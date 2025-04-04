@@ -1,0 +1,15 @@
+.error-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background-color: #fee2e2;
+  color: #991b1b;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+.error-icon {
+  margin-right: 8px;
+  font-size: 1.2em;
+} 
