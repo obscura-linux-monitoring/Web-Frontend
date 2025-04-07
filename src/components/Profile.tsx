@@ -3,6 +3,7 @@ import api from '../api';
 import { getToken } from '../components/utils/Auth';
 import styles from '../scss/Profile.module.scss';
 import NodeMetrics from './NodeMetrics';
+import CommandForm from './CommandForm';
 
 type UserProfile = {
   sub: string;
@@ -60,6 +61,11 @@ const UserProfile = () => {
     setSelectedNodeId(nodeId === selectedNodeId ? null : nodeId);
   };
 
+  const handleCommandSuccess = () => {
+    // 명령 등록 성공 후 필요한 작업 수행
+    alert('명령이 성공적으로 등록되었습니다.');
+  };
+
   if (loading) return <p>⏳ 로딩 중...</p>;
   if (!user) return <p>😥 사용자 정보를 불러오지 못했습니다.</p>;
 
@@ -102,6 +108,14 @@ const UserProfile = () => {
         {selectedNodeId && (
           <div className={styles.metricsSection}>
             <NodeMetrics nodeId={selectedNodeId} />
+            
+            <div className={styles.commandSection}>
+              <h3>🔧 명령 등록</h3>
+              <CommandForm 
+                onSubmitSuccess={handleCommandSuccess} 
+                nodeId={selectedNodeId} 
+              />
+            </div>
           </div>
         )}
       </div>
