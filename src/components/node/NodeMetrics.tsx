@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import styles from '../../scss/NodeMetric.module.scss';
+import styles from '../../scss/node/NodeMetric.module.scss';
 
 type NodeMetrics = {
   node_id: string;

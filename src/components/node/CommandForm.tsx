@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import styles from '../../scss/Command.module.scss';
+import styles from '../../scss/node/Command.module.scss';
 import api from '../../api';
 
 interface CommandFormProps {

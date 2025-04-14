@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../../api';
 import { getToken } from '../utils/Auth';
-import styles from '../../scss/Profile.module.scss';
+import styles from '../../scss/user/Profile.module.scss';
 import NodeMetrics from '../node/NodeMetrics';
 import CommandForm from '../node/CommandForm';
 
