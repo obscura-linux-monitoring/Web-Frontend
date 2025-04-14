@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import api from '../api';
-import { getToken } from '../components/utils/Auth';
-import styles from '../scss/Profile.module.scss';
-import NodeMetrics from './NodeMetrics';
-import CommandForm from './CommandForm';
+import api from '../../api';
+import { getToken } from '../utils/Auth';
+import styles from '../../scss/Profile.module.scss';
+import NodeMetrics from '../node/NodeMetrics';
+import CommandForm from '../node/CommandForm';
 
-type UserProfile = {
+type Profile = {
   sub: string;
   email: string;
   exp: number;
@@ -17,8 +17,8 @@ type Node = {
   server_type: string;
 };
 
-const UserProfile = () => {
-  const [user, setUser] = useState<UserProfile | null>(null);
+const Profile = () => {
+  const [user, setUser] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [obscuraKey, setObscuraKey] = useState<string | null>(null);
   const [version, setVersion] = useState<string | null>(null);
@@ -32,7 +32,7 @@ const UserProfile = () => {
       return;
     }
 
-    api.get('/protected/profile', {
+    api.get('/user/profile', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -41,7 +41,7 @@ const UserProfile = () => {
         setUser(res.data.user);
         setObscuraKey(res.data.obscura_key);
         setVersion(res.data.version);
-        return api.get('/protected/nodes', {
+        return api.get('/user/nodes', {
           params: {
             obscura_key: res.data.obscura_key
           }
@@ -123,4 +123,4 @@ const UserProfile = () => {
   );
 };
 
-export default UserProfile;
+export default Profile;

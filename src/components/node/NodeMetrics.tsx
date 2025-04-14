@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import api from '../api';
-import styles from '../scss/NodeMetric.module.scss';
+import styles from '../../scss/NodeMetric.module.scss';
 
 type NodeMetrics = {
   node_id: string;
@@ -14,53 +13,46 @@ type NodeMetrics = {
   last_update: string;
 };
 
-type MetricsHistory = {
-  node_id: string;
-  field: string;
-  history: {
-    time: string;
-    value: number;
-  }[];
-};
-
 interface NodeMetricsProps {
   nodeId: string;
 }
 
 const NodeMetrics = ({ nodeId }: NodeMetricsProps) => {
   const [metrics, setMetrics] = useState<NodeMetrics | null>(null);
-  const [metricsHistory, setMetricsHistory] = useState<MetricsHistory | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchNodeMetrics = async () => {
-    try {
-      const [metricsResponse, historyResponse] = await Promise.all([
-        api.get(`/influx/node/metrics/${nodeId}`),
-        api.get(`/influx/node/history/${nodeId}`, {
-          params: {
-            field: 'cpu_usage',
-            start: '-1h'
-          }
-        })
-      ]);
-
-      setMetrics(metricsResponse.data);
-      setMetricsHistory(historyResponse.data);
-      setError(null);
-    } catch (error) {
-      console.error('❌ 메트릭 데이터 조회 실패:', error);
-      setError('메트릭 데이터를 불러오는데 실패했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchNodeMetrics();
-    // 1분마다 데이터 갱신
-    const interval = setInterval(fetchNodeMetrics, 60000);
-    return () => clearInterval(interval);
+    const socket = new WebSocket(`ws://1.209.148.143:8000/influx/ws/metrics/${nodeId}`);
+
+    socket.onopen = () => {
+      console.log('📡 WebSocket 연결됨');
+    };
+
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        setMetrics(data);
+        setError(null);
+        setLoading(false);
+      } catch (err) {
+        console.error('❌ WebSocket 메시지 파싱 실패:', err);
+        setError('데이터 수신 오류');
+      }
+    };
+
+    socket.onerror = (err) => {
+      console.error('❌ WebSocket 에러:', err);
+      setError('WebSocket 연결 실패');
+    };
+
+    socket.onclose = () => {
+      console.log('🔌 WebSocket 연결 종료');
+    };
+
+    return () => {
+      socket.close(); // cleanup
+    };
   }, [nodeId]);
 
   if (loading) return <div className={styles.loading}>데이터 로딩 중...</div>;
@@ -78,7 +70,7 @@ const NodeMetrics = ({ nodeId }: NodeMetricsProps) => {
           </div>
           <div className={styles.metricItem}>
             <span className={styles.label}>메모리 사용량</span>
-            <span className={styles.value}>{formatBytes(metrics.metrics.memory_usage)}</span>
+            <span className={styles.value}>{metrics.metrics.memory_usage?.toFixed(2)}%</span>
           </div>
           <div className={styles.metricItem}>
             <span className={styles.label}>디스크 사용량</span>
@@ -97,13 +89,6 @@ const NodeMetrics = ({ nodeId }: NodeMetricsProps) => {
           마지막 업데이트: {new Date(metrics.last_update).toLocaleString()}
         </div>
       </div>
-
-      {metricsHistory && (
-        <div className={styles.history}>
-          <h4>CPU 사용률 기록 (1시간)</h4>
-          {/* 여기에 차트 컴포넌트를 추가할 수 있습니다 */}
-        </div>
-      )}
     </div>
   );
 };

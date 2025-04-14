@@ -1,14 +1,17 @@
 import { GoogleLogin } from '@react-oauth/google';
-import api from '../api';
+import api from '../../api';
 
 
 type Props = {
-  onLogin?: () => void;  // ✅ 이거 추가!
+  onLogin?: () => void;
 };
 
 const GoogleLoginButton = ({ onLogin }: Props) => {
   const handleLoginSuccess = async (credentialResponse: any) => {
     const idToken = credentialResponse.credential;
+
+    // 구글에서 받은 credential 로그 출력
+    console.log("🔍 구글 credentialResponse:", credentialResponse);
 
     if (!idToken) {
       console.error('No credential returned');
@@ -27,6 +30,9 @@ const GoogleLoginButton = ({ onLogin }: Props) => {
       
       // JWT 저장
       localStorage.setItem("jwt", access_token);
+
+      // 사용자 정보 저장 (프로필 이미지 포함)
+      localStorage.setItem("userInfo", JSON.stringify(user));
 
       onLogin?.(); // 콜백 실행
     } catch (err) {

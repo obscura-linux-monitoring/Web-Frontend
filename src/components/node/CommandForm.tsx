@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import styles from '../scss/Command.module.scss';
-import api from '../api';
+import styles from '../../scss/Command.module.scss';
+import api from '../../api';
 
 interface CommandFormProps {
   onSubmitSuccess?: () => void;

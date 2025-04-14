@@ -2,7 +2,7 @@ import axios, { AxiosInstance } from 'axios';
 import { getToken, removeToken, saveToken } from './components/utils/Auth';
 
 const api: AxiosInstance = axios.create({
-    baseURL: 'http://localhost:8000',
+    baseURL: 'http://1.209.148.143:8000',
     withCredentials: true, // 모든 요청에 자동 적용!
 });
 

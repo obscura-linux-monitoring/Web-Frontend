@@ -1,12 +1,21 @@
 import { jwtDecode } from "jwt-decode";
 
 const TOKEN_KEY = "jwt";
+const USER_INFO_KEY = "userInfo";
 
 type JwtPayload = {
   sub: string;
   email: string;
   exp: number;
   is_admin?: boolean;
+};
+
+type UserInfo = {
+  id?: string;
+  email?: string;
+  name?: string;
+  picture?: string; // 프로필 이미지 URL
+  [key: string]: any;
 };
 
 // JWT토큰 가져오기
@@ -27,6 +36,56 @@ export const getUserFromToken = (): JwtPayload | null => {
     console.error("❌ 디코딩 실패:", err);
     return null;
   }
+};
+
+// 사용자 정보 관련 함수들
+export const getUserInfo = (): UserInfo | null => {
+  try {
+    const userInfo = localStorage.getItem(USER_INFO_KEY);
+    
+    if (!userInfo) {
+      console.warn("⚠️ localStorage에 userInfo가 없습니다");
+      return null;
+    }
+    
+    const parsedUserInfo = JSON.parse(userInfo);
+    
+    return parsedUserInfo;
+  } catch (err) {
+    console.error("❌ 사용자 정보 파싱 실패:", err);
+    return null;
+  }
+};
+
+export const saveUserInfo = (userInfo: UserInfo) => {
+  localStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo));
+};
+
+export const removeUserInfo = () => {
+  localStorage.removeItem(USER_INFO_KEY);
+};
+
+// getUserProfileImage 함수 수정
+export const getUserProfileImage = (): string | null => {
+  const userInfo = getUserInfo();
+  console.log("🔍 getUserProfileImage에서 받은 userInfo:", userInfo);
+  
+  if (!userInfo) {
+    console.warn("⚠️ userInfo가 없습니다");
+    return null;
+  }
+  
+  // 다양한 이미지 필드 이름을 시도합니다
+  const imageUrl = userInfo.picture || userInfo.image || userInfo.avatar || userInfo.profileImage;
+  console.log("🖼️ 발견된 이미지 URL:", imageUrl || "이미지 URL이 없습니다");
+  return imageUrl || null;
+};
+
+// 로그아웃 시 사용자 정보도 함께 삭제
+export const clearUserSession = () => {
+  removeToken();
+  removeUserInfo();
+  clearAutoLogout();
 };
 
 // JWT토큰 만료 여부 확인
