@@ -1,40 +1,103 @@
 import styles from '../scss/Header.module.scss';
-import { useEffect } from 'react';
 import { getUserInfo, getUserProfileImage } from './utils/Auth';
+import { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import Profile from './user/Profile';
 
-const Header = () => {
+interface HeaderProps {
+  onLogout: () => void | Promise<void>;
+  isAdmin?: boolean;
+}
+
+const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
   const profileImageUrl = getUserProfileImage();
+  const userInfo = getUserInfo();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   
+  // 외부 클릭 감지로 드롭다운 닫기
   useEffect(() => {
-    const directUserInfo = localStorage.getItem("userInfo");
-    console.log("🔍 localStorage에서 직접 조회한 userInfo:", directUserInfo);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
     
-    // JWT 토큰 확인
-    const token = localStorage.getItem("jwt");
-    console.log("🔍 JWT 토큰 존재:", !!token);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
   
   return (
     <header className={styles.header}>
       <div className={styles.headerContent}>
         <div className={styles.headerRight}>
-          {profileImageUrl ? (
-            <div className={styles.profileImage}>
-              <img src={profileImageUrl} alt="Profile" />
-              <p style={{ display: 'none' }}>{/* 로그용 숨겨진 텍스트 */}
-                이미지 URL: {profileImageUrl}
-              </p>
+          <div className={styles.profileContainer} ref={dropdownRef}>
+            <div 
+              className={styles.profileImage} 
+              title={`${userInfo?.name || userInfo?.email || '사용자'} 프로필`}
+              onClick={() => setShowDropdown(!showDropdown)}
+            >
+              {profileImageUrl ? (
+                <img src={profileImageUrl} alt="Profile" />
+              ) : (
+                <div className={styles.placeholderImage}>
+                  {userInfo?.email?.[0]?.toUpperCase() || '?'}
+                </div>
+              )}
             </div>
-          ) : (
-            <div className={styles.profileImage}>
-              {/* 프로필 이미지가 없을 때 대체 이미지 표시 */}
-              <div className={styles.placeholderImage}>
-                {getUserInfo()?.email?.[0]?.toUpperCase() || '?'}
+            
+            {showDropdown && (
+              <div className={styles.dropdown}>
+                <div className={styles.userInfo}>
+                  <p className={styles.userName}>{userInfo?.name || '사용자'}</p>
+                  <p className={styles.userEmail}>{userInfo?.email}</p>
+                </div>
+                <div className={styles.dropdownButtons}>
+                  <button 
+                    className={styles.dropdownButton}
+                    onClick={() => {
+                      setShowProfile(true);
+                      setShowDropdown(false);
+                    }}
+                  >
+                    👤 프로필 보기
+                  </button>
+                  
+                  {isAdmin && (
+                    <Link to="/admin" className={styles.dropdownButton}>
+                      🔒 관리자 페이지
+                    </Link>
+                  )}
+                  
+                  <button 
+                    className={`${styles.dropdownButton} ${styles.logoutButton}`}
+                    onClick={onLogout}
+                  >
+                    🚪 로그아웃
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
+      
+      {showProfile && (
+        <div className={styles.profileModal}>
+          <div className={styles.profileModalContent}>
+            <button 
+              className={styles.closeButton}
+              onClick={() => setShowProfile(false)}
+            >
+              ✖
+            </button>
+            <Profile />
+          </div>
+        </div>
+      )}
     </header>
   );
 };

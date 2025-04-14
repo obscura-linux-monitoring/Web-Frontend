@@ -1,51 +1,188 @@
 .header {
-    position: fixed;
-    top: 0;
-    right: 0;
-    height: 60px;
-    background-color: #1a1a1a;
-    width: calc(100% - 250px);
-    z-index: 100;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 60px;
+  background-color: #1a1a1a;
+  width: calc(100% - 250px);
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.headerContent {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100%;
+  padding: 0 2rem;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+}
+
+.profileContainer {
+  position: relative;
+}
+
+.profileImage {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #3a3a3a;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   }
   
-  .headerContent {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
+  img {
+    width: 100%;
     height: 100%;
-    padding: 0 2rem;
+    object-fit: cover;
+  }
+}
+
+.placeholderImage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #3a3a3a;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.dropdown {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  width: 240px;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  padding: 1rem;
+  z-index: 110;
+  animation: fadeIn 0.2s ease;
+}
+
+.userInfo {
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.userName {
+  font-size: 1rem;
+  font-weight: bold;
+  margin: 0 0 0.25rem 0;
+  color: white;
+}
+
+.userEmail {
+  font-size: 0.8rem;
+  margin: 0;
+  color: #aaa;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdownButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dropdownButton {
+  background: none;
+  border: none;
+  color: white;
+  padding: 0.5rem;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+  display: block;
+  width: 100%;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+  text-decoration: none;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.logoutButton {
+  margin-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 0.75rem;
+  color: #ff6b6b;
+  
+  &:hover {
+    background-color: rgba(255, 0, 0, 0.1);
+  }
+}
+
+.profileModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 200;
+  animation: fadeIn 0.3s ease;
+}
+
+.profileModalContent {
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  padding: 2rem;
+  width: 500px;
+  max-width: 90%;
+  position: relative;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.closeButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .header {
+    width: 100%;
+    top: 0;
   }
   
-  .headerRight {
-    display: flex;
-    align-items: center;
+  .dropdown {
+    width: 200px;
   }
-  
-  .profileImage {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 2px solid #3a3a3a;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    
-    &:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    }
-    
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-  }
-  
-  @media (max-width: 768px) {
-    .header {
-      width: 100%;
-      top: 0;
-    }
-  }
+}

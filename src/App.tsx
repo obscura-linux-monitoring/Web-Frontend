@@ -13,8 +13,6 @@ import Header from './components/Header';
 const App = () => {
   const {
     isAuthenticated,
-    showProfile,
-    setShowProfile,
     isAdmin,
     handleLogout,
   } = useAuth();
@@ -32,21 +30,11 @@ const App = () => {
   return (
     <GoogleOAuthProvider clientId="465689070189-hr1tl3qm0uamosf0nnf5o06rqo2g35fv.apps.googleusercontent.com">
       <div className="app-container">
-        <Header />
+        <Header onLogout={handleLogout} isAdmin={isAdmin} />
         <SideBar />
         <div className="main-content">
           <Routes>
-            <Route
-              path="/"
-              element={
-                <UserDashboard
-                  onLogout={handleLogout}
-                  onShowProfile={setShowProfile}
-                  showProfile={showProfile}
-                  isAdmin={isAdmin ?? false}
-                />
-              }
-            />
+            <Route path="/" element={<UserDashboard/>} />
             <Route path="/nodes" element={<NodesView />} />
             <Route path="/details" element={<DetailsView />} />
             <Route path="/settings" element={<SettingsView />} />

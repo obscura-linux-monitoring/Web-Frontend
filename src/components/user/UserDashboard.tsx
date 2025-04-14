@@ -1,24 +1,18 @@
-import Profile from './Profile';
-import { getUserFromToken} from '../utils/Auth';
+import { getUserFromToken } from '../utils/Auth';
 
-interface Props {
-  onLogout: () => void;
-  onShowProfile: (v: boolean) => void;
-  showProfile: boolean;
-  isAdmin: boolean;
-}
-
-const UserDashboard = ({ onLogout, onShowProfile, showProfile, isAdmin }: Props) => {
+const UserDashboard = () => {
   const user = getUserFromToken();
 
   return (
-    <div>
-      <p>✅ 로그인됨!</p>
-      <p>🙋‍♂️ 사용자: {user?.email}</p>
-      <button onClick={onLogout}>로그아웃</button>
-      {isAdmin && <button>관리자 페이지</button>}
-      <button onClick={() => onShowProfile(true)}>프로필 보기</button>
-      {showProfile && <Profile />}
+    <div className="dashboard-container">
+      <h2>대시보드</h2>
+      <p>환영합니다, {user?.email}님!</p>
+      <div className="dashboard-content">
+        <div className="card">
+          <h3>👋 시작하기</h3>
+          <p>좌측 메뉴에서 다양한 기능을 이용할 수 있습니다.</p>
+        </div>
+      </div>
     </div>
   );
 };
