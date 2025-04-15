@@ -1,73 +1,176 @@
 .metricsContainer {
-    padding: 1rem;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  
-    .currentMetrics {
-      h4 {
-        margin: 0 0 1rem;
-        color: #333;
-        font-size: 1.1rem;
-      }
-  
-      .metricsGrid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1rem;
-  
-        .metricItem {
-          padding: 1rem;
-          background: #f8f9fa;
-          border-radius: 6px;
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-  
-          .label {
-            color: #666;
-            font-size: 0.9rem;
-          }
-  
-          .value {
-            color: #2c3e50;
-            font-size: 1.2rem;
-            font-weight: 500;
-          }
+  padding: 1rem;
+  background: #2c2c2c; 
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+
+  .currentMetrics {
+    h4 {
+      margin: 0 0 1rem;
+      color: #e0e0e0; 
+      font-size: 1.1rem;
+    }
+
+    .metricsGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+
+      .metricItem {
+        padding: 1rem;
+        background: #1a1a1a; 
+        border-radius: 6px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        border: 1px solid #3a3a3a; 
+
+        .label {
+          color: #aaa; 
+          font-size: 0.9rem;
+        }
+
+        .value {
+          color: #fff; 
+          font-size: 1.2rem;
+          font-weight: 500;
         }
       }
-  
-      .lastUpdate {
-        color: #666;
-        font-size: 0.8rem;
-        text-align: right;
-      }
     }
-  
-    .history {
-      margin-top: 2rem;
-      padding-top: 1rem;
-      border-top: 1px solid #eee;
-  
+
+    .lastUpdate {
+      color: #888; 
+      font-size: 0.8rem;
+      text-align: right;
+    }
+  }
+
+  // 차트 섹션 스타일 수정
+  .chartSection {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #3a3a3a;
+
+    .chartHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+
       h4 {
-        margin: 0 0 1rem;
-        color: #333;
+        margin: 0;
+        color: #e0e0e0;
         font-size: 1.1rem;
       }
+
+      .selectAllButton {
+        background: #333;
+        color: #e0e0e0;
+        border: 1px solid #444;
+        border-radius: 4px;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+          background: #444;
+        }
+      }
+    }
+
+    // 메트릭 체크박스 선택 영역 추가
+    .metricsSelection {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin-bottom: 1.5rem;
+
+      .metricCheckbox {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        font-size: 0.9rem;
+        color: #e0e0e0;
+        user-select: none;
+        padding: 0.4rem 0.8rem;
+        background: #1a1a1a;
+        border-radius: 4px;
+        border: 1px solid #3a3a3a;
+        transition: all 0.2s;
+
+        &:hover {
+          border-color: #555;
+        }
+
+        input {
+          position: absolute;
+          opacity: 0;
+          cursor: pointer;
+          height: 0;
+          width: 0;
+        }
+
+        .checkmark {
+          position: relative;
+          height: 16px;
+          width: 16px;
+          border-radius: 3px;
+          background-color: #2c2c2c;
+          border: 1px solid #555;
+          margin-right: 8px;
+          transition: all 0.2s;
+
+          &:after {
+            content: "";
+            position: absolute;
+            display: none;
+          }
+        }
+
+        input:checked ~ .checkmark:after {
+          display: block;
+          left: 5px;
+          top: 2px;
+          width: 4px;
+          height: 8px;
+          border: solid white;
+          border-width: 0 2px 2px 0;
+          transform: rotate(45deg);
+        }
+      }
+    }
+
+    .chartContainer {
+      background: #1a1a1a;
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid #3a3a3a;
+      height: 340px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .noChartData {
+      color: #aaa;
+      font-size: 0.9rem;
+      text-align: center;
     }
   }
-  
-  .loading {
-    padding: 2rem;
-    text-align: center;
-    color: #666;
-  }
-  
-  .error {
-    padding: 1rem;
-    color: #dc3545;
-    background: #f8d7da;
-    border-radius: 4px;
-    margin: 1rem 0;
-  }
+}
+
+.loading {
+  padding: 2rem;
+  text-align: center;
+  color: #aaa; 
+}
+
+.error {
+  padding: 1rem;
+  color: #ff6b6b; 
+  background: rgba(220, 53, 69, 0.2); 
+  border-radius: 4px;
+  margin: 1rem 0;
+}

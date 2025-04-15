@@ -5,8 +5,7 @@ import GoogleLoginButton from './components/user/GoogleLoginButton';
 import UserDashboard from './components/user/UserDashboard';
 import SideBar from './components/SideBar';
 import { useAuth } from './hooks/useAuth';
-import NodesView from './components/node/NodesView';
-import DetailsView from './components/node/DetailsView';
+import NodeDetail from './components/node/NodeDetail';
 import SettingsView from './components/node/SettingView';
 import Header from './components/Header';
 
@@ -35,8 +34,7 @@ const App = () => {
         <div className="main-content">
           <Routes>
             <Route path="/" element={<UserDashboard/>} />
-            <Route path="/nodes" element={<NodesView />} />
-            <Route path="/details" element={<DetailsView />} />
+            <Route path="/nodes/:nodeId" element={<NodeDetail />} />
             <Route path="/settings" element={<SettingsView />} />
           </Routes>
         </div>

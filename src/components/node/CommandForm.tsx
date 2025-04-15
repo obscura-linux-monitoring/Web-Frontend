@@ -26,7 +26,7 @@ const CommandForm: React.FC<CommandFormProps> = ({ onSubmitSuccess, nodeId }) =>
     }
   }, [nodeId]);
 
-  const commandTypeOptions = ['a', 'b', 'c', 'd', 'e'];
+  const commandTypeOptions = ['a', 'b', 'c', 'd', 'e', 'f'];
   const commandStatusOptions = ['1', '2', '3', '4'];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -44,7 +44,7 @@ const CommandForm: React.FC<CommandFormProps> = ({ onSubmitSuccess, nodeId }) =>
 
     try {
       // API 엔드포인트는 실제 백엔드에 맞게 조정해야 합니다
-      await api.post('/protected/command/insert', formData);
+      await api.post('/user/command/insert', formData);
       
       // 폼 초기화
       setFormData({
