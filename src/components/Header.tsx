@@ -1,8 +1,10 @@
 import styles from '../scss/Header.module.scss';
 import { getUserInfo, getUserProfileImage } from './utils/Auth';
 import { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import Profile from './user/Profile';
+import { useNodeContext } from '../context/NodeContext';
+import MiniMetricsGraph from './node/MiniMetricsGraph';
 
 interface HeaderProps {
   onLogout: () => void | Promise<void>;
@@ -15,6 +17,8 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { selectedNode, monitoringEnabled, toggleMonitoring } = useNodeContext();
+  const { nodeId } = useParams<{ nodeId: string }>();
   
   // 외부 클릭 감지로 드롭다운 닫기
   useEffect(() => {
@@ -30,9 +34,44 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
     };
   }, []);
   
+  // 현재 URL의 nodeId 또는 context의 selectedNode 사용
+  const currentNodeId = nodeId || selectedNode?.node_id;
+  
   return (
     <header className={styles.header}>
       <div className={styles.headerContent}>
+        <div className={styles.headerLeft}>
+          {currentNodeId ? (
+            <div className={styles.nodeLinks}>
+              <Link to={`/nodes/monitoring/${currentNodeId}`} className={styles.nodeLink}>
+                모니터링
+              </Link>
+              <Link to={`/nodes/process/${currentNodeId}`} className={styles.nodeLink}>
+                프로세스
+              </Link>
+              <Link to={`/nodes/command/${currentNodeId}`} className={styles.nodeLink}>
+                명령어
+              </Link>
+              
+              {/* 모니터링 토글 버튼 */}
+              <button 
+                className={`${styles.monitoringToggle} ${monitoringEnabled ? styles.enabled : styles.disabled}`}
+                onClick={toggleMonitoring}
+                title={monitoringEnabled ? '모니터링 중지' : '모니터링 시작'}
+              >
+                <span className={styles.toggleIcon}></span>
+                <span className={styles.toggleText}>
+                  {monitoringEnabled ? 'ON' : 'OFF'}
+                </span>
+              </button>
+              
+              {/* 미니 메트릭 그래프 추가 */}
+              {monitoringEnabled && <MiniMetricsGraph />}
+            </div>
+          ) : (
+            <span className={styles.noNodeSelected}>노드를 선택해주세요</span>
+          )}
+        </div>
         <div className={styles.headerRight}>
           <div className={styles.profileContainer} ref={dropdownRef}>
             <div 

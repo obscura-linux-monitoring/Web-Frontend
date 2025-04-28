@@ -1,0 +1,85 @@
+// src/scss/node/MiniMetricsGraph.module.scss
+.miniMetricsContainer {
+    display: flex;
+    align-items: center;
+    margin-left: 16px;
+    padding: 4px 8px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    border: 1px solid #333;
+  }
+  
+  .metricItem {
+    display: flex;
+    align-items: center;
+    margin-right: 12px;
+    transition: all 0.3s ease;
+    
+    &:last-child {
+      margin-right: 0;
+    }
+    
+    &.alert {
+      animation: pulse 1s infinite;
+      
+      .label, .value {
+        color: #ff6b6b;
+      }
+      
+      .sparklinePath {
+        stroke: #ff6b6b;
+      }
+    }
+  }
+  
+  .label {
+    font-size: 0.8rem;
+    color: #aaa;
+    margin-right: 5px;
+  }
+  
+  .value {
+    font-size: 0.8rem;
+    color: #e0e0e0;
+    font-weight: 500;
+    min-width: 45px;
+    text-align: right;
+  }
+  
+  .sparkline {
+    margin: 0 5px;
+  }
+  
+  .sparklinePath {
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  
+  .cpuPath {
+    stroke: #4ecdc4;
+  }
+  
+  .memoryPath {
+    stroke: #ff6b6b;
+  }
+  
+  .placeholderGraph {
+    width: 60px;
+    height: 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    margin: 0 5px;
+  }
+  
+  @keyframes pulse {
+    0% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+    100% {
+      opacity: 1;
+    }
+  }

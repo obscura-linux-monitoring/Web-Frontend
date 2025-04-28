@@ -1,8 +1,9 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import styles from '../scss/SideBar.module.scss';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import api from '../api';
 import { getToken } from './utils/Auth';
+import { useNodeContext } from '../context/NodeContext';
 
 type Node = {
   node_id: string;
@@ -13,10 +14,15 @@ const SideBar = () => {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isSubmenuOpen, setIsSubmenuOpen] = useState(false);
+  const { selectedNode, selectNode } = useNodeContext();
+  const location = useLocation();
+  const fetchedRef = useRef(false);
   
-  // 사용자의 노드 목록을 가져오는 함수
+  // 사용자의 노드 목록을 가져오는 함수 - 최초 한 번만 실행
   useEffect(() => {
+    // 이미 데이터를 가져왔다면 중복 요청 방지
+    if (fetchedRef.current) return;
+    
     const fetchNodes = async () => {
       const token = getToken();
       if (!token) return;
@@ -40,6 +46,7 @@ const SideBar = () => {
         });
         
         setNodes(nodesRes.data.nodes);
+        fetchedRef.current = true;
       } catch (err) {
         console.error('노드 목록 로딩 실패:', err);
         setError('노드 목록을 불러오지 못했습니다.');
@@ -49,46 +56,59 @@ const SideBar = () => {
     };
     
     fetchNodes();
-  }, []);
-
-  // 서브메뉴 토글 함수
-  const toggleSubmenu = (e: React.MouseEvent) => {
-    e.preventDefault(); // 기본 링크 이동 방지
-    setIsSubmenuOpen(!isSubmenuOpen);
+  }, []); // 의존성 배열을 비워 최초 한 번만 실행
+  
+  // URL에서 nodeId 추출하여 현재 선택된 노드 설정
+  useEffect(() => {
+    if (nodes.length === 0) return;
+    
+    const path = location.pathname;
+    const match = path.match(/\/nodes\/\w+\/([^/]+)/);
+    if (match && match[1]) {
+      const currentNodeId = match[1];
+      const currentNode = nodes.find(node => node.node_id === currentNodeId);
+      
+      if (currentNode && (!selectedNode || selectedNode.node_id !== currentNodeId)) {
+        selectNode(currentNode);
+      }
+    }
+  }, [location.pathname, nodes, selectedNode, selectNode]);
+  
+  // 노드 선택 핸들러
+  const handleNodeSelect = (node: Node) => {
+    selectNode(node);
   };
 
   return (
     <div className={styles.sidebar}>
       <h3>🔧 메뉴</h3>
       <ul>
-        <li><Link to="/">📊 대시보드</Link></li>
-        
-        <li className={`${styles.hasSubmenu} ${isSubmenuOpen ? styles.open : ''}`}>
-          <a href="#" onClick={toggleSubmenu}>🧩 노드 목록</a>
-          {isSubmenuOpen && (
-            <div className={styles.submenu}>
-              {loading ? (
-                <div className={styles.submenuItem}>⏳ 로딩 중...</div>
-              ) : error ? (
-                <div className={styles.submenuItem}>❌ {error}</div>
-              ) : nodes.length === 0 ? (
-                <div className={styles.submenuItem}>등록된 노드가 없습니다</div>
-              ) : (
-                nodes.map(node => (
-                  <Link 
-                    key={node.node_id}
-                    to={`/nodes/${node.node_id}`}
-                    className={styles.submenuItem}
-                  >
-                    {node.server_type} - {node.node_id.substring(0, 8)}...
-                  </Link>
-                ))
-              )}
-            </div>
-          )}
+        <li className={styles.nodeListSection}>
+          <div className={styles.nodeListHeader}>🧩 노드 목록</div>
+          <div className={styles.nodeList}>
+            {loading ? (
+              <div className={styles.nodeItem}>⏳ 로딩 중...</div>
+            ) : error ? (
+              <div className={styles.nodeItem}>❌ {error}</div>
+            ) : nodes.length === 0 ? (
+              <div className={styles.nodeItem}>등록된 노드가 없습니다</div>
+            ) : (
+              nodes.map(node => (
+                <Link 
+                  key={node.node_id}
+                  to={`/nodes/monitoring/${node.node_id}`}
+                  className={`${styles.nodeItem} ${
+                    selectedNode?.node_id === node.node_id ? styles.active : ''
+                  }`}
+                  onClick={() => handleNodeSelect(node)}
+                >
+                  {node.server_type} - {node.node_id.substring(0, 8)}...
+                </Link>
+              ))
+            )}
+          </div>
         </li>
         
-        <li><Link to="/process">📊 프로세스</Link></li>
         <li><Link to="/settings">⚙️ 설정</Link></li>
       </ul>
     </div>

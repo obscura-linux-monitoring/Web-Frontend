@@ -373,6 +373,104 @@
   color: #777;
 }
 
+// 노드 헤더 스타일
+.nodeHeader {
+  margin-bottom: 1.5rem;
+  
+  h2 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+  }
+  
+  .nodeId {
+    font-size: 0.9rem;
+    color: #aaa;
+  }
+}
+
+// 액션 컬럼 스타일
+.actionsColumn {
+  width: 150px;
+  text-align: center;
+}
+
+.actionsCell {
+  padding: 0.5rem !important;
+}
+
+.actionButtons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.actionButton {
+  padding: 0.4rem 0.7rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(50%);
+  }
+}
+
+.restartButton {
+  background-color: #3498db;
+  color: white;
+  
+  &:hover:not(:disabled) {
+    background-color: #2980b9;
+    transform: translateY(-1px);
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+.stopButton {
+  background-color: #f39c12;
+  color: white;
+  
+  &:hover:not(:disabled) {
+    background-color: #e67e22;
+    transform: translateY(-1px);
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+.monitoringDisabled {
+  background-color: rgba(231, 76, 60, 0.1);
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  border: 1px solid #e74c3c;
+  
+  p {
+    color: #e74c3c;
+    margin: 0;
+    text-align: center;
+    font-weight: 500;
+  }
+}
+
+// 비활성화된 요소 스타일
+.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 1024px) {
   .controls {
     flex-direction: column;
