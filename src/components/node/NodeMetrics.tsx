@@ -38,8 +38,8 @@ const AVAILABLE_METRICS = [
 
 const NodeMetrics = () => {
   const { nodeId } = useParams<{ nodeId: string }>();
-  // NodeContext에서 monitoringEnabled 상태와 updateNodeMetrics 함수 가져오기
-  const { selectedNode, monitoringEnabled, updateNodeMetrics } = useNodeContext();
+  // NodeContext에서 monitoringEnabled 상태 가져오기 (updateNodeMetrics 제거)
+  const { selectedNode, monitoringEnabled } = useNodeContext();
   
   const [metrics, setMetrics] = useState<NodeMetrics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -93,10 +93,7 @@ const NodeMetrics = () => {
           const data = JSON.parse(event.data);
           setMetrics(data);
           
-          // NodeContext에 메트릭 데이터 업데이트 - 헤더의 MiniMetricsGraph에서 사용
-          if (updateNodeMetrics) {
-            updateNodeMetrics(data);
-          }
+          // NodeContext 업데이트 코드 제거 (독립 구현 방식)
           
           const newDataPoint: TimeSeriesData = {
             ...data.metrics,
@@ -148,7 +145,7 @@ const NodeMetrics = () => {
         clearTimeout(reconnectTimeoutRef.current);
       }
     };
-  }, [nodeId, monitoringEnabled, updateNodeMetrics]); // updateNodeMetrics 의존성 추가
+  }, [nodeId, monitoringEnabled]); // updateNodeMetrics 의존성 제거
 
   // 메트릭 체크박스 변경 핸들러
   const handleMetricChange = (metricId: string) => {

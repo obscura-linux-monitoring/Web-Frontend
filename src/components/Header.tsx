@@ -1,7 +1,7 @@
 import styles from '../scss/Header.module.scss';
 import { getUserInfo, getUserProfileImage } from './utils/Auth';
 import { useState, useRef, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useLocation } from 'react-router-dom'; // useLocation 추가
 import Profile from './user/Profile';
 import { useNodeContext } from '../context/NodeContext';
 import MiniMetricsGraph from './node/MiniMetricsGraph';
@@ -19,6 +19,7 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { selectedNode, monitoringEnabled, toggleMonitoring } = useNodeContext();
   const { nodeId } = useParams<{ nodeId: string }>();
+  const location = useLocation(); // 현재 경로 가져오기
   
   // 외부 클릭 감지로 드롭다운 닫기
   useEffect(() => {
@@ -37,20 +38,37 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
   // 현재 URL의 nodeId 또는 context의 selectedNode 사용
   const currentNodeId = nodeId || selectedNode?.node_id;
   
+  // 현재 활성화된 메뉴 경로 확인
+  const isMonitoringActive = location.pathname.includes('/nodes/monitoring/');
+  const isProcessActive = location.pathname.includes('/nodes/process/');
+  const isTerminalActive = location.pathname.includes('/nodes/terminal/');
+  
   return (
     <header className={styles.header}>
       <div className={styles.headerContent}>
         <div className={styles.headerLeft}>
           {currentNodeId ? (
             <div className={styles.nodeLinks}>
-              <Link to={`/nodes/monitoring/${currentNodeId}`} className={styles.nodeLink}>
+              <Link 
+                to={`/nodes/monitoring/${currentNodeId}`} 
+                className={`${styles.nodeLink} ${isMonitoringActive ? styles.activeLink : ''}`}
+              >
                 모니터링
+                {isMonitoringActive && <span className={styles.activeIndicator}></span>}
               </Link>
-              <Link to={`/nodes/process/${currentNodeId}`} className={styles.nodeLink}>
+              <Link 
+                to={`/nodes/process/${currentNodeId}`} 
+                className={`${styles.nodeLink} ${isProcessActive ? styles.activeLink : ''}`}
+              >
                 프로세스
+                {isProcessActive && <span className={styles.activeIndicator}></span>}
               </Link>
-              <Link to={`/nodes/command/${currentNodeId}`} className={styles.nodeLink}>
-                명령어
+              <Link 
+                to={`/nodes/terminal/${currentNodeId}`} 
+                className={`${styles.nodeLink} ${isTerminalActive ? styles.activeLink : ''}`}
+              >
+                터미널
+                {isTerminalActive && <span className={styles.activeIndicator}></span>}
               </Link>
               
               {/* 모니터링 토글 버튼 */}

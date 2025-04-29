@@ -256,6 +256,34 @@
   align-items: center;
 }
 
+/* 기존 스타일에 추가 */
+.nodeLink {
+  position: relative;
+  padding: 10px 15px;
+  transition: color 0.3s;
+  
+  &.activeLink {
+    color: #4ecdc4; /* 활성화된 메뉴 색상 */
+    font-weight: 600;
+  }
+  
+  .activeIndicator {
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 3px;
+    background-color: #4ecdc4; /* 활성화 표시 색상 */
+    border-radius: 3px;
+    transition: width 0.3s;
+  }
+  
+  &:hover .activeIndicator {
+    width: 25px;
+  }
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

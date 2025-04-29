@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import styles from '../../scss/node/ProcessView.module.scss';
 import { useNodeContext } from '../../context/NodeContext';
+import api from '../../api';
 
 // 서버로부터 받는 프로세스 데이터 타입 정의
 type Process = {
@@ -146,123 +147,88 @@ const ProcessView = ({ nodeId: propsNodeId }: ProcessViewProps = {}) => {
     }
     
     try {
-      // WebSocket을 통해 프로세스 종료 명령 전송
-      const commandSocket = new WebSocket(`ws://1.209.148.143:8000/influx/ws/commands/${nodeId}`);
+      // 각 선택된 프로세스에 대해 명령 전송
+      const promises = selectedProcesses.map(pid => {
+        const formData = {
+          target: pid.toString(),
+          command_type: 'c', // 프로세스 커맨드
+          command_status: '1', // 중지 (종료와 동일)
+          node_id: nodeId
+        };
+        
+        return api.post('/user/command/insert', formData);
+      });
       
-      commandSocket.onopen = () => {
-        commandSocket.send(JSON.stringify({
-          command: 'kill_processes',
-          pids: selectedProcesses
-        }));
-      };
+      await Promise.all(promises);
       
-      commandSocket.onmessage = (event) => {
-        const response = JSON.parse(event.data);
-        if (response.status === 'success') {
-          setSelectedProcesses([]);
-          alert('선택한 프로세스가 성공적으로 종료되었습니다.');
-        } else {
-          alert('프로세스 종료에 실패했습니다: ' + response.message);
-        }
-        commandSocket.close();
-      };
-      
-      commandSocket.onerror = () => {
-        alert('프로세스 종료 요청 전송에 실패했습니다.');
-        commandSocket.close();
-      };
+      setSelectedProcesses([]);
+      alert('선택한 프로세스 종료 명령이 전송되었습니다.');
     } catch (err) {
       console.error('프로세스 종료 실패:', err);
-      alert('프로세스 종료에 실패했습니다.');
+      alert('프로세스 종료 명령 전송에 실패했습니다.');
     }
   };
 
   // 프로세스 재시작 핸들러
   const handleRestartProcess = async (process: Process) => {
-    if (!nodeId || !monitoringEnabled) return;
+    // if (!nodeId || !monitoringEnabled) return;
     
-    if (!window.confirm(`"${process.name}" 프로세스를 재시작하시겠습니까?`)) {
-      return;
-    }
+    // if (!window.confirm(`"${process.name}" 프로세스를 재시작하시겠습니까?`)) {
+    //   return;
+    // }
     
-    setProcessingAction({ pid: process.pid, action: 'restart' });
+    // setProcessingAction({ pid: process.pid, action: 'restart' });
     
-    try {
-      const commandSocket = new WebSocket(`ws://1.209.148.143:8000/influx/ws/commands/${nodeId}`);
+    // try {
+    //   // CommandForm 형식에 맞는 데이터 구성
+    //   const formData = {
+    //     target: process.pid.toString(),
+    //     command_type: 'c', // 프로세스 커맨드
+    //     command_status: '2', // 재시작
+    //     node_id: nodeId
+    //   };
       
-      commandSocket.onopen = () => {
-        commandSocket.send(JSON.stringify({
-          command: 'restart_process',
-          pid: process.pid,
-          process_name: process.name,
-          process_command: process.command
-        }));
-      };
+    //   // API 호출
+    //   await api.post('/user/command/insert', formData);
       
-      commandSocket.onmessage = (event) => {
-        const response = JSON.parse(event.data);
-        if (response.status === 'success') {
-          alert(`${process.name} 프로세스가 성공적으로 재시작되었습니다.`);
-        } else {
-          alert(`프로세스 재시작에 실패했습니다: ${response.message}`);
-        }
-        commandSocket.close();
-        setProcessingAction(null);
-      };
-      
-      commandSocket.onerror = () => {
-        alert('프로세스 재시작 요청 전송에 실패했습니다.');
-        commandSocket.close();
-        setProcessingAction(null);
-      };
-    } catch (err) {
-      console.error('프로세스 재시작 실패:', err);
-      alert('프로세스 재시작에 실패했습니다.');
-      setProcessingAction(null);
-    }
+    //   alert(`${process.name} 프로세스 재시작 명령이 전송되었습니다.`);
+    // } catch (err) {
+    //   console.error('프로세스 재시작 명령 전송 실패:', err);
+    //   alert('프로세스 재시작 명령 전송에 실패했습니다.');
+    // } finally {
+    //   setProcessingAction(null);
+    // }
   };
   
   // 프로세스 중지 핸들러
   const handleStopProcess = async (process: Process) => {
-    if (!nodeId || !monitoringEnabled) return;
+    // if (!nodeId || !monitoringEnabled) return;
     
-    if (!window.confirm(`"${process.name}" 프로세스를 중지하시겠습니까?`)) {
-      return;
-    }
+    // if (!window.confirm(`"${process.name}" 프로세스를 중지하시겠습니까?`)) {
+    //   return;
+    // }
     
-    setProcessingAction({ pid: process.pid, action: 'stop' });
+    // setProcessingAction({ pid: process.pid, action: 'stop' });
     
-    try {
-      const commandSocket = new WebSocket(`ws://1.209.148.143:8000/influx/ws/commands/${nodeId}`);
+    // try {
+    //   // CommandForm 형식에 맞는 데이터 구성
+    //   const formData = {
+    //     target: process.pid.toString(),
+    //     command_type: 'c', // 프로세스 커맨드
+    //     command_status: '1', // 중지
+    //     node_id: nodeId
+    //   };
       
-      commandSocket.onopen = () => {
-        commandSocket.send(JSON.stringify({
-          command: 'stop_process',
-          pid: process.pid
-        }));
-      };
+    //   // API 호출
+    //   await api.post('/user/command/insert', formData);
       
-      commandSocket.onmessage = (event) => {
-        const response = JSON.parse(event.data);
-        if (response.status === 'success') {
-          alert(`${process.name} 프로세스가 성공적으로 중지되었습니다.`);
-        } else {
-          alert(`프로세스 중지에 실패했습니다: ${response.message}`);
-        }
-        commandSocket.close();
-        setProcessingAction(null);
-      };
-      
-      commandSocket.onerror = () => {
-        alert('프로세스 중지 요청 전송에 실패했습니다.');
-        commandSocket.close();
-        setProcessingAction(null);
-      };
-    } catch (err) {
-      console.error('프로세스 중지 실패:', err);
-      alert('프로세스 중지에 실패했습니다.');
-      setProcessingAction(null);
-    }
+    //   alert(`${process.name} 프로세스 중지 명령이 전송되었습니다.`);
+    // } catch (err) {
+    //   console.error('프로세스 중지 명령 전송 실패:', err);
+    //   alert('프로세스 중지 명령 전송에 실패했습니다.');
+    // } finally {
+    //   setProcessingAction(null);
+    // }
   };
   
   // 프로세스 필터링 및 정렬
@@ -358,12 +324,12 @@ const ProcessView = ({ nodeId: propsNodeId }: ProcessViewProps = {}) => {
       )}
       
       {/* 노드 정보 표시 헤더 추가 */}
-      {selectedNode && (
+      {/* {selectedNode && (
         <div className={styles.nodeHeader}>
           <h2>🖥️ {selectedNode.server_type} 노드 프로세스</h2>
           <div className={styles.nodeId}>ID: {nodeId}</div>
         </div>
-      )}
+      )} */}
       
       <div className={styles.header}>
         <div className={styles.titleRow}>

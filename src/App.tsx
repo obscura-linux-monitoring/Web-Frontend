@@ -10,6 +10,8 @@ import Header from './components/Header';
 import NodeMetrics from './components/node/NodeMetrics';
 import { NodeProvider } from './context/NodeContext';
 import ProcessView from './components/node/ProcessView';
+import CommandForm from './components/node/CommandForm';
+import NodeTerminal from './components/node/NodeTerminal';
 
 const App = () => {
   const {
@@ -39,6 +41,8 @@ const App = () => {
               <Route path="/" element={<UserDashboard/>} />
               <Route path="/nodes/monitoring/:nodeId" element={<NodeMetrics />} />
               <Route path="/nodes/process/:nodeId" element={<ProcessView />} />
+              <Route path="/nodes/command/:nodeId" element={<CommandForm />} />// App.tsx 또는 라우팅 파일
+              <Route path="/nodes/terminal/:nodeId" element={<NodeTerminal />} />
               <Route path="/settings" element={<SettingsView />} />
             </Routes>
           </div>
