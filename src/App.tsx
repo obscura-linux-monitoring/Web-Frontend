@@ -12,6 +12,7 @@ import { NodeProvider } from './context/NodeContext';
 import ProcessView from './components/node/ProcessView';
 import CommandForm from './components/node/CommandForm';
 import NodeTerminal from './components/node/NodeTerminal';
+import CpuMonitor from './components/performance/CpuMonitor';
 
 const App = () => {
   const {
@@ -41,7 +42,12 @@ const App = () => {
               <Route path="/" element={<UserDashboard/>} />
               <Route path="/nodes/monitoring/:nodeId" element={<NodeMetrics />} />
               <Route path="/nodes/process/:nodeId" element={<ProcessView />} />
-              <Route path="/nodes/command/:nodeId" element={<CommandForm />} />// App.tsx 또는 라우팅 파일
+              <Route path="/nodes/container/:nodeId" element={<ProcessView />} />
+              <Route path="/nodes/cpu/:nodeId" element={<CpuMonitor />} />
+              <Route path="/nodes/memory/:nodeId" element={<ProcessView />} />
+              <Route path="/nodes/network/:nodeId" element={<ProcessView />} />
+              <Route path="/nodes/service/:nodeId" element={<ProcessView />} />
+              {/* <Route path="/nodes/command/:nodeId" element={<CommandForm />} /> */}
               <Route path="/nodes/terminal/:nodeId" element={<NodeTerminal />} />
               <Route path="/settings" element={<SettingsView />} />
             </Routes>

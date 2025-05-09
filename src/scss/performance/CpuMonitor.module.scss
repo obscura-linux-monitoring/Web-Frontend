@@ -1,0 +1,212 @@
+.cpuMonitorContainer {
+    width: 100%;
+    max-width: 1200px;
+    border-radius: 8px;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    
+    &.darkMode {
+      background-color: #1e1e1e;
+      color: #f0f0f0;
+    }
+    
+    &.lightMode {
+      background-color: #f5f5f5;
+      color: #333;
+    }
+  }
+  
+  .headerSection {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    .title {
+      h2 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 500;
+      }
+      
+      .model {
+        font-size: 14px;
+        opacity: 0.8;
+        margin-top: 4px;
+        display: block;
+      }
+    }
+  }
+  
+  .mainContent {
+    display: flex;
+    height: calc(100% - 70px);
+  }
+  
+  .sidebarInfo {
+    width: 240px;
+    padding: 10px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .resourceItem {
+    display: flex;
+    margin-bottom: 24px;
+    align-items: center;
+    
+    .miniGraph {
+      width: 50px;
+      height: 40px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-right: 10px;
+      position: relative;
+      border-radius: 2px;
+      
+      .cpuMiniGraph {
+        background: linear-gradient(transparent 70%, #0078D4 70%);
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: 0;
+      }
+      
+      .memoryMiniGraph {
+        background: linear-gradient(transparent 11%, #5B9BD5 11%);
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: 0;
+      }
+      
+      .diskMiniGraph {
+        background: linear-gradient(transparent 92%, #70AD47 92%);
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: 0;
+      }
+      
+      .networkMiniGraph {
+        background: linear-gradient(transparent 90%, #ED7D31 90%);
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: 0;
+      }
+    }
+    
+    .resourceDetails {
+      display: flex;
+      flex-direction: column;
+      
+      .resourceName {
+        font-size: 14px;
+        font-weight: 500;
+      }
+      
+      .resourceValue {
+        font-size: 12px;
+        opacity: 0.8;
+        margin-top: 2px;
+      }
+    }
+  }
+  
+  .mainPanel {
+    flex: 1;
+    padding: 15px;
+  }
+  
+  .usageSection {
+    margin-bottom: 20px;
+    
+    .usageHeader {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      margin-bottom: 5px;
+      padding: 0 5px;
+      
+      .maxUsage {
+        opacity: 0.7;
+      }
+    }
+    
+    .chartWrapper {
+      position: relative;
+      height: 200px;
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+      
+      .chartLabel {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(0, 0, 0, 0.6);
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+      }
+    }
+  }
+  
+  .detailsSection {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    
+    .detailColumn {
+      width: 32%;
+    }
+    
+    .detailItem {
+      display: flex;
+      margin-bottom: 14px;
+      font-size: 14px;
+      
+      .detailLabel {
+        width: 120px;
+        opacity: 0.8;
+      }
+      
+      .detailValue {
+        font-weight: 500;
+      }
+    }
+  }
+  
+  @media (max-width: 900px) {
+    .mainContent {
+      flex-direction: column;
+    }
+    
+    .sidebarInfo {
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-wrap: wrap;
+      padding-bottom: 15px;
+      
+      .resourceItem {
+        width: 33%;
+        min-width: 200px;
+      }
+    }
+    
+    .detailsSection {
+      flex-direction: column;
+      
+      .detailColumn {
+        width: 100%;
+        margin-bottom: 20px;
+      }
+    }
+  }

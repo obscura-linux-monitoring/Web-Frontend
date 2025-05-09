@@ -42,6 +42,7 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
   const isMonitoringActive = location.pathname.includes('/nodes/monitoring/');
   const isProcessActive = location.pathname.includes('/nodes/process/');
   const isTerminalActive = location.pathname.includes('/nodes/terminal/');
+  const isCpuActivate = location.pathname.includes('/nodes/cpu/');
   
   return (
     <header className={styles.header}>
@@ -49,6 +50,20 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
         <div className={styles.headerLeft}>
           {currentNodeId ? (
             <div className={styles.nodeLinks}>
+              {/* 모니터링 토글 버튼 */}
+              <button 
+                className={`${styles.monitoringToggle} ${monitoringEnabled ? styles.enabled : styles.disabled}`}
+                onClick={toggleMonitoring}
+                title={monitoringEnabled ? '모니터링 중지' : '모니터링 시작'}
+                >
+                <span className={styles.toggleIcon}></span>
+                <span className={styles.toggleText}>
+                  {monitoringEnabled ? 'ON' : 'OFF'}
+                </span>
+              </button>
+              
+              {monitoringEnabled && <MiniMetricsGraph />}
+
               <Link 
                 to={`/nodes/monitoring/${currentNodeId}`} 
                 className={`${styles.nodeLink} ${isMonitoringActive ? styles.activeLink : ''}`}
@@ -64,27 +79,54 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
                 {isProcessActive && <span className={styles.activeIndicator}></span>}
               </Link>
               <Link 
+                to={`/nodes/container/${currentNodeId}`} 
+                className={`${styles.nodeLink} ${isTerminalActive ? styles.activeLink : ''}`}
+              >
+                Docker
+                {isTerminalActive && <span className={styles.activeIndicator}></span>}
+              </Link>
+              <Link 
+                to={`/nodes/cpu/${currentNodeId}`} 
+                className={`${styles.nodeLink} ${isTerminalActive ? styles.activeLink : ''}`}
+              >
+                CPU
+                {isCpuActivate && <span className={styles.activeIndicator}></span>}
+              </Link>
+              <Link 
+                to={`/nodes/disk/${currentNodeId}`} 
+                className={`${styles.nodeLink} ${isTerminalActive ? styles.activeLink : ''}`}
+              >
+                디스크
+                {isTerminalActive && <span className={styles.activeIndicator}></span>}
+              </Link>
+              <Link 
+                to={`/nodes/memory/${currentNodeId}`} 
+                className={`${styles.nodeLink} ${isTerminalActive ? styles.activeLink : ''}`}
+              >
+                메모리
+                {isTerminalActive && <span className={styles.activeIndicator}></span>}
+              </Link>
+              <Link 
+                to={`/nodes/network/${currentNodeId}`} 
+                className={`${styles.nodeLink} ${isTerminalActive ? styles.activeLink : ''}`}
+              >
+                네트워크
+                {isTerminalActive && <span className={styles.activeIndicator}></span>}
+              </Link>
+              <Link 
+                to={`/nodes/service/${currentNodeId}`} 
+                className={`${styles.nodeLink} ${isTerminalActive ? styles.activeLink : ''}`}
+              >
+                서비스
+                {isTerminalActive && <span className={styles.activeIndicator}></span>}
+              </Link>
+              <Link 
                 to={`/nodes/terminal/${currentNodeId}`} 
                 className={`${styles.nodeLink} ${isTerminalActive ? styles.activeLink : ''}`}
               >
                 터미널
                 {isTerminalActive && <span className={styles.activeIndicator}></span>}
               </Link>
-              
-              {/* 모니터링 토글 버튼 */}
-              <button 
-                className={`${styles.monitoringToggle} ${monitoringEnabled ? styles.enabled : styles.disabled}`}
-                onClick={toggleMonitoring}
-                title={monitoringEnabled ? '모니터링 중지' : '모니터링 시작'}
-              >
-                <span className={styles.toggleIcon}></span>
-                <span className={styles.toggleText}>
-                  {monitoringEnabled ? 'ON' : 'OFF'}
-                </span>
-              </button>
-              
-              {/* 미니 메트릭 그래프 추가 */}
-              {monitoringEnabled && <MiniMetricsGraph />}
             </div>
           ) : (
             <span className={styles.noNodeSelected}>노드를 선택해주세요</span>

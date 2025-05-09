@@ -8,6 +8,8 @@ import { useNodeContext } from '../context/NodeContext';
 type Node = {
   node_id: string;
   server_type: string;
+  status: number;
+  node_name: string;
 };
 
 const SideBar = () => {
@@ -17,6 +19,7 @@ const SideBar = () => {
   const { selectedNode, selectNode } = useNodeContext();
   const location = useLocation();
   const fetchedRef = useRef(false);
+  const wsRef = useRef<WebSocket | null>(null);
   
   // 사용자의 노드 목록을 가져오는 함수 - 최초 한 번만 실행
   useEffect(() => {
@@ -44,9 +47,44 @@ const SideBar = () => {
             obscura_key: obscuraKey
           }
         });
-        
         setNodes(nodesRes.data.nodes);
         fetchedRef.current = true;
+        
+        // WebSocket 연결
+        const ws = new WebSocket(`ws://1.209.148.143:8000/user/ws/nodes?obscura_key=${obscuraKey}&token=${token}`);
+        
+        ws.onopen = () => {
+          console.log('WebSocket 연결 성공');
+        };
+        
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            console.log('WebSocket 메시지 수신:', data);
+            
+            if (data.type === 'node_status_update') {
+              // 함수형 업데이트를 사용하여 최신 상태 보장
+              setNodes(prevNodes => {
+                console.log('이전 노드:', prevNodes);
+                console.log('새 노드 데이터:', data.nodes);
+                return data.nodes;
+              });
+            }
+          } catch (err) {
+            console.error('WebSocket 메시지 처리 오류:', err);
+          }
+        };
+        
+        ws.onerror = (error) => {
+          console.error('WebSocket 오류:', error);
+        };
+        
+        ws.onclose = () => {
+          console.log('WebSocket 연결 종료');
+        };
+        
+        wsRef.current = ws;
+        
       } catch (err) {
         console.error('노드 목록 로딩 실패:', err);
         setError('노드 목록을 불러오지 못했습니다.');
@@ -56,7 +94,14 @@ const SideBar = () => {
     };
     
     fetchNodes();
-  }, []); // 의존성 배열을 비워 최초 한 번만 실행
+    
+    // 컴포넌트 언마운트 시 WebSocket 연결 해제
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, []);
   
   // URL에서 nodeId 추출하여 현재 선택된 노드 설정
   useEffect(() => {
@@ -77,6 +122,15 @@ const SideBar = () => {
   // 노드 선택 핸들러
   const handleNodeSelect = (node: Node) => {
     selectNode(node);
+  };
+
+  // 상태 표시 함수
+  const getStatusIndicator = (status: number) => {
+    return (
+      <span className={`${styles.statusIndicator} ${status === 1 ? styles.active : styles.inactive}`}>
+        {status === 1 ? '●' : '○'}
+      </span>
+    );
   };
 
   return (
@@ -102,7 +156,13 @@ const SideBar = () => {
                   }`}
                   onClick={() => handleNodeSelect(node)}
                 >
-                  {node.server_type} - {node.node_id.substring(0, 8)}...
+                  {getStatusIndicator(node.status)}
+                  <span className={styles.nodeInfo}>
+                    {node.node_name}
+                    {node.status === 0 && (
+                      <span className={styles.statusText}> (수집 중단)</span>
+                    )}
+                  </span>
                 </Link>
               ))
             )}

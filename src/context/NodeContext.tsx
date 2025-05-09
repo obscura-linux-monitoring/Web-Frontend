@@ -5,6 +5,8 @@ import { createContext, useState, useContext, ReactNode, useCallback } from 'rea
 type Node = {
   node_id: string;
   server_type: string;
+  status: number;
+  node_name: string;
 };
 
 // 메트릭 타입 정의
