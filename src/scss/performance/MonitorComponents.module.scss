@@ -1,0 +1,100 @@
+// 모니터링 컴포넌트 공통 스타일
+.monitorContainer {
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    padding: 16px;
+    
+    &.darkMode {
+      background-color: #1e1e1e;
+      color: #e0e0e0;
+    }
+    
+    &.lightMode {
+      background-color: #f5f5f5;
+      color: #333;
+    }
+  }
+  
+  .headerSection {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    
+    .title {
+      h2 {
+        margin: 0;
+        font-size: 1.5rem;
+      }
+      
+      .model {
+        font-size: 0.9rem;
+        color: #999;
+      }
+    }
+  }
+  
+  .mainContent {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    
+    .usageSection {
+      flex: 1;
+      margin-bottom: 20px;
+      
+      .usageHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        color: #999;
+        
+        .maxUsage {
+          text-align: right;
+        }
+      }
+      
+      .chartWrapper {
+        height: 180px;
+        position: relative;
+        
+        .chartLabel {
+          position: absolute;
+          bottom: 0;
+          left: 8px;
+          font-size: 0.8rem;
+          color: #999;
+        }
+      }
+    }
+    
+    .detailsSection {
+      display: flex;
+      flex-wrap: wrap;
+      
+      .detailColumn {
+        flex: 1;
+        min-width: 200px;
+        
+        .detailItem {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 8px;
+          
+          .detailLabel {
+            color: #999;
+          }
+          
+          .detailValue {
+            font-weight: 500;
+          }
+        }
+      }
+    }
+  }

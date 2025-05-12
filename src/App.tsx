@@ -12,7 +12,7 @@ import { NodeProvider } from './context/NodeContext';
 import ProcessView from './components/node/ProcessView';
 import CommandForm from './components/node/CommandForm';
 import NodeTerminal from './components/node/NodeTerminal';
-import CpuMonitor from './components/performance/CpuMonitor';
+import PerformanceView from './components/performance/PerformanceView';
 
 const App = () => {
   const {
@@ -42,13 +42,13 @@ const App = () => {
               <Route path="/" element={<UserDashboard/>} />
               <Route path="/nodes/monitoring/:nodeId" element={<NodeMetrics />} />
               <Route path="/nodes/process/:nodeId" element={<ProcessView />} />
-              <Route path="/nodes/container/:nodeId" element={<ProcessView />} />
-              <Route path="/nodes/cpu/:nodeId" element={<CpuMonitor />} />
-              <Route path="/nodes/memory/:nodeId" element={<ProcessView />} />
-              <Route path="/nodes/network/:nodeId" element={<ProcessView />} />
-              <Route path="/nodes/service/:nodeId" element={<ProcessView />} />
+              <Route path="/nodes/container/:nodeId" element={<PerformanceView />} />
+              <Route path="/nodes/performance/:nodeId" element={<PerformanceView />} />
+              <Route path="/nodes/memory/:nodeId" element={<PerformanceView />} />
+              <Route path="/nodes/network/:nodeId" element={<PerformanceView />} />
+              <Route path="/nodes/service/:nodeId" element={<PerformanceView />} />
               {/* <Route path="/nodes/command/:nodeId" element={<CommandForm />} /> */}
-              <Route path="/nodes/terminal/:nodeId" element={<NodeTerminal />} />
+              <Route path="/nodes/terminal/:nodeId" element={<PerformanceView />} />
               <Route path="/settings" element={<SettingsView />} />
             </Routes>
           </div>

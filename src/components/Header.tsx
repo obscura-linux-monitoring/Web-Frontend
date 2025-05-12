@@ -1,7 +1,7 @@
 import styles from '../scss/Header.module.scss';
 import { getUserInfo, getUserProfileImage } from './utils/Auth';
 import { useState, useRef, useEffect } from 'react';
-import { Link, useParams, useLocation } from 'react-router-dom'; // useLocation 추가
+import { Link, useParams, useLocation } from 'react-router-dom';
 import Profile from './user/Profile';
 import { useNodeContext } from '../context/NodeContext';
 import MiniMetricsGraph from './node/MiniMetricsGraph';
@@ -42,7 +42,7 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
   const isMonitoringActive = location.pathname.includes('/nodes/monitoring/');
   const isProcessActive = location.pathname.includes('/nodes/process/');
   const isTerminalActive = location.pathname.includes('/nodes/terminal/');
-  const isCpuActivate = location.pathname.includes('/nodes/cpu/');
+  const isCpuActivate = location.pathname.includes('/nodes/performance/');
   
   return (
     <header className={styles.header}>
@@ -86,13 +86,13 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
                 {isTerminalActive && <span className={styles.activeIndicator}></span>}
               </Link>
               <Link 
-                to={`/nodes/cpu/${currentNodeId}`} 
+                to={`/nodes/performance/${currentNodeId}`} 
                 className={`${styles.nodeLink} ${isTerminalActive ? styles.activeLink : ''}`}
               >
-                CPU
+                작업관리자
                 {isCpuActivate && <span className={styles.activeIndicator}></span>}
               </Link>
-              <Link 
+              {/* <Link 
                 to={`/nodes/disk/${currentNodeId}`} 
                 className={`${styles.nodeLink} ${isTerminalActive ? styles.activeLink : ''}`}
               >
@@ -112,7 +112,7 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
               >
                 네트워크
                 {isTerminalActive && <span className={styles.activeIndicator}></span>}
-              </Link>
+              </Link> */}
               <Link 
                 to={`/nodes/service/${currentNodeId}`} 
                 className={`${styles.nodeLink} ${isTerminalActive ? styles.activeLink : ''}`}
