@@ -1,6 +1,5 @@
-.cpuMonitorContainer {
+  .cpuMonitorContainer {
     width: 100%;
-    max-width: 1200px;
     border-radius: 8px;
     overflow: hidden;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -210,3 +209,66 @@
       }
     }
   }
+
+  .resourceItem {
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    &.selected {
+      background-color: rgba(0, 120, 212, 0.2);
+      border-left: 3px solid #0078D4;
+    }
+  }
+
+  .monitorContainer {
+    flex: 1;
+    min-height: 400px;
+    padding: 0;
+    display: flex;
+  }
+
+  .comingSoon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 20px;
+    text-align: center;
+    color: #888;
+    
+    h3 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+    
+    p {
+      font-size: 1rem;
+    }
+  }
+
+@media (max-width: 900px) {
+  .mainContent {
+    flex-direction: column;
+  }
+  
+  .sidebarInfo {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-wrap: wrap;
+    padding-bottom: 10px; // 패딩 줄임 (15px -> 10px)
+    
+    .resourceItem {
+      width: 33%;
+      min-width: 180px; // 최소 너비 줄임 (200px -> 180px)
+    }
+  }
+}

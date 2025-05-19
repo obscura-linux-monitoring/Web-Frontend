@@ -1,0 +1,116 @@
+.diskMonitorContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #121212;
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 15px;
+  height: 100%;
+  min-height: 600px;
+  position: relative;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.headerSection {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.diskTitle {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.diskModel {
+  font-size: 14px;
+  color: #999;
+  margin-top: 4px;
+}
+
+.chartSection {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.chartContainer {
+  background-color: #181818;
+  border-radius: 4px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  height: 180px;
+}
+
+.chartHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  font-size: 12px;
+  color: #888;
+}
+
+.chartMaxValue {
+  font-weight: bold;
+}
+
+.chartFooter {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  font-size: 12px;
+  color: #888;
+}
+
+.metricsSection {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+}
+
+.metricRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.metricGroup {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metricLabel {
+  font-size: 14px;
+  color: #999;
+}
+
+.metricValue {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+// 상태 표시 스타일
+.loadingState,
+.disconnectedState,
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  text-align: center;
+  color: #aaa;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.errorState {
+  color: #e74c3c;
+}

@@ -1,61 +1,23 @@
-import { useEffect, useState } from 'react';
-import {
-  getToken,
-  getUserFromToken,
-  isTokenExpired,
-  removeToken,
-  setupAutoLogout,
-  clearAutoLogout,
-  clearUserSession,
-} from '../components/utils/Auth';
-import api from '../api';
+import { useState } from 'react';
+import { useAuthContext } from '../context/AuthContext';
+import { createAuthenticatedWebSocket } from '../utils/websocket';
 
 export const useAuth = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const auth = useAuthContext();
+  
+  // UI 관련 상태 추가 (기존 useAuth.tsx에서 있던 기능)
   const [showProfile, setShowProfile] = useState(false);
-  const user = getUserFromToken();
-  const isAdmin = user?.is_admin;
-
-  useEffect(() => {
-    const token = getToken();
-    const expired = isTokenExpired();
-
-    if (!token || expired) {
-      console.log('❌ 토큰 없음 또는 만료됨 → 자동 로그아웃');
-      removeToken();
-      setIsAuthenticated(false);
-      return;
-    }
-
-    setIsAuthenticated(true);
-
-    setupAutoLogout(() => {
-      handleLogout();
-    });
-  }, []);
-
-  const handleLogout = async () => {
-    try {
-      await api.post('/auth/logout');
-      console.log('🧹 서버 로그아웃 완료');
-    } catch (error) {
-      console.error('❌ 로그아웃 요청 실패:', error);
-    }
-
-    clearUserSession();
-    removeToken();
-    clearAutoLogout();
-    setIsAuthenticated(false);
-    setShowProfile(false);
-    window.location.reload();
-  };
-
+  
   return {
-    isAuthenticated,
+    ...auth,
     showProfile,
     setShowProfile,
-    isAdmin,
-    user,
-    handleLogout,
+
+    createAuthenticatedWebSocket,
+    
+    hasNodeAccess: (nodeId: string): boolean => {
+      if (auth.isAdmin) return true;
+      return true;
+    }
   };
 };

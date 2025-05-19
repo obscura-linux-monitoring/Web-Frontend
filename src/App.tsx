@@ -1,5 +1,4 @@
 import './App.css';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Route, Routes } from 'react-router-dom';
 import GoogleLoginButton from './components/user/GoogleLoginButton';
 import UserDashboard from './components/user/UserDashboard';
@@ -10,8 +9,6 @@ import Header from './components/Header';
 import NodeMetrics from './components/node/NodeMetrics';
 import { NodeProvider } from './context/NodeContext';
 import ProcessView from './components/node/ProcessView';
-import CommandForm from './components/node/CommandForm';
-import NodeTerminal from './components/node/NodeTerminal';
 import PerformanceView from './components/performance/PerformanceView';
 
 const App = () => {
@@ -23,38 +20,31 @@ const App = () => {
 
   // 로그인하지 않은 경우 로그인 버튼 표시
   if (!isAuthenticated) {
-    return (
-      <GoogleOAuthProvider clientId="465689070189-hr1tl3qm0uamosf0nnf5o06rqo2g35fv.apps.googleusercontent.com">
-        <GoogleLoginButton onLogin={() => window.location.reload()} />
-      </GoogleOAuthProvider>
-    );
+    return <GoogleLoginButton onLogin={() => window.location.reload()} />;
   }
 
   // 로그인된 경우 사이드바와 라우트 표시
   return (
-    <GoogleOAuthProvider clientId="465689070189-hr1tl3qm0uamosf0nnf5o06rqo2g35fv.apps.googleusercontent.com">
-      <NodeProvider>
-        <div className="app-container">
-          <Header onLogout={handleLogout} isAdmin={isAdmin} />
-          <SideBar />
-          <div className="main-content">
-            <Routes>
-              <Route path="/" element={<UserDashboard/>} />
-              <Route path="/nodes/monitoring/:nodeId" element={<NodeMetrics />} />
-              <Route path="/nodes/process/:nodeId" element={<ProcessView />} />
-              <Route path="/nodes/container/:nodeId" element={<PerformanceView />} />
-              <Route path="/nodes/performance/:nodeId" element={<PerformanceView />} />
-              <Route path="/nodes/memory/:nodeId" element={<PerformanceView />} />
-              <Route path="/nodes/network/:nodeId" element={<PerformanceView />} />
-              <Route path="/nodes/service/:nodeId" element={<PerformanceView />} />
-              {/* <Route path="/nodes/command/:nodeId" element={<CommandForm />} /> */}
-              <Route path="/nodes/terminal/:nodeId" element={<PerformanceView />} />
-              <Route path="/settings" element={<SettingsView />} />
-            </Routes>
-          </div>
+    <NodeProvider>
+      <div className="app-container">
+        <Header onLogout={handleLogout} isAdmin={isAdmin} />
+        <SideBar />
+        <div className="main-content">
+          <Routes>
+            <Route path="/" element={<UserDashboard/>} />
+            <Route path="/nodes/monitoring/:nodeId" element={<NodeMetrics />} />
+            <Route path="/nodes/process/:nodeId" element={<ProcessView />} />
+            <Route path="/nodes/container/:nodeId" element={<PerformanceView />} />
+            <Route path="/nodes/performance/:nodeId" element={<PerformanceView />} />
+            <Route path="/nodes/memory/:nodeId" element={<PerformanceView />} />
+            <Route path="/nodes/network/:nodeId" element={<PerformanceView />} />
+            <Route path="/nodes/service/:nodeId" element={<PerformanceView />} />
+            <Route path="/nodes/terminal/:nodeId" element={<PerformanceView />} />
+            <Route path="/settings" element={<SettingsView />} />
+          </Routes>
         </div>
-      </NodeProvider>
-    </GoogleOAuthProvider>
+      </div>
+    </NodeProvider>
   );
 };
 

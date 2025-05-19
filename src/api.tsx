@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
-import { getToken, removeToken, saveToken } from './components/utils/Auth';
+import { getToken, removeToken, saveToken } from './utils/Auth';
 
 const api: AxiosInstance = axios.create({
     baseURL: 'http://1.209.148.143:8000',

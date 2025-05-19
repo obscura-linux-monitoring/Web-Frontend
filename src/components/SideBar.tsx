@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import styles from '../scss/SideBar.module.scss';
 import { useEffect, useState, useRef } from 'react';
 import api from '../api';
-import { getToken } from './utils/Auth';
+import { getToken } from '../utils/Auth';
 import { useNodeContext } from '../context/NodeContext';
 
 type Node = {
@@ -60,13 +60,13 @@ const SideBar = () => {
         ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
-            console.log('WebSocket 메시지 수신:', data);
+            // console.log('WebSocket 메시지 수신:', data);
             
             if (data.type === 'node_status_update') {
               // 함수형 업데이트를 사용하여 최신 상태 보장
               setNodes(prevNodes => {
-                console.log('이전 노드:', prevNodes);
-                console.log('새 노드 데이터:', data.nodes);
+                // console.log('이전 노드:', prevNodes);
+                // console.log('새 노드 데이터:', data.nodes);
                 return data.nodes;
               });
             }

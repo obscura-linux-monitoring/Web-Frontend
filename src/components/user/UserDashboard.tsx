@@ -1,4 +1,4 @@
-import { getUserFromToken } from '../utils/Auth';
+import { getUserFromToken } from '../../utils/Auth';
 
 const UserDashboard = () => {
   const user = getUserFromToken();
