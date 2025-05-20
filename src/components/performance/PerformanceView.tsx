@@ -1,127 +1,209 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import api from '../../api'; // axios 인스턴스 import
 import styles from '../../scss/performance/PerformanceView.module.scss';
 import CpuMonitor from './CpuMonitor';
 import MemoryMonitor from './MemoryMonitor';
 import DiskMonitor from './DiskMonitor';
 import NetworkMonitor from './NetworkMonitor';
+import MiniPerformanceGraph from './MiniPerformanceGraph';
 
-// 리소스 타입 정의
-type ResourceType = 'cpu' | 'memory' | 'disk0' | 'disk1' | 'network';
+// 리소스 타입 정의 - 허용되는 리소스 타입을 명시적으로 지정
+type ResourceType = 'cpu' | 'memory' | 'network' | `disk${number}`;
 
-interface CpuData {
+// 디스크 정보 인터페이스
+interface DiskInfo {
+  id: number;
   name: string;
-  model: string;
-  usage: number;
-  speed: string;
-  baseSpeed: string;
-  sockets: number;
-  cores: number;
-  logicalProcessors: number;
-  virtualization: string;
-  l1Cache: string;
-  l2Cache: string;
-  l3Cache: string;
-  processes: number;
-  threads: number;
-  handles: number;
-  uptime: string;
+  device: string;
+  model?: string;
+  type?: string;
+  usage_percent?: number;
+  total_gb?: number;
 }
 
-interface CpuUsagePoint {
-  time: number;
-  usage: number;
-}
-
-interface CpuMonitorProps {
-  initialData?: CpuData;
+interface PerformanceViewProps {
   darkMode?: boolean;
 }
 
-const PerformanceView: React.FC<CpuMonitorProps> = ({ 
-  initialData,
+const PerformanceView: React.FC<PerformanceViewProps> = ({ 
   darkMode = true
 }) => {
-  // 선택된 리소스 타입 상태 추가
+  // 선택된 리소스 타입 상태
   const [selectedResource, setSelectedResource] = useState<ResourceType>('cpu');
+  // 디스크 목록 상태 추가
+  const [disks, setDisks] = useState<DiskInfo[]>([]);
+  // 로딩 상태 추가
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  // 에러 상태 추가
+  const [error, setError] = useState<string | null>(null);
+  // 리소스 전환 중인지 상태 추가
+  const [transitioning, setTransitioning] = useState<boolean>(false);
   
-  // 더미 데이터 (실제로는 API 또는 WebSocket으로 가져올 수 있음)
-  const defaultData: CpuData = {
-    name: "CPU",
-    model: "12th Gen Intel(R) Core(TM) i5-1240P",
-    usage: 15,
-    speed: "1.91GHz",
-    baseSpeed: "1.70GHz",
-    sockets: 1,
-    cores: 12,
-    logicalProcessors: 16,
-    virtualization: "사용",
-    l1Cache: "1.1MB",
-    l2Cache: "9.0MB",
-    l3Cache: "12.0MB",
-    processes: 367,
-    threads: 5781,
-    handles: 169658,
-    uptime: "4:16:33:58"
-  };
-
-  const [cpuData, setCpuData] = useState<CpuData>(initialData || defaultData);
-  const [usageHistory, setUsageHistory] = useState<CpuUsagePoint[]>([]);
-  const [maxPoints] = useState<number>(60); // 그래프에 표시할 최대 데이터 포인트 수
-
-  // 실시간 CPU 데이터 시뮬레이션 (CPU가 선택되었을 때만 실행)
+  // 현재 활성화된 디스크 추적
+  const activeDiskRef = useRef<string | null>(null);
+  
+  // 컴포넌트 마운트 시 디스크 목록 가져오기
   useEffect(() => {
-    if (selectedResource !== 'cpu') return;
-    
-    const interval = setInterval(() => {
-      // 실제 구현에서는 여기서 API 호출하여 최신 CPU 데이터 가져옴
-      const newUsage = Math.floor(Math.random() * 30) + 5; // 5% ~ 35% 범위의 가상 CPU 사용량
-      
-      setCpuData(prev => ({
-        ...prev,
-        usage: newUsage,
-        speed: `${(1.7 + Math.random() * 0.5).toFixed(2)}GHz`
-      }));
-
-      setUsageHistory(prev => {
-        const newPoint = {
-          time: prev.length > 0 ? prev[prev.length - 1].time + 1 : 0,
-          usage: newUsage
-        };
+    const fetchDisks = async () => {
+      try {
+        setIsLoading(true);
         
-        // 최대 포인트 수를 유지
-        const newHistory = [...prev, newPoint];
-        if (newHistory.length > maxPoints) {
-          return newHistory.slice(newHistory.length - maxPoints);
+        // URL에서 nodeId 가져오기
+        const nodeId = window.location.pathname.split('/').pop();
+        
+        if (!nodeId) {
+          throw new Error('노드 ID를 찾을 수 없습니다.');
         }
-        return newHistory;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [maxPoints, selectedResource]);
+        
+        // api 인스턴스를 사용하여 디스크 정보 가져오기
+        const response = await api.get(`/performance/disk_list/${nodeId}`);
+        
+        if (response.data && Array.isArray(response.data.disks)) {
+          setDisks(response.data.disks);
+        } else {
+          // 응답 형식이 예상과 다른 경우 빈 디스크 배열 설정
+          setDisks([]);
+          console.warn('디스크 정보 형식이 예상과 다릅니다:', response.data);
+        }
+        
+        setError(null);
+      } catch (err) {
+        console.error('디스크 정보 가져오기 실패:', err);
+        setError('디스크 정보를 불러올 수 없습니다.');
+        
+        // 오류 발생 시 기본 디스크 목록 사용
+        setDisks([
+          { id: 0, name: '디스크 0', device: '/dev/sda' },
+          { id: 1, name: '디스크 1', device: '/dev/sdb' }
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchDisks();
+  }, []);
   
-  // 리소스 항목 클릭 핸들러
-  const handleResourceClick = (resourceType: ResourceType) => {
-    setSelectedResource(resourceType);
+  // useMemo를 사용해 디스크 컴포넌트를 미리 생성하고 캐싱
+  const diskMonitors = useMemo(() => {
+  // 각 디스크별로 DiskMonitor 컴포넌트를 생성하여 맵으로 관리
+    const monitors: Record<string, React.ReactNode> = {};
+    
+    disks.forEach(disk => {
+      const resourceKey = `disk${disk.id}` as const;
+      // 디스크 장치가 있을 때만 추가
+      if (disk.device) {
+        // 컴포넌트 자체를 저장하지 않고 장치 정보만 저장
+        monitors[resourceKey] = disk.device;
+      }
+    });
+    
+    return monitors;
+  }, [disks]); // 디스크 목록이 변경될 때만 재계산
+  
+  // 기본 모니터 컴포넌트 매핑
+  const baseMonitors = useMemo(() => ({
+    cpu: <CpuMonitor />,
+    memory: <MemoryMonitor />,
+    network: <NetworkMonitor />
+  }), []); // 의존성 없음 - 컴포넌트가 마운트될 때 한 번만 생성
+
+  // 렌더링 함수 수정
+  const renderResourceMonitor = () => {
+    // 전환 중이면 로딩 화면 표시
+    if (transitioning) {
+      return (
+        <div className={styles.transitioningState}>
+          <div className={styles.loadingSpinner}></div>
+          <div>리소스 전환 중...</div>
+        </div>
+      );
+    }
+    
+    // CPU, 메모리, 네트워크 등 기본 리소스 렌더링
+    if (selectedResource === 'cpu' || selectedResource === 'memory' || selectedResource === 'network') {
+      return baseMonitors[selectedResource];
+    }
+    
+    // 디스크 리소스 렌더링
+    if (selectedResource.startsWith('disk')) {
+      // 캐시된 디스크 장치명이 있으면 새 컴포넌트 생성
+      const devicePath = diskMonitors[selectedResource];
+      
+      if (devicePath && typeof devicePath === 'string') {
+        // 명확한 key 속성 부여
+        return (
+          <DiskMonitor 
+            key={`disk-${devicePath}`}
+            device={devicePath}
+          />
+        );
+      }
+      
+      // 캐시에 없으면 디스크 ID로 검색
+      const diskId = selectedResource.replace('disk', '');
+      const selectedDisk = disks.find(disk => disk.id.toString() === diskId);
+      
+      if (selectedDisk?.device) {
+        return (
+          <DiskMonitor 
+            key={`disk-${selectedDisk.device}`}
+            device={selectedDisk.device}
+          />
+        );
+      }
+      
+      // 디스크 장치명을 찾을 수 없는 경우 오류 표시
+      return (
+        <div className={styles.errorState}>
+          디스크 장치명을 찾을 수 없습니다. (ID: {diskId})
+        </div>
+      );
+    }
+    
+    // 기본값으로 CPU 모니터 반환
+    return baseMonitors['cpu'];
   };
 
-  // 선택된 리소스에 따라 적절한 컴포넌트 렌더링
-  const renderResourceMonitor = () => {
-    const nodeId = window.location.pathname.split('/').pop() || undefined;
+  // 리소스 항목 클릭 핸들러 - 디스크 전환 시 지연 시간 증가
+  const handleResourceClick = (resourceType: ResourceType) => {
+    // 이미 선택된 것과 같은 리소스면 아무것도 하지 않음
+    if (selectedResource === resourceType || transitioning) return;
     
-    switch (selectedResource) {
-      case 'cpu':
-        return <CpuMonitor nodeId={nodeId} />;
-      case 'memory':
-        return <MemoryMonitor />;
-      case 'disk0':
-        return <DiskMonitor />;
-      case 'disk1':
-        return <DiskMonitor />;
-      case 'network':
-        return <NetworkMonitor />;
-      default:
-        return <CpuMonitor nodeId={nodeId} />;
+    // 디스크 간 전환 시 특별 처리
+    if (selectedResource.startsWith('disk') && resourceType.startsWith('disk')) {
+      // 전환 중 상태로 설정
+      setTransitioning(true);
+      
+      // 현재 활성 디스크 추적
+      activeDiskRef.current = resourceType;
+      
+      // 지연 후 리소스 변경
+      setTimeout(() => {
+        // 중간에 다른 리소스로 변경되지 않았는지 확인
+        if (activeDiskRef.current === resourceType) {
+          setSelectedResource(resourceType);
+          
+          // 추가 지연 후 전환 상태 해제 (디스크 모니터가 마운트된 후)
+          setTimeout(() => {
+            setTransitioning(false);
+          }, 400); // 증가된 지연 시간
+        } else {
+          setTransitioning(false);
+        }
+      }, 300); // 증가된 지연 시간
+    } else {
+      // 디스크 <-> 다른 리소스 간 전환도 약간의 전환 효과 추가
+      setTransitioning(true);
+      
+      // 현재 활성 리소스 추적
+      activeDiskRef.current = resourceType;
+      
+      // 짧은 지연 후 리소스 변경
+      setTimeout(() => {
+        setSelectedResource(resourceType);
+        setTransitioning(false);
+      }, 200);
     }
   };
 
@@ -129,8 +211,16 @@ const PerformanceView: React.FC<CpuMonitorProps> = ({
     <div className={`${styles.cpuMonitorContainer} ${darkMode ? styles.darkMode : styles.lightMode}`}>
       <div className={styles.headerSection}>
         <div className={styles.title}>
-          <h2>{cpuData.name}</h2>
-          <span className={styles.model}>{cpuData.model}</span>
+          <h2>성능 모니터링</h2>
+          <span className={styles.model}>
+            {selectedResource === 'cpu' ? 'CPU' : 
+             selectedResource === 'memory' ? '메모리' : 
+             selectedResource === 'network' ? '네트워크' :
+             // 디스크인 경우 해당 디스크 이름 표시
+             selectedResource.startsWith('disk') ? 
+               disks.find(d => `disk${d.id}` === selectedResource)?.name || selectedResource :
+               selectedResource}
+          </span>
         </div>
       </div>
       
@@ -142,11 +232,11 @@ const PerformanceView: React.FC<CpuMonitorProps> = ({
             onClick={() => handleResourceClick('cpu')}
           >
             <div className={styles.miniGraph}>
-              <div className={styles.cpuMiniGraph}></div>
+              <MiniPerformanceGraph type="cpu" color="#1E88E5" />
             </div>
             <div className={styles.resourceDetails}>
               <span className={styles.resourceName}>CPU</span>
-              <span className={styles.resourceValue}>{cpuData.usage}% {cpuData.speed}</span>
+              <span className={styles.resourceValue}>로딩 중...</span>
             </div>
           </div>
           
@@ -156,41 +246,46 @@ const PerformanceView: React.FC<CpuMonitorProps> = ({
             onClick={() => handleResourceClick('memory')}
           >
             <div className={styles.miniGraph}>
-              <div className={styles.memoryMiniGraph}></div>
+              <MiniPerformanceGraph type="memory" color="#8E24AA" />
             </div>
             <div className={styles.resourceDetails}>
               <span className={styles.resourceName}>메모리</span>
-              <span className={styles.resourceValue}>6.8/7.6GB (89%)</span>
+              <span className={styles.resourceValue}>로딩 중...</span>
             </div>
           </div>
           
-          {/* 디스크 0 리소스 항목 */}
-          <div 
-            className={`${styles.resourceItem} ${selectedResource === 'disk0' ? styles.selected : ''}`}
-            onClick={() => handleResourceClick('disk0')}
-          >
-            <div className={styles.miniGraph}>
-              <div className={styles.diskMiniGraph}></div>
-            </div>
-            <div className={styles.resourceDetails}>
-              <span className={styles.resourceName}>디스크 0(C:)</span>
-              <span className={styles.resourceValue}>SSD(NVMe) 2%</span>
-            </div>
-          </div>
-          
-          {/* 디스크 1 리소스 항목 */}
-          <div 
-            className={`${styles.resourceItem} ${selectedResource === 'disk1' ? styles.selected : ''}`}
-            onClick={() => handleResourceClick('disk1')}
-          >
-            <div className={styles.miniGraph}>
-              <div className={styles.diskMiniGraph}></div>
-            </div>
-            <div className={styles.resourceDetails}>
-              <span className={styles.resourceName}>디스크 1(D:)</span>
-              <span className={styles.resourceValue}>SSD(NVMe) 1%</span>
-            </div>
-          </div>
+          {/* 디스크 항목들 - 동적으로 생성 */}
+          {isLoading ? (
+            <div className={styles.loadingDisks}>디스크 정보 로딩 중...</div>
+          ) : (
+            disks.length > 0 ? (
+              disks.map((disk, index) => (
+                <div 
+                  key={`disk-item-${disk.id}`}
+                  className={`${styles.resourceItem} ${selectedResource === `disk${disk.id}` ? styles.selected : ''}`}
+                  onClick={() => handleResourceClick(`disk${disk.id}`)}
+                >
+                  <div className={styles.miniGraph}>
+                    <MiniPerformanceGraph 
+                      type="disk" 
+                      resourceId={disk.id.toString()} 
+                      color={index % 2 === 0 ? "#4CAF50" : "#FB8C00"} 
+                    />
+                  </div>
+                  <div className={styles.resourceDetails}>
+                    <span className={styles.resourceName}>{disk.name}</span>
+                    <span className={styles.resourceValue}>
+                      {disk.device?.split('/').pop() || disk.device}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className={styles.emptyDisks}>
+                디스크 정보가 없습니다.
+              </div>
+            )
+          )}
           
           {/* 네트워크 리소스 항목 */}
           <div 
@@ -198,18 +293,21 @@ const PerformanceView: React.FC<CpuMonitorProps> = ({
             onClick={() => handleResourceClick('network')}
           >
             <div className={styles.miniGraph}>
-              <div className={styles.networkMiniGraph}></div>
+              <MiniPerformanceGraph type="network" color="#039BE5" />
             </div>
             <div className={styles.resourceDetails}>
-              <span className={styles.resourceName}>Wi-Fi</span>
-              <span className={styles.resourceValue}>S: 0 R: 0 Kbps</span>
+              <span className={styles.resourceName}>네트워크</span>
+              <span className={styles.resourceValue}>로딩 중...</span>
             </div>
           </div>
         </div>
         
         {/* 선택된 리소스에 따라 해당 모니터링 컴포넌트 렌더링 */}
         <div className={styles.monitorContainer}>
-          {renderResourceMonitor()}
+          {/* 전환 상태를 표시하기 위한 wraper div */}
+          <div className={styles.monitorWrapper} style={{ opacity: transitioning ? 0.5 : 1 }}>
+            {renderResourceMonitor()}
+          </div>
         </div>
       </div>
     </div>
