@@ -82,13 +82,71 @@
     color: #f39c12;
   }
   
-  @media (max-width: 900px) {
-    .detailsSection {
-      flex-direction: column;
+  // @media (max-width: 900px) {
+  //   .detailsSection {
+  //     flex-direction: column;
       
-      .detailColumn {
-        width: 100%;
-        margin-bottom: 20px;
+  //     .detailColumn {
+  //       width: 100%;
+  //       margin-bottom: 20px;
+  //     }
+  //   }
+  // }
+
+  // 모바일 스타일 추가
+  @media (max-width: 768px) {
+    .mainPanel {
+      padding: 10px; /* 패딩 축소 */
+    }
+  
+    .usageSection {
+      margin-bottom: 15px; /* 섹션 간격 축소 */
+  
+      .usageHeader {
+        font-size: 12px; /* 글꼴 크기 축소 */
+        padding: 0 3px; /* 내부 패딩 축소 */
       }
+  
+      .chartWrapper {
+        height: 150px; /* 차트 높이 축소 */
+        border-radius: 3px; /* 둥근 모서리 축소 */
+  
+        .chartLabel {
+          font-size: 10px; /* 글꼴 크기 축소 */
+          padding: 3px 8px; /* 내부 패딩 축소 */
+        }
+      }
+    }
+  
+    .detailsSection {
+      flex-direction: column; /* 세로 정렬 */
+      gap: 10px; /* 간격 추가 */
+  
+      .detailColumn {
+        width: 100%; /* 전체 너비 사용 */
+        margin-bottom: 15px; /* 하단 여백 축소 */
+      }
+  
+      .detailItem {
+        font-size: 12px; /* 글꼴 크기 축소 */
+        padding: 5px 8px; /* 내부 패딩 축소 */
+  
+        .detailLabel {
+          width: auto; /* 고정 너비 제거 */
+          font-size: 11px; /* 글꼴 크기 축소 */
+        }
+  
+        .detailValue {
+          font-size: 12px; /* 글꼴 크기 축소 */
+        }
+      }
+    }
+  
+    .loadingState,
+    .errorState,
+    .disconnectedState {
+      height: 150px; /* 높이 축소 */
+      font-size: 14px; /* 글꼴 크기 축소 */
+      margin-bottom: 15px; /* 하단 여백 축소 */
     }
   }

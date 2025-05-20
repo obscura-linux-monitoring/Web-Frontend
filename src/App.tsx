@@ -1,6 +1,6 @@
 import './App.css';
 import { Route, Routes } from 'react-router-dom';
-import GoogleLoginButton from './components/user/GoogleLoginButton';
+// import GoogleLoginButton from './components/user/GoogleLoginButton';
 import UserDashboard from './components/user/UserDashboard';
 import SideBar from './components/SideBar';
 import { useAuth } from './hooks/useAuth';
@@ -20,7 +20,7 @@ const App = () => {
 
   // 로그인하지 않은 경우 로그인 버튼 표시
   if (!isAuthenticated) {
-    return <GoogleLoginButton onLogin={() => window.location.reload()} />;
+    // return <GoogleLoginButton onLogin={() => window.location.reload()} />;
   }
 
   // 로그인된 경우 사이드바와 라우트 표시

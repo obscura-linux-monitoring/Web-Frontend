@@ -114,3 +114,52 @@
 .errorState {
   color: #e74c3c;
 }
+
+// 모바일 스타일 추가
+@media (max-width: 768px) {
+  .diskMonitorContainer {
+    padding: 10px;
+    min-height: auto;
+  }
+
+  .headerSection {
+    margin-bottom: 10px;
+    padding-bottom: 3px;
+  }
+
+  .diskTitle {
+    font-size: 18px;
+  }
+
+  .diskModel {
+    font-size: 12px;
+  }
+
+  .chartSection {
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .chartContainer {
+    height: 150px;
+    padding: 8px;
+  }
+
+  .chartHeader,
+  .chartFooter {
+    font-size: 10px;
+  }
+
+  .metricsSection {
+    gap: 10px;
+  }
+
+  .metricRow {
+    grid-template-columns: 1fr;
+  }
+
+  .metricLabel,
+  .metricValue {
+    font-size: 12px;
+  }
+}

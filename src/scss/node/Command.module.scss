@@ -75,3 +75,40 @@ $disabled-color: #cccccc;
     cursor: not-allowed;
   }
 }
+
+// 모바일 스타일 추가
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+    max-width: 100%;
+  }
+
+  .title {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+  }
+
+  .errorMessage {
+    font-size: 0.9rem;
+    padding: 8px;
+  }
+
+  .formGroup {
+    margin-bottom: 10px;
+  }
+
+  .label {
+    font-size: 0.9rem;
+  }
+
+  .input, 
+  .select {
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .button {
+    padding: 10px;
+    font-size: 14px;
+  }
+}

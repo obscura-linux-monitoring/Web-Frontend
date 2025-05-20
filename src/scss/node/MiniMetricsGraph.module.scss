@@ -83,3 +83,39 @@
       opacity: 1;
     }
   }
+
+  // 모바일 스타일 추가
+  @media (max-width: 768px) {
+    .miniMetricsContainer {
+      flex-direction: column; /* 세로 정렬 */
+      align-items: flex-start;
+      margin-left: 0;
+      padding: 8px;
+    }
+  
+    .metricItem {
+      margin-right: 0;
+      margin-bottom: 8px; /* 항목 간 간격 추가 */
+      width: 100%; /* 전체 너비 사용 */
+      justify-content: space-between; /* 레이블과 값 간 간격 조정 */
+    }
+  
+    .label {
+      font-size: 0.7rem; /* 글꼴 크기 축소 */
+    }
+  
+    .value {
+      font-size: 0.7rem; /* 글꼴 크기 축소 */
+      min-width: auto; /* 최소 너비 제거 */
+      text-align: left; /* 왼쪽 정렬 */
+    }
+  
+    .sparkline {
+      margin: 5px 0; /* 위아래 간격 추가 */
+    }
+  
+    .placeholderGraph {
+      width: 100%; /* 그래프 너비를 전체로 확장 */
+      height: 30px; /* 높이 증가 */
+    }
+  }

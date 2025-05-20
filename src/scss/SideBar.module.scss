@@ -126,12 +126,60 @@
   }
 }
 
+// @media (max-width: 768px) {
+//   .sidebar {
+//     position: static;
+//     width: 100%;
+//     height: auto;
+//     min-height: auto;
+//     z-index: 90;
+//   }
+// }
+
+// 모바일 스타일 추가
+// 모바일 스타일 추가
 @media (max-width: 768px) {
   .sidebar {
-    position: static;
-    width: 100%;
-    height: auto;
-    min-height: auto;
-    z-index: 90;
+    position: fixed; /* 고정 위치 */
+    width: 100%; /* 모바일에서 전체 너비 사용 */
+    height: 100vh; /* 전체 높이 사용 */
+    top: 0;
+    left: 0;
+    background-color: #1a1a1a;
+    z-index: 200;
+    padding: 1rem; /* 내부 패딩 축소 */
+    box-shadow: none; /* 그림자 제거 */
+    overflow-y: auto;
+  }
+
+  h3 {
+    font-size: 1.2rem; /* 제목 크기 축소 */
+    margin-bottom: 1rem; /* 하단 여백 축소 */
+  }
+
+  ul {
+    li {
+      margin-bottom: 0.5rem; /* 항목 간 간격 축소 */
+
+      a {
+        font-size: 0.9rem; /* 글꼴 크기 축소 */
+        padding: 0.6rem 0.8rem; /* 내부 패딩 축소 */
+      }
+    }
+  }
+
+  .nodeList {
+    margin-left: 0; /* 왼쪽 여백 제거 */
+    padding: 0.5rem; /* 내부 패딩 추가 */
+
+    .nodeItem {
+      font-size: 0.8rem; /* 글꼴 크기 축소 */
+      padding: 0.5rem 0.8rem; /* 내부 패딩 축소 */
+    }
+  }
+
+  .statusIndicator {
+    font-size: 10px; /* 상태 표시 글꼴 크기 축소 */
+    margin-right: 5px; /* 오른쪽 여백 축소 */
   }
 }

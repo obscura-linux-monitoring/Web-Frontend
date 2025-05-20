@@ -228,3 +228,78 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+// 모바일 스타일 추가
+@media (max-width: 768px) {
+  .container {
+    padding: 0.5rem; /* 패딩 축소 */
+  }
+
+  .metricsContainer {
+    padding: 0.8rem; /* 내부 패딩 축소 */
+  }
+
+  .currentMetrics {
+    h4 {
+      font-size: 1rem; /* 제목 크기 축소 */
+    }
+
+    .metricsGrid {
+      grid-template-columns: 1fr; /* 단일 열로 변경 */
+      gap: 0.5rem; /* 간격 축소 */
+    }
+
+    .metricItem {
+      padding: 0.8rem; /* 내부 패딩 축소 */
+    }
+
+    .label {
+      font-size: 0.8rem; /* 글꼴 크기 축소 */
+    }
+
+    .value {
+      font-size: 1rem; /* 글꼴 크기 축소 */
+    }
+  }
+
+  .chartSection {
+    margin-top: 1rem; /* 상단 여백 축소 */
+    padding-top: 1rem; /* 내부 여백 축소 */
+
+    .chartContainer {
+      padding: 1rem; /* 내부 패딩 축소 */
+      min-height: 200px; /* 최소 높이 축소 */
+    }
+
+    .chartHeader {
+      h4 {
+        font-size: 1rem; /* 제목 크기 축소 */
+      }
+
+      .selectAllButton {
+        font-size: 0.7rem; /* 버튼 글꼴 크기 축소 */
+        padding: 0.3rem 0.6rem; /* 버튼 패딩 축소 */
+      }
+    }
+
+    .metricsSelection {
+      gap: 0.5rem; /* 간격 축소 */
+      margin-bottom: 1rem; /* 하단 여백 축소 */
+
+      .metricCheckbox {
+        font-size: 0.8rem; /* 글꼴 크기 축소 */
+        padding: 0.3rem 0.6rem; /* 내부 패딩 축소 */
+      }
+    }
+  }
+
+  .loading {
+    padding: 1rem; /* 패딩 축소 */
+    font-size: 0.9rem; /* 글꼴 크기 축소 */
+  }
+
+  .error {
+    padding: 0.8rem; /* 패딩 축소 */
+    font-size: 0.9rem; /* 글꼴 크기 축소 */
+  }
+}

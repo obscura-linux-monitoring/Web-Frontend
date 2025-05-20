@@ -289,13 +289,75 @@
   to { opacity: 1; }
 }
 
+// @media (max-width: 768px) {
+//   .header {
+//     width: 100%;
+//     top: 0;
+//   }
+  
+//   .dropdown {
+//     width: 200px;
+//   }
+// }
+
+// 모바일 스타일 추가
 @media (max-width: 768px) {
   .header {
-    width: 100%;
+    width: 100%; /* 헤더 너비를 전체로 확장 */
     top: 0;
+    left: 0;
+    height: 50px; /* 헤더 높이 축소 */
+    padding: 0 1rem; /* 내부 패딩 축소 */
   }
-  
+
+  .headerContent {
+    flex-direction: column; /* 세로 정렬 */
+    align-items: flex-start;
+    gap: 0.5rem; /* 간격 추가 */
+  }
+
+  .headerLeft {
+    width: 100%; /* 전체 너비 사용 */
+    justify-content: space-between;
+
+    a {
+      font-size: 0.9rem; /* 글꼴 크기 축소 */
+      padding: 0.4rem 0.8rem; /* 내부 패딩 축소 */
+    }
+  }
+
+  .headerRight {
+    width: 100%; /* 전체 너비 사용 */
+    justify-content: flex-end;
+  }
+
+  .profileImage {
+    width: 30px; /* 프로필 이미지 크기 축소 */
+    height: 30px;
+  }
+
   .dropdown {
-    width: 200px;
+    width: 200px; /* 드롭다운 너비 축소 */
+    padding: 0.8rem; /* 내부 패딩 축소 */
+  }
+
+  .dropdownButton {
+    font-size: 0.8rem; /* 글꼴 크기 축소 */
+    padding: 0.4rem; /* 내부 패딩 축소 */
+  }
+
+  .logoutButton {
+    font-size: 0.8rem; /* 글꼴 크기 축소 */
+    padding-top: 0.5rem; /* 내부 패딩 축소 */
+  }
+
+  .monitoringToggle {
+    padding: 4px 10px; /* 내부 패딩 축소 */
+    font-size: 0.8rem; /* 글꼴 크기 축소 */
+
+    .toggleIcon {
+      width: 12px; /* 아이콘 크기 축소 */
+      height: 12px;
+    }
   }
 }
