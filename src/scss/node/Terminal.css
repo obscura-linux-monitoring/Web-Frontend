@@ -1,0 +1,165 @@
+/* 터미널 컨테이너: 전체 터미널 UI를 감싸는 컨테이너 */
+.terminal-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    align-items: center;
+}
+
+/* 실제 터미널 출력 영역 */
+.terminal {
+    flex: 1;
+    padding: 5px;
+}
+
+/* 연결 폼: SSH 접속 정보를 입력하는 영역 */
+.connection-form {
+    min-width: 600px;
+    background-color: #2c2c2c;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* 폼 그룹: 각 입력 필드와 라벨을 포함하는 컨테이너 */
+.form-group {
+    margin-bottom: 10px;
+}
+
+/* 폼 라벨 스타일 */
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #ddd;
+}
+
+/* 폼 입력 필드 스타일 */
+.form-group input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #444;
+    background-color: #333;
+    color: white;
+    border-radius: 3px;
+}
+
+/* 버튼 기본 스타일 */
+button {
+    background-color: #0078d4;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+/* 버튼 호버 효과 */
+button:hover {
+    background-color: #0063b1;
+}
+
+/* 버튼 비활성화 스타일 */
+button:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #222;
+    color: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    min-width: 320px;
+    max-width: 90vw;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #444;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 0.3rem 0.7rem;
+    cursor: pointer;
+}
+
+/* 명령 실행 결과 컨테이너 */
+.command-result {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 5px;
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    font-family: monospace;
+}
+
+/* 성공 결과 스타일 */
+.command-result.success {
+    background-color: #1e3a29;
+    border: 1px solid #2a9d8f;
+}
+
+/* 오류 결과 스타일 */
+.command-result.error {
+    background-color: #3a1e1e;
+    border: 1px solid #e63946;
+}
+
+/* 명령 결과 텍스트 스타일 */
+.command-result pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+/* 로딩 컨테이너 */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* 로딩 스피너 */
+.loading-spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 4px solid #fff;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

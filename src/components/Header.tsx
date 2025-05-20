@@ -92,27 +92,6 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
                 작업관리자
                 {isCpuActivate && <span className={styles.activeIndicator}></span>}
               </Link>
-              {/* <Link 
-                to={`/nodes/disk/${currentNodeId}`} 
-                className={`${styles.nodeLink} ${isTerminalActive ? styles.activeLink : ''}`}
-              >
-                디스크
-                {isTerminalActive && <span className={styles.activeIndicator}></span>}
-              </Link>
-              <Link 
-                to={`/nodes/memory/${currentNodeId}`} 
-                className={`${styles.nodeLink} ${isTerminalActive ? styles.activeLink : ''}`}
-              >
-                메모리
-                {isTerminalActive && <span className={styles.activeIndicator}></span>}
-              </Link>
-              <Link 
-                to={`/nodes/network/${currentNodeId}`} 
-                className={`${styles.nodeLink} ${isTerminalActive ? styles.activeLink : ''}`}
-              >
-                네트워크
-                {isTerminalActive && <span className={styles.activeIndicator}></span>}
-              </Link> */}
               <Link 
                 to={`/nodes/service/${currentNodeId}`} 
                 className={`${styles.nodeLink} ${isTerminalActive ? styles.activeLink : ''}`}

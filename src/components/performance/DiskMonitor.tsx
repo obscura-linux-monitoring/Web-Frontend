@@ -731,13 +731,37 @@ const DiskMonitor = ({ nodeId: propsNodeId, device }: DiskMonitorProps) => {
   }, [nodeId, device, monitoringEnabled, isAuthenticated, clearAllData, 
       setConnectionTimer, cleanupConnection, createConnection]);
 
-  // location 변경 정리
+  // location 변경 정리 - 필요한 경우에만 수행하도록 수정
   useEffect(() => {
-    return () => {
-      console.log("라우트 변경으로 정리 수행");
-      clearAllTimers(); // 모든 타이머 정리
+    // React Router의 location.key가 변경될 때만 정리 수행
+    // 단, 같은 디스크 내에서의 변경은 무시
+    const handleRouteChange = () => {
+      // 디스크 모니터 내에서의 변경은 제외 (같은 컴포넌트 내 라우팅)
+      if (location.pathname.includes('/performance') && !location.pathname.includes('/performance/')) {
+        return;
+      }
+      
+      // 이미 연결이 있는 경우에만 정리 수행
       if (socketRef.current) {
+        console.log("중요 라우트 변경으로 정리 수행");
         cleanupConnection();
+      }
+    };
+    
+    // 컴포넌트 마운트 시 이벤트 리스너 등록
+    window.addEventListener('popstate', handleRouteChange);
+    
+    return () => {
+      // 컴포넌트 언마운트 시 이벤트 리스너 제거 및 정리
+      window.removeEventListener('popstate', handleRouteChange);
+      
+      // 실제 언마운트 시에만 정리 작업 수행
+      if (isMounted.current) {
+        console.log("라우트 변경으로 정리 수행");
+        clearAllTimers();
+        if (socketRef.current) {
+          cleanupConnection();
+        }
       }
     };
   }, [location.key, cleanupConnection, clearAllTimers]);

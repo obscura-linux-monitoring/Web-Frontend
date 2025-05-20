@@ -10,6 +10,7 @@ import NodeMetrics from './components/node/NodeMetrics';
 import { NodeProvider } from './context/NodeContext';
 import ProcessView from './components/node/ProcessView';
 import PerformanceView from './components/performance/PerformanceView';
+import NodeTerminal from './components/node/NodeTerminal';
 
 const App = () => {
   const {
@@ -39,7 +40,7 @@ const App = () => {
             <Route path="/nodes/memory/:nodeId" element={<PerformanceView />} />
             <Route path="/nodes/network/:nodeId" element={<PerformanceView />} />
             <Route path="/nodes/service/:nodeId" element={<PerformanceView />} />
-            <Route path="/nodes/terminal/:nodeId" element={<PerformanceView />} />
+            <Route path="/nodes/terminal/:nodeId" element={<NodeTerminal />} />
             <Route path="/settings" element={<SettingsView />} />
           </Routes>
         </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import styles from '../../scss/node/ProcessView.module.scss';
 import { useNodeContext } from '../../context/NodeContext';
@@ -29,6 +29,16 @@ interface ProcessViewProps {
   nodeId?: string; // nodeId를 선택적으로 변경
 }
 
+// 툴팁 상태 인터페이스 추가
+interface TooltipState {
+  visible: boolean;
+  x: number;
+  y: number;
+  content: string | null;
+  loading: boolean;
+  pid: number;
+}
+
 type SortField = 'pid' | 'name' | 'user' | 'cpu_usage' | 'memory_rss' | 'cpu_time' | 'threads' | 'start_time';
 type SortDirection = 'asc' | 'desc';
 
@@ -54,6 +64,11 @@ const ProcessView = ({ nodeId: propsNodeId }: ProcessViewProps = {}) => {
     'pid', 'name', 'user', 'cpu_usage', 'memory_rss', 'status', 'start_time', 'command', 'actions'
   ]);
 
+  // 툴팁 관련 상태 추가
+  const [tooltip, setTooltip] = useState<TooltipState | null>(null);
+  const tooltipCacheRef = useRef<Record<number, string>>({});
+  const tooltipTimerRef = useRef<number | null>(null);
+
   // Toggle column visibility
   const toggleColumnVisibility = (column: string) => {
     // 'actions' 컬럼은 항상 표시되도록 설정
@@ -65,6 +80,124 @@ const ProcessView = ({ nodeId: propsNodeId }: ProcessViewProps = {}) => {
         : [...prev, column]
     );
   };
+
+  // 툴팁 요청 및 표시 함수
+  const fetchProcessTooltip = useCallback(async (process: Process, x: number, y: number) => {
+    // 이미 캐시에 있으면 바로 표시
+    if (tooltipCacheRef.current[process.pid]) {
+      setTooltip({
+        visible: true,
+        x,
+        y,
+        content: tooltipCacheRef.current[process.pid],
+        loading: false,
+        pid: process.pid
+      });
+      return;
+    }
+
+    // 로딩 상태로 툴팁 표시
+    setTooltip({
+      visible: true,
+      x,
+      y,
+      content: null,
+      loading: true,
+      pid: process.pid
+    });
+
+    try {
+      // 서버로 보낼 데이터 준비
+      const requestData = {
+        pid: process.pid,
+        name: process.name,
+        user: process.user,
+        cpu: process.cpu_usage,
+        memory: process.memory_rss,
+        command: process.command
+      };
+
+      // API 요청 보내기
+      const response = await api.post('/api/tooltips', requestData);
+      const tooltipContent = response.data;
+
+      // 캐시에 저장
+      tooltipCacheRef.current[process.pid] = tooltipContent;
+
+      // 툴팁 업데이트 (아직 같은 프로세스에 호버 중일 때만)
+      setTooltip(prev => {
+        if (prev && prev.pid === process.pid) {
+          return {
+            ...prev,
+            content: tooltipContent,
+            loading: false
+          };
+        }
+        return prev;
+      });
+    } catch (error) {
+      console.error('툴팁 정보 가져오기 실패:', error);
+      
+      // 기본 정보로 툴팁 표시
+      const defaultContent = `
+        <div>
+          <strong>${process.name}</strong> (PID: ${process.pid})<br/>
+          사용자: ${process.user}<br/>
+          CPU: ${process.cpu_usage.toFixed(1)}%<br/>
+          메모리: ${formatBytes(process.memory_rss)}<br/>
+          상태: ${process.status}
+        </div>
+      `;
+
+      // 캐시에 저장
+      tooltipCacheRef.current[process.pid] = defaultContent;
+
+      // 툴팁 업데이트
+      setTooltip(prev => {
+        if (prev && prev.pid === process.pid) {
+          return {
+            ...prev,
+            content: defaultContent,
+            loading: false
+          };
+        }
+        return prev;
+      });
+    }
+  }, []);
+
+  // 마우스 호버 이벤트 핸들러
+  const handleProcessNameHover = useCallback((e: React.MouseEvent, process: Process) => {
+    if (tooltipTimerRef.current) {
+      clearTimeout(tooltipTimerRef.current);
+      tooltipTimerRef.current = null;
+    }
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    fetchProcessTooltip(process, rect.right, rect.top);
+  }, [fetchProcessTooltip]);
+
+  // 마우스 떠남 이벤트 핸들러
+  const handleProcessNameLeave = useCallback(() => {
+    // 약간의 지연을 두어 툴팁이 깜빡이는 것을 방지
+    if (tooltipTimerRef.current) {
+      clearTimeout(tooltipTimerRef.current);
+    }
+    
+    tooltipTimerRef.current = window.setTimeout(() => {
+      setTooltip(null);
+      tooltipTimerRef.current = null;
+    }, 150);
+  }, []);
+
+  // 컴포넌트 언마운트 시 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (tooltipTimerRef.current) {
+        clearTimeout(tooltipTimerRef.current);
+      }
+    };
+  }, []);
 
   // WebSocket으로 프로세스 데이터 가져오기
   useEffect(() => {
@@ -316,6 +449,25 @@ const ProcessView = ({ nodeId: propsNodeId }: ProcessViewProps = {}) => {
 
   return (
     <div className={styles.container}>
+      {/* 마우스 호버 툴팁 */}
+      {tooltip && tooltip.visible && (
+        <div 
+          className={styles.processTooltip} 
+          style={{ 
+            position: 'fixed', 
+            left: `${tooltip.x}px`, 
+            top: `${tooltip.y}px`,
+            zIndex: 1000
+          }}
+        >
+          {tooltip.loading ? (
+            <div className={styles.tooltipLoading}>로딩 중...</div>
+          ) : (
+            <div dangerouslySetInnerHTML={{ __html: tooltip.content || '' }} />
+          )}
+        </div>
+      )}
+
       {/* 모니터링 비활성화 상태 알림 */}
       {!monitoringEnabled && (
         <div className={styles.monitoringDisabled}>
@@ -686,7 +838,13 @@ const ProcessView = ({ nodeId: propsNodeId }: ProcessViewProps = {}) => {
                     )}
                     
                     {visibleColumns.includes('name') && (
-                      <td className={styles.processName}>{process.name}</td>
+                      <td 
+                        className={styles.processName}
+                        onMouseEnter={(e) => handleProcessNameHover(e, process)}
+                        onMouseLeave={handleProcessNameLeave}
+                      >
+                        {process.name}
+                      </td>
                     )}
                     
                     {visibleColumns.includes('user') && (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import api from '../../api'; // axios 인스턴스 import
 import styles from '../../scss/performance/PerformanceView.module.scss';
 import CpuMonitor from './CpuMonitor';
@@ -6,9 +6,10 @@ import MemoryMonitor from './MemoryMonitor';
 import DiskMonitor from './DiskMonitor';
 import NetworkMonitor from './NetworkMonitor';
 import MiniPerformanceGraph from './MiniPerformanceGraph';
+import WiFiMonitor from './WiFiMonitor';
 
-// 리소스 타입 정의 - 허용되는 리소스 타입을 명시적으로 지정
-type ResourceType = 'cpu' | 'memory' | 'network' | `disk${number}`;
+// 리소스 타입 정의
+type ResourceType = 'cpu' | 'memory' | 'network' | 'wifi' | string;
 
 // 디스크 정보 인터페이스
 interface DiskInfo {
@@ -30,17 +31,20 @@ const PerformanceView: React.FC<PerformanceViewProps> = ({
 }) => {
   // 선택된 리소스 타입 상태
   const [selectedResource, setSelectedResource] = useState<ResourceType>('cpu');
-  // 디스크 목록 상태 추가
+  // 디스크 목록 상태
   const [disks, setDisks] = useState<DiskInfo[]>([]);
-  // 로딩 상태 추가
+  // 로딩 상태
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  // 에러 상태 추가
+  // 에러 상태
   const [error, setError] = useState<string | null>(null);
-  // 리소스 전환 중인지 상태 추가
+  // 리소스 전환 중인지 상태
   const [transitioning, setTransitioning] = useState<boolean>(false);
   
-  // 현재 활성화된 디스크 추적
-  const activeDiskRef = useRef<string | null>(null);
+  // 현재 선택된 디스크 정보
+  const [selectedDiskDevice, setSelectedDiskDevice] = useState<string>('');
+  
+  // 전환 타이머 참조 저장용
+  const transitionTimerRef = useRef<number | null>(null);
   
   // 컴포넌트 마운트 시 디스크 목록 가져오기
   useEffect(() => {
@@ -60,6 +64,11 @@ const PerformanceView: React.FC<PerformanceViewProps> = ({
         
         if (response.data && Array.isArray(response.data.disks)) {
           setDisks(response.data.disks);
+          
+          // 첫 번째 디스크 장치명 저장 (초기값)
+          if (response.data.disks.length > 0 && response.data.disks[0].device) {
+            setSelectedDiskDevice(response.data.disks[0].device);
+          }
         } else {
           // 응답 형식이 예상과 다른 경우 빈 디스크 배열 설정
           setDisks([]);
@@ -72,44 +81,75 @@ const PerformanceView: React.FC<PerformanceViewProps> = ({
         setError('디스크 정보를 불러올 수 없습니다.');
         
         // 오류 발생 시 기본 디스크 목록 사용
-        setDisks([
+        const defaultDisks = [
           { id: 0, name: '디스크 0', device: '/dev/sda' },
           { id: 1, name: '디스크 1', device: '/dev/sdb' }
-        ]);
+        ];
+        setDisks(defaultDisks);
+        
+        // 기본 디스크 장치명 저장
+        setSelectedDiskDevice('/dev/sda');
       } finally {
         setIsLoading(false);
       }
     };
     
     fetchDisks();
+    
+    // 컴포넌트 언마운트 시 타이머 정리
+    return () => {
+      if (transitionTimerRef.current !== null) {
+        clearTimeout(transitionTimerRef.current);
+        transitionTimerRef.current = null;
+      }
+    };
   }, []);
   
-  // useMemo를 사용해 디스크 컴포넌트를 미리 생성하고 캐싱
-  const diskMonitors = useMemo(() => {
-  // 각 디스크별로 DiskMonitor 컴포넌트를 생성하여 맵으로 관리
-    const monitors: Record<string, React.ReactNode> = {};
-    
-    disks.forEach(disk => {
-      const resourceKey = `disk${disk.id}` as const;
-      // 디스크 장치가 있을 때만 추가
-      if (disk.device) {
-        // 컴포넌트 자체를 저장하지 않고 장치 정보만 저장
-        monitors[resourceKey] = disk.device;
-      }
-    });
-    
-    return monitors;
-  }, [disks]); // 디스크 목록이 변경될 때만 재계산
+  // 디스크 ID로 장치명 조회하는 함수 - 메모이제이션
+  const getDiskDeviceById = useCallback((diskId: string): string => {
+    const disk = disks.find(d => d.id.toString() === diskId);
+    return disk?.device || '';
+  }, [disks]);
   
-  // 기본 모니터 컴포넌트 매핑
-  const baseMonitors = useMemo(() => ({
-    cpu: <CpuMonitor />,
-    memory: <MemoryMonitor />,
-    network: <NetworkMonitor />
-  }), []); // 의존성 없음 - 컴포넌트가 마운트될 때 한 번만 생성
-
-  // 렌더링 함수 수정
-  const renderResourceMonitor = () => {
+  // 리소스 아이템 클릭 핸들러 - useCallback으로 최적화
+  const handleResourceClick = useCallback((resourceType: ResourceType) => {
+    // 이미 선택된 것과 같은 리소스면 아무것도 하지 않음
+    if (selectedResource === resourceType || transitioning) return;
+    
+    // 전환 중 상태로 설정
+    setTransitioning(true);
+    
+    // 기존 전환 타이머가 있다면 정리
+    if (transitionTimerRef.current !== null) {
+      clearTimeout(transitionTimerRef.current);
+      transitionTimerRef.current = null;
+    }
+    
+    // 디스크 리소스인 경우 디스크 장치명 먼저 업데이트
+    if (resourceType.startsWith('disk')) {
+      const diskId = resourceType.replace('disk', '');
+      const devicePath = getDiskDeviceById(diskId);
+      
+      if (devicePath) {
+        console.log(`디스크 장치 변경: ${selectedDiskDevice} -> ${devicePath}`);
+        setSelectedDiskDevice(devicePath);
+      }
+    }
+    
+    // 지연 후 리소스 변경 (모든 리소스 타입에 동일한 지연 적용)
+    transitionTimerRef.current = window.setTimeout(() => {
+      setSelectedResource(resourceType);
+      
+      // 추가 지연 후 전환 상태 해제
+      transitionTimerRef.current = window.setTimeout(() => {
+        setTransitioning(false);
+        transitionTimerRef.current = null;
+      }, 400); // 지연 시간 증가
+    }, 200); // 지연 시간 증가
+  }, [selectedResource, transitioning, getDiskDeviceById, selectedDiskDevice]);
+  
+  // 메인 컨텐츠 렌더링 - useMemo로 최적화
+  const mainContent = useMemo(() => {
     // 전환 중이면 로딩 화면 표시
     if (transitioning) {
       return (
@@ -119,108 +159,93 @@ const PerformanceView: React.FC<PerformanceViewProps> = ({
         </div>
       );
     }
-    
-    // CPU, 메모리, 네트워크 등 기본 리소스 렌더링
-    if (selectedResource === 'cpu' || selectedResource === 'memory' || selectedResource === 'network') {
-      return baseMonitors[selectedResource];
+
+    // 기본 리소스 표시 (CPU, 메모리, 네트워크)
+    if (selectedResource === 'cpu') {
+      return <CpuMonitor key="cpu-monitor" />;
     }
     
-    // 디스크 리소스 렌더링
-    if (selectedResource.startsWith('disk')) {
-      // 캐시된 디스크 장치명이 있으면 새 컴포넌트 생성
-      const devicePath = diskMonitors[selectedResource];
-      
-      if (devicePath && typeof devicePath === 'string') {
-        // 명확한 key 속성 부여
-        return (
-          <DiskMonitor 
-            key={`disk-${devicePath}`}
-            device={devicePath}
-          />
-        );
-      }
-      
-      // 캐시에 없으면 디스크 ID로 검색
-      const diskId = selectedResource.replace('disk', '');
-      const selectedDisk = disks.find(disk => disk.id.toString() === diskId);
-      
-      if (selectedDisk?.device) {
-        return (
-          <DiskMonitor 
-            key={`disk-${selectedDisk.device}`}
-            device={selectedDisk.device}
-          />
-        );
-      }
-      
-      // 디스크 장치명을 찾을 수 없는 경우 오류 표시
+    if (selectedResource === 'memory') {
+      return <MemoryMonitor key="memory-monitor" />;
+    }
+    
+    if (selectedResource === 'network') {
+      return <NetworkMonitor key="network-monitor" />;
+    }
+
+    if (selectedResource === 'wifi') {
+      return <WiFiMonitor key="wifi-monitor" />;
+    }
+    
+    // 디스크 리소스 표시 - 단일 DiskMonitor 인스턴스 사용
+    if (selectedResource.startsWith('disk') && selectedDiskDevice) {
       return (
-        <div className={styles.errorState}>
-          디스크 장치명을 찾을 수 없습니다. (ID: {diskId})
-        </div>
+        <DiskMonitor 
+          key={`disk-monitor-${selectedDiskDevice}`} // 디바이스별 고유 키 사용
+          device={selectedDiskDevice} 
+        />
       );
     }
     
     // 기본값으로 CPU 모니터 반환
-    return baseMonitors['cpu'];
-  };
+    return <CpuMonitor key="cpu-monitor-default" />;
+  }, [selectedResource, selectedDiskDevice, transitioning]);
 
-  // 리소스 항목 클릭 핸들러 - 디스크 전환 시 지연 시간 증가
-  const handleResourceClick = (resourceType: ResourceType) => {
-    // 이미 선택된 것과 같은 리소스면 아무것도 하지 않음
-    if (selectedResource === resourceType || transitioning) return;
+  // 선택된 리소스의 이름 계산 - useMemo로 최적화
+  const selectedResourceName = useMemo(() => {
+    if (selectedResource === 'cpu') return 'CPU';
+    if (selectedResource === 'memory') return '메모리';
+    if (selectedResource === 'network') return '네트워크';
+    if (selectedResource === 'wifi') return 'Wi-Fi';
     
-    // 디스크 간 전환 시 특별 처리
-    if (selectedResource.startsWith('disk') && resourceType.startsWith('disk')) {
-      // 전환 중 상태로 설정
-      setTransitioning(true);
-      
-      // 현재 활성 디스크 추적
-      activeDiskRef.current = resourceType;
-      
-      // 지연 후 리소스 변경
-      setTimeout(() => {
-        // 중간에 다른 리소스로 변경되지 않았는지 확인
-        if (activeDiskRef.current === resourceType) {
-          setSelectedResource(resourceType);
-          
-          // 추가 지연 후 전환 상태 해제 (디스크 모니터가 마운트된 후)
-          setTimeout(() => {
-            setTransitioning(false);
-          }, 400); // 증가된 지연 시간
-        } else {
-          setTransitioning(false);
-        }
-      }, 300); // 증가된 지연 시간
-    } else {
-      // 디스크 <-> 다른 리소스 간 전환도 약간의 전환 효과 추가
-      setTransitioning(true);
-      
-      // 현재 활성 리소스 추적
-      activeDiskRef.current = resourceType;
-      
-      // 짧은 지연 후 리소스 변경
-      setTimeout(() => {
-        setSelectedResource(resourceType);
-        setTransitioning(false);
-      }, 200);
+    // 디스크인 경우 해당 디스크 이름 표시
+    if (selectedResource.startsWith('disk')) {
+      const disk = disks.find(d => `disk${d.id}` === selectedResource);
+      return disk?.name || '디스크';
     }
-  };
+    
+    return selectedResource;
+  }, [selectedResource, disks]);
+
+  // 디스크 항목 렌더링 - useMemo로 최적화
+  const diskItems = useMemo(() => {
+    if (isLoading) {
+      return <div className={styles.loadingDisks}>디스크 정보 로딩 중...</div>;
+    }
+    
+    if (disks.length === 0) {
+      return <div className={styles.emptyDisks}>디스크 정보가 없습니다.</div>;
+    }
+    
+    return disks.map((disk, index) => (
+      <div 
+        key={`disk-item-${disk.id}`}
+        className={`${styles.resourceItem} ${selectedResource === `disk${disk.id}` ? styles.selected : ''}`}
+        onClick={() => handleResourceClick(`disk${disk.id}`)}
+      >
+        <div className={styles.miniGraph}>
+          <MiniPerformanceGraph 
+            type="disk" 
+            resourceId={disk.id.toString()} 
+            color={index % 2 === 0 ? "#4CAF50" : "#FB8C00"} 
+          />
+        </div>
+        <div className={styles.resourceDetails}>
+          <span className={styles.resourceName}>{disk.name}</span>
+          <span className={styles.resourceValue}>
+            {disk.device?.split('/').pop() || disk.device}
+          </span>
+        </div>
+      </div>
+    ));
+  }, [disks, isLoading, selectedResource, handleResourceClick]);
 
   return (
     <div className={`${styles.cpuMonitorContainer} ${darkMode ? styles.darkMode : styles.lightMode}`}>
       <div className={styles.headerSection}>
         <div className={styles.title}>
           <h2>성능 모니터링</h2>
-          <span className={styles.model}>
-            {selectedResource === 'cpu' ? 'CPU' : 
-             selectedResource === 'memory' ? '메모리' : 
-             selectedResource === 'network' ? '네트워크' :
-             // 디스크인 경우 해당 디스크 이름 표시
-             selectedResource.startsWith('disk') ? 
-               disks.find(d => `disk${d.id}` === selectedResource)?.name || selectedResource :
-               selectedResource}
-          </span>
+          <span className={styles.model}>{selectedResourceName}</span>
         </div>
       </div>
       
@@ -255,37 +280,7 @@ const PerformanceView: React.FC<PerformanceViewProps> = ({
           </div>
           
           {/* 디스크 항목들 - 동적으로 생성 */}
-          {isLoading ? (
-            <div className={styles.loadingDisks}>디스크 정보 로딩 중...</div>
-          ) : (
-            disks.length > 0 ? (
-              disks.map((disk, index) => (
-                <div 
-                  key={`disk-item-${disk.id}`}
-                  className={`${styles.resourceItem} ${selectedResource === `disk${disk.id}` ? styles.selected : ''}`}
-                  onClick={() => handleResourceClick(`disk${disk.id}`)}
-                >
-                  <div className={styles.miniGraph}>
-                    <MiniPerformanceGraph 
-                      type="disk" 
-                      resourceId={disk.id.toString()} 
-                      color={index % 2 === 0 ? "#4CAF50" : "#FB8C00"} 
-                    />
-                  </div>
-                  <div className={styles.resourceDetails}>
-                    <span className={styles.resourceName}>{disk.name}</span>
-                    <span className={styles.resourceValue}>
-                      {disk.device?.split('/').pop() || disk.device}
-                    </span>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className={styles.emptyDisks}>
-                디스크 정보가 없습니다.
-              </div>
-            )
-          )}
+          {diskItems}
           
           {/* 네트워크 리소스 항목 */}
           <div 
@@ -300,18 +295,31 @@ const PerformanceView: React.FC<PerformanceViewProps> = ({
               <span className={styles.resourceValue}>로딩 중...</span>
             </div>
           </div>
+          
+          {/* WiFi 리소스 항목 추가 */}
+          <div 
+            className={`${styles.resourceItem} ${selectedResource === 'wifi' ? styles.selected : ''}`}
+            onClick={() => handleResourceClick('wifi')}
+          >
+            <div className={styles.miniGraph}>
+              <MiniPerformanceGraph type="wifi" color="#E91E63" />
+            </div>
+            <div className={styles.resourceDetails}>
+              <span className={styles.resourceName}>Wi-Fi</span>
+              <span className={styles.resourceValue}>로딩 중...</span>
+            </div>
+          </div>
         </div>
+
+        
         
         {/* 선택된 리소스에 따라 해당 모니터링 컴포넌트 렌더링 */}
         <div className={styles.monitorContainer}>
-          {/* 전환 상태를 표시하기 위한 wraper div */}
-          <div className={styles.monitorWrapper} style={{ opacity: transitioning ? 0.5 : 1 }}>
-            {renderResourceMonitor()}
-          </div>
+          {mainContent}
         </div>
       </div>
     </div>
   );
 };
 
-export default PerformanceView;
+export default React.memo(PerformanceView);

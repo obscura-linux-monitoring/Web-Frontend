@@ -272,3 +272,43 @@
     }
   }
 }
+
+.monitorContainer {
+  flex: 1;
+  position: relative;
+  min-height: 500px;
+  transition: opacity 0.3s ease;
+  
+  &.transitioning {
+    opacity: 0.5;
+  }
+}
+
+.transitioningState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 10;
+  
+  .loadingSpinner {
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 3px solid #ffffff;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
