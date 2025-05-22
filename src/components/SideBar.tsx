@@ -20,6 +20,14 @@ const SideBar = () => {
   const location = useLocation();
   const fetchedRef = useRef(false);
   const wsRef = useRef<WebSocket | null>(null);
+
+  // 모바일 사이드바 열림/닫힘 상태
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // 사이드바 열기/닫기 토글 함수
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
   
   // 사용자의 노드 목록을 가져오는 함수 - 최초 한 번만 실행
   useEffect(() => {
@@ -134,7 +142,13 @@ const SideBar = () => {
   };
 
   return (
-    <div className={styles.sidebar}>
+    <>
+    {/* 햄버거 메뉴 버튼 */}
+    <div className={styles.hamburger} onClick={toggleSidebar}>
+      ☰
+    </div>
+
+    <div className={`${styles.sidebar} ${isSidebarOpen ? styles.open : ''}`}>
       <h3>🔧 메뉴</h3>
       <ul>
         <li className={styles.nodeListSection}>
@@ -172,6 +186,7 @@ const SideBar = () => {
         <li><Link to="/settings">⚙️ 설정</Link></li>
       </ul>
     </div>
+    </>
   );
 };
 

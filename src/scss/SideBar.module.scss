@@ -10,6 +10,14 @@
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
   overflow-y: auto;
   z-index: 100;
+  display: block;
+
+  @media (max-width: 768px) {
+    display: none; /* 모바일에서는 기본 사이드바 숨김 */
+    &.open {
+      display: block; /* 햄버거 메뉴가 열렸을 때 표시 */
+    }
+  }
 
   h3 {
     margin-bottom: 1.5rem;
@@ -138,6 +146,16 @@
 
 // 모바일 스타일 추가
 // 모바일 스타일 추가
+.hamburger {
+  display: none; /* 기본적으로 숨김 */
+
+  @media (max-width: 768px) {
+    display: block; /* 모바일에서만 보이도록 */
+    cursor: pointer;
+    font-size: 24px;
+  }
+}
+
 @media (max-width: 768px) {
   .sidebar {
     position: fixed; /* 고정 위치 */
