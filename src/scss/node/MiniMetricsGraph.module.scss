@@ -90,12 +90,12 @@
       flex-direction: column; /* 세로 정렬 */
       align-items: flex-start;
       margin-left: 0;
-      padding: 8px;
+      padding: 0.5rem; /* 내부 패딩 축소 */
     }
   
     .metricItem {
       margin-right: 0;
-      margin-bottom: 8px; /* 항목 간 간격 추가 */
+      margin-bottom: 0.5rem; /* 항목 간 간격 추가 */
       width: 100%; /* 전체 너비 사용 */
       justify-content: space-between; /* 레이블과 값 간 간격 조정 */
     }

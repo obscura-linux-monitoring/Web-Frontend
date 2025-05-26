@@ -79,36 +79,36 @@ $disabled-color: #cccccc;
 // 모바일 스타일 추가
 @media (max-width: 768px) {
   .container {
-    padding: 10px;
-    max-width: 100%;
+    padding: 8px; /* 패딩 축소 */
+    max-width: 95%; /* 더 유연한 너비 */
   }
 
   .title {
-    font-size: 1.2rem;
-    margin-bottom: 15px;
+    font-size: 1.1rem; /* 제목 크기 약간 축소 */
+    margin-bottom: 10px; /* 간격 축소 */
   }
 
   .errorMessage {
-    font-size: 0.9rem;
-    padding: 8px;
+    font-size: 0.85rem; /* 글꼴 크기 축소 */
+    padding: 6px; /* 내부 패딩 축소 */
   }
 
   .formGroup {
-    margin-bottom: 10px;
+    margin-bottom: 8px; /* 간격 축소 */
   }
 
   .label {
-    font-size: 0.9rem;
+    font-size: 0.85rem; /* 글꼴 크기 축소 */
   }
 
   .input, 
   .select {
-    padding: 8px;
-    font-size: 14px;
+    padding: 6px; /* 내부 패딩 축소 */
+    font-size: 13px; /* 글꼴 크기 축소 */
   }
 
   .button {
-    padding: 10px;
-    font-size: 14px;
+    padding: 8px; /* 내부 패딩 축소 */
+    font-size: 13px; /* 글꼴 크기 축소 */
   }
 }

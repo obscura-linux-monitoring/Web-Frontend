@@ -306,8 +306,8 @@
     width: 100%; /* 헤더 너비를 전체로 확장 */
     top: 0;
     left: 0;
-    height: 50px; /* 헤더 높이 축소 */
-    padding: 0 1rem; /* 내부 패딩 축소 */
+    height: auto; /* 높이 자동 조정 */
+    padding: 0.5rem 1rem; /* 내부 패딩 축소 */
   }
 
   .headerContent {
@@ -337,8 +337,8 @@
   }
 
   .dropdown {
-    width: 200px; /* 드롭다운 너비 축소 */
-    padding: 0.8rem; /* 내부 패딩 축소 */
+    width: 180px; /* 드롭다운 너비 축소 */
+    padding: 0.6rem; /* 내부 패딩 축소 */
   }
 
   .dropdownButton {

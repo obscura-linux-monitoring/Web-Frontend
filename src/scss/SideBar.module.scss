@@ -145,7 +145,6 @@
 // }
 
 // 모바일 스타일 추가
-// 모바일 스타일 추가
 .hamburger {
   display: none; /* 기본적으로 숨김 */
 
@@ -160,12 +159,12 @@
   .sidebar {
     position: fixed; /* 고정 위치 */
     width: 100%; /* 모바일에서 전체 너비 사용 */
-    height: 100vh; /* 전체 높이 사용 */
+    height: calc(100vh - 56px); /* 브라우저 주소창 높이를 고려 */
     top: 0;
     left: 0;
     background-color: #1a1a1a;
     z-index: 200;
-    padding: 1rem; /* 내부 패딩 축소 */
+    padding: 0.8rem; /* 내부 패딩 축소 */
     box-shadow: none; /* 그림자 제거 */
     overflow-y: auto;
   }
