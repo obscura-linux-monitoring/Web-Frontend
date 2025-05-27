@@ -303,3 +303,126 @@
     font-size: 0.9rem; /* 글꼴 크기 축소 */
   }
 }
+
+.nodeMetricsContainer {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .nodeMetricsContainer {
+    width: 100%;
+    padding: 10px;
+    margin: 0;
+  }
+
+  .metricsHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 15px;
+    width: 100%;
+
+    h1 {
+      font-size: 1.5rem;
+    }
+
+    .nodeInfo {
+      font-size: 0.9rem;
+    }
+  }
+
+  .metricsGrid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .metricCard {
+    width: 100%;
+    padding: 15px;
+    margin: 0;
+
+    .cardHeader {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 5px;
+
+      h3 {
+        font-size: 1.2rem;
+      }
+
+      .cardSubtitle {
+        font-size: 0.8rem;
+      }
+    }
+
+    .chartContainer {
+      height: 200px;
+      width: 100%;
+      margin: 10px 0;
+    }
+
+    .metricDetails {
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+
+      .detailItem {
+        width: 100%;
+        padding: 8px;
+
+        .detailLabel {
+          font-size: 0.9rem;
+        }
+
+        .detailValue {
+          font-size: 1rem;
+        }
+      }
+    }
+  }
+
+  .alertSection {
+    width: 100%;
+    padding: 15px;
+    margin: 0;
+
+    h2 {
+      font-size: 1.2rem;
+    }
+
+    .alertList {
+      width: 100%;
+
+      .alertItem {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+
+        .alertHeader {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 5px;
+
+          .alertTitle {
+            font-size: 1rem;
+          }
+
+          .alertTime {
+            font-size: 0.8rem;
+          }
+        }
+
+        .alertDescription {
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+}

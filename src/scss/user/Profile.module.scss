@@ -144,3 +144,110 @@
     }
   }
 }
+
+.profileContainer {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .profileContainer {
+    width: 100%;
+    padding: 10px;
+    margin: 0;
+  }
+
+  .profileHeader {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    width: 100%;
+
+    .profileImage {
+      width: 100px;
+      height: 100px;
+    }
+
+    .profileInfo {
+      width: 100%;
+      text-align: center;
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      p {
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  .profileContent {
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .profileSection {
+    width: 100%;
+    padding: 15px;
+    margin: 0;
+
+    h2 {
+      font-size: 1.2rem;
+    }
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    width: 100%;
+
+    .statItem {
+      width: 100%;
+      padding: 10px;
+
+      .statValue {
+        font-size: 1.5rem;
+      }
+
+      .statLabel {
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  .activityList {
+    width: 100%;
+
+    .activityItem {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+
+      .activityHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+
+        .activityTitle {
+          font-size: 1rem;
+        }
+
+        .activityDate {
+          font-size: 0.8rem;
+        }
+      }
+
+      .activityDescription {
+        font-size: 0.9rem;
+      }
+    }
+  }
+}

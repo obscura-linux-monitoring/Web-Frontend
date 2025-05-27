@@ -1,15 +1,20 @@
 .diskMonitorContainer {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  background-color: #121212;
-  color: #ffffff;
   border-radius: 8px;
-  padding: 15px;
-  height: 100%;
-  min-height: 600px;
-  position: relative;
+  overflow: hidden;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  
+  &.darkMode {
+    background-color: #1e1e1e;
+    color: #f0f0f0;
+  }
+  
+  &.lightMode {
+    background-color: #f5f5f5;
+    color: #333;
+  }
 }
 
 .headerSection {
@@ -118,48 +123,87 @@
 // 모바일 스타일 추가
 @media (max-width: 768px) {
   .diskMonitorContainer {
+    width: 100%;
     padding: 10px;
-    min-height: auto;
+    border-radius: 6px;
+    box-shadow: none;
+    margin: 0;
   }
 
   .headerSection {
-    margin-bottom: 10px;
-    padding-bottom: 3px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 0;
+    margin: 0;
+
+    .title h2 {
+      font-size: 1.5rem;
+    }
+
+    .title .model {
+      font-size: 0.9rem;
+    }
   }
 
-  .diskTitle {
-    font-size: 18px;
+  .mainContent {
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
   }
 
-  .diskModel {
-    font-size: 12px;
+  .diskList {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+
+    .diskItem {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+
+      .diskHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+
+        .diskName {
+          font-size: 1rem;
+        }
+
+        .diskType {
+          font-size: 0.8rem;
+        }
+      }
+
+      .diskInfo {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+
+        .infoItem {
+          width: 100%;
+          font-size: 0.9rem;
+        }
+      }
+    }
   }
 
   .chartSection {
-    gap: 10px;
-    margin-bottom: 15px;
-  }
+    width: 100%;
+    margin: 0;
+    padding: 0;
 
-  .chartContainer {
-    height: 150px;
-    padding: 8px;
-  }
+    .chartHeader {
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
 
-  .chartHeader,
-  .chartFooter {
-    font-size: 10px;
-  }
-
-  .metricsSection {
-    gap: 10px;
-  }
-
-  .metricRow {
-    grid-template-columns: 1fr;
-  }
-
-  .metricLabel,
-  .metricValue {
-    font-size: 12px;
+    .chartWrapper {
+      height: 200px;
+      width: 100%;
+    }
   }
 }

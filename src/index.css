@@ -24,10 +24,11 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  padding: 0;
   min-width: 320px;
   min-height: 100vh;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 h1 {
@@ -69,8 +70,9 @@ button:focus-visible {
 
 @media (max-width: 768px) {
   body {
-    flex-direction: column;
-    padding: 10px;
+    width: 100%;
+    overflow-x: hidden;
+    padding: 0;
   }
 
   h1 {

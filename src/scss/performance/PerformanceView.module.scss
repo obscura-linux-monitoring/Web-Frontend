@@ -276,98 +276,115 @@
 // 모바일 스타일 추가
 @media (max-width: 768px) {
   .cpuMonitorContainer {
-    padding: 10px; /* 패딩 축소 */
-    border-radius: 6px; /* 둥근 모서리 축소 */
-    box-shadow: none; /* 그림자 제거 */
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    box-shadow: none;
+    margin: 0;
   }
 
   .headerSection {
-    flex-direction: column; /* 세로 정렬 */
+    flex-direction: column;
     align-items: flex-start;
-    gap: 10px; /* 간격 추가 */
+    gap: 10px;
+    padding: 0;
+    margin: 0;
 
     .title h2 {
-      font-size: 1.5rem; /* 제목 크기 축소 */
+      font-size: 1.5rem;
     }
 
     .title .model {
-      font-size: 0.9rem; /* 모델 글꼴 크기 축소 */
+      font-size: 0.9rem;
     }
   }
 
   .mainContent {
-    flex-direction: column; /* 세로 정렬 */
-    gap: 15px; /* 섹션 간 간격 추가 */
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
   }
 
   .sidebarInfo {
-    width: 100%; /* 전체 너비 사용 */
-    border-right: none; /* 오른쪽 테두리 제거 */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* 하단 테두리 추가 */
-    padding-bottom: 10px; /* 패딩 축소 */
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 0;
+    margin: 0;
 
     .resourceItem {
-      width: 100%; /* 전체 너비 사용 */
-      margin-bottom: 10px; /* 항목 간 간격 추가 */
+      width: 100%;
+      margin-bottom: 10px;
     }
   }
 
   .usageSection {
-    margin-bottom: 15px; /* 섹션 간격 축소 */
+    margin-bottom: 15px;
+    width: 100%;
 
     .usageHeader {
-      font-size: 12px; /* 글꼴 크기 축소 */
-      padding: 0 5px; /* 내부 패딩 축소 */
+      font-size: 12px;
+      padding: 0 5px;
     }
 
     .chartWrapper {
-      height: 140px; /* 차트 높이 축소 */
-      border-radius: 4px; /* 둥근 모서리 축소 */
+      height: 140px;
+      border-radius: 4px;
+      width: 100%;
 
       .chartLabel {
-        font-size: 10px; /* 글꼴 크기 축소 */
+        font-size: 10px;
       }
     }
   }
 
   .detailsSection {
-    flex-direction: column; /* 세로 정렬 */
-    gap: 10px; /* 간격 추가 */
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    padding: 0;
 
     .detailColumn {
-      width: 100%; /* 전체 너비 사용 */
-      margin-bottom: 15px; /* 하단 여백 추가 */
+      width: 100%;
+      margin-bottom: 15px;
     }
 
     .detailItem {
-      font-size: 12px; /* 글꼴 크기 축소 */
-      padding: 5px 8px; /* 내부 패딩 축소 */
+      font-size: 12px;
+      padding: 5px 8px;
+      width: 100%;
 
       .detailLabel {
-        font-size: 11px; /* 글꼴 크기 축소 */
+        font-size: 11px;
       }
 
       .detailValue {
-        font-size: 12px; /* 글꼴 크기 축소 */
+        font-size: 12px;
       }
     }
   }
 
   .monitorContainer {
-    flex-direction: column; /* 세로 정렬 */
-    gap: 15px; /* 간격 추가 */
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
   }
 
   .comingSoon {
-    padding: 15px; /* 패딩 축소 */
+    padding: 15px;
     text-align: center;
+    width: 100%;
 
     h3 {
-      font-size: 1.2rem; /* 제목 크기 축소 */
+      font-size: 1.2rem;
     }
 
     p {
-      font-size: 0.9rem; /* 본문 글꼴 크기 축소 */
+      font-size: 0.9rem;
     }
   }
 }

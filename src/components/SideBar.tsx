@@ -28,7 +28,26 @@ const SideBar = () => {
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
-  
+
+  // 사이드바 외부 클릭 시 닫기
+  const handleOverlayClick = () => {
+    setIsSidebarOpen(false);
+  };
+
+  // ESC 키 누를 때 사이드바 닫기
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isSidebarOpen) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleEscKey);
+    return () => {
+      window.removeEventListener('keydown', handleEscKey);
+    };
+  }, [isSidebarOpen]);
+
   // 사용자의 노드 목록을 가져오는 함수 - 최초 한 번만 실행
   useEffect(() => {
     // 이미 데이터를 가져왔다면 중복 요청 방지
@@ -143,49 +162,65 @@ const SideBar = () => {
 
   return (
     <>
-    {/* 햄버거 메뉴 버튼 */}
-    <div className={styles.hamburger} onClick={toggleSidebar}>
-      ☰
-    </div>
+      {/* 햄버거 메뉴 버튼 */}
+      <div className={styles.hamburger} onClick={toggleSidebar}>
+        ☰
+      </div>
 
-    <div className={`${styles.sidebar} ${isSidebarOpen ? styles.open : ''}`}>
-      <h3>🔧 메뉴</h3>
-      <ul>
-        <li className={styles.nodeListSection}>
-          <div className={styles.nodeListHeader}>🧩 노드 목록</div>
-          <div className={styles.nodeList}>
-            {loading ? (
-              <div className={styles.nodeItem}>⏳ 로딩 중...</div>
-            ) : error ? (
-              <div className={styles.nodeItem}>❌ {error}</div>
-            ) : nodes.length === 0 ? (
-              <div className={styles.nodeItem}>등록된 노드가 없습니다</div>
-            ) : (
-              nodes.map(node => (
-                <Link 
-                  key={node.node_id}
-                  to={`/nodes/monitoring/${node.node_id}`}
-                  className={`${styles.nodeItem} ${
-                    selectedNode?.node_id === node.node_id ? styles.active : ''
-                  }`}
-                  onClick={() => handleNodeSelect(node)}
-                >
-                  {getStatusIndicator(node.status)}
-                  <span className={styles.nodeInfo}>
-                    {node.node_name}
-                    {node.status === 0 && (
-                      <span className={styles.statusText}> (수집 중단)</span>
-                    )}
-                  </span>
-                </Link>
-              ))
-            )}
-          </div>
-        </li>
-        
-        <li><Link to="/settings">⚙️ 설정</Link></li>
-      </ul>
-    </div>
+      {/* 오버레이 */}
+      <div 
+        className={`${styles.overlay} ${isSidebarOpen ? styles.open : ''}`}
+        onClick={handleOverlayClick}
+      />
+
+      <div className={`${styles.sidebar} ${isSidebarOpen ? styles.open : ''}`}>
+        <h3>🔧 메뉴</h3>
+        <ul>
+          <li className={styles.nodeListSection}>
+            <div className={styles.nodeListHeader}>🧩 노드 목록</div>
+            <div className={styles.nodeList}>
+              {loading ? (
+                <div className={styles.nodeItem}>⏳ 로딩 중...</div>
+              ) : error ? (
+                <div className={styles.nodeItem}>❌ {error}</div>
+              ) : nodes.length === 0 ? (
+                <div className={styles.nodeItem}>등록된 노드가 없습니다</div>
+              ) : (
+                nodes.map(node => (
+                  <Link 
+                    key={node.node_id}
+                    to={`/nodes/monitoring/${node.node_id}`}
+                    className={`${styles.nodeItem} ${
+                      selectedNode?.node_id === node.node_id ? styles.active : ''
+                    }`}
+                    onClick={() => {
+                      handleNodeSelect(node);
+                      setIsSidebarOpen(false); // 노드 선택 시 사이드바 닫기
+                    }}
+                  >
+                    {getStatusIndicator(node.status)}
+                    <span className={styles.nodeInfo}>
+                      {node.node_name}
+                      {node.status === 0 && (
+                        <span className={styles.statusText}> (수집 중단)</span>
+                      )}
+                    </span>
+                  </Link>
+                ))
+              )}
+            </div>
+          </li>
+          
+          <li>
+            <Link 
+              to="/settings"
+              onClick={() => setIsSidebarOpen(false)} // 설정 메뉴 클릭 시 사이드바 닫기
+            >
+              ⚙️ 설정
+            </Link>
+          </li>
+        </ul>
+      </div>
     </>
   );
 };
