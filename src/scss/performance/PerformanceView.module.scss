@@ -227,10 +227,14 @@
   }
 
   .monitorContainer {
-    flex: 1;
-    min-height: 400px;
-    padding: 0;
     display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
   }
 
   .comingSoon {
@@ -370,6 +374,8 @@
     flex-direction: column;
     gap: 15px;
     width: 100%;
+    height: auto;
+    min-height: 0;
     margin: 0;
     padding: 0;
   }
