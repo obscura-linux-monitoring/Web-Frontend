@@ -12,6 +12,13 @@ const MAX_RECONNECT_ATTEMPTS = 3; // 최대 재연결 시도 횟수
 const RECONNECT_DELAY = 3000; // 재연결 지연 시간 (ms)
 const DATA_TIMEOUT = 5000; // 데이터 수신 타임아웃 (ms)
 
+// ===== 유틸리티 함수 =====
+// 소수점 자릿수 포맷팅
+const formatNumber = (num: number, decimal: number = 1): string => {
+  if (typeof num !== 'number' || isNaN(num)) return '0';
+  return num.toFixed(decimal);
+};
+
 // ===== 인터페이스 정의 =====
 interface DiskData {
   // 디스크 기본 정보
@@ -359,10 +366,15 @@ const DiskMonitor = ({ nodeId: propsNodeId, device }: DiskMonitorProps) => {
         clearConnectionTimer('dataTimeout');
         
         try {
+          // 디버깅: 원본 데이터 로깅
+          console.log("WebSocket에서 수신한 원본 데이터:", event.data);
+          
           const response = JSON.parse(event.data);
+          console.log("파싱된 응답 구조:", response);
           
           // 핑/퐁 메시지 처리
           if (response.type === 'ping') {
+            console.log("Ping 메시지 수신, 응답 전송");
             socket.send(JSON.stringify({ type: 'pong' }));
             return;
           }
@@ -381,6 +393,8 @@ const DiskMonitor = ({ nodeId: propsNodeId, device }: DiskMonitorProps) => {
           
           // 디스크 메트릭 처리
           if (response.type === 'disk_metrics') {
+            console.log("디스크 메트릭 수신:", response.type);
+            
             // 현재 연결된 장치가 실제 요청한 장치와 같은지 확인
             if (device.trim() !== currentDeviceRef.current.trim()) {
               console.log(`장치 불일치로 데이터 무시: 수신=${device}, 현재=${currentDeviceRef.current}`);
@@ -396,45 +410,13 @@ const DiskMonitor = ({ nodeId: propsNodeId, device }: DiskMonitorProps) => {
               setLoading(false);
             }
             
-            // 디스크 정보 처리
-            let diskInfo = null;
+            // 백엔드에서 오는 데이터 구조에 맞게 처리
+            const diskInfo = response.data;
+            console.log("디스크 정보 데이터:", diskInfo);
             
-            // 데이터 구조 분석 (간소화)
-            if (response.data) {
-              const serverData = response.data;
-              
-              if (serverData.primary_disk) {
-                diskInfo = serverData.primary_disk;
-              } else if (serverData.disks && serverData.disks.length > 0) {
-                diskInfo = serverData.disks[0];
-              } else if (serverData.device) {
-                diskInfo = serverData;
-              }
-            } else if (response.disks && response.disks.length > 0) {
-              diskInfo = response.disks[0];
-            } else if (response.device) {
-              diskInfo = response;
-            }
-            
-            // 디스크 정보가 없는 경우 기본값 사용
             if (!diskInfo) {
-              console.warn(`디스크 정보가 없습니다. 기본 데이터 사용.`);
-              diskInfo = {
-                device: device,
-                model: "기본 디스크 모델",
-                usage_percent: 50,
-                total: 100,
-                free: 50,
-                used: 50,
-                read_speed: Math.random() * 50,
-                write_speed: Math.random() * 30,
-                active_time: Math.random() * 100,
-                response_time: Math.random() * 10,
-                is_system_disk: true,
-                has_page_file: false,
-                filesystem_type: "ext4",
-                interface_type: "SSD"
-              };
+              console.warn(`디스크 정보가 없습니다.`);
+              return;
             }
 
             // 데이터 매핑 및 업데이트
@@ -442,47 +424,57 @@ const DiskMonitor = ({ nodeId: propsNodeId, device }: DiskMonitorProps) => {
             let shortDeviceName = deviceName.split('/').pop() || deviceName;
             shortDeviceName = shortDeviceName.replace(/--/g, '-');
 
+            // 새 데이터로 상태 업데이트 - 타입 변환 및 안전장치 추가
             const newDiskData = {
               device: shortDeviceName,
               model: diskInfo.model || "Unknown",
-              usage_percent: diskInfo.usage_percent || 0,
-              total: diskInfo.total || 0,
-              free: diskInfo.free || 0,
-              used: diskInfo.used || 0,
-              read_speed: diskInfo.read_speed || 0,
-              write_speed: diskInfo.write_speed || 0,
-              active_time: diskInfo.active_time || 0,
-              response_time: diskInfo.response_time || 0,
-              is_system_disk: diskInfo.is_system_disk || false,
-              has_page_file: diskInfo.has_page_file || false,
+              usage_percent: parseFloat(diskInfo.usage_percent?.toString() || '0') || 0,
+              total: parseFloat(diskInfo.total?.toString() || '0') || 0,
+              free: parseFloat(diskInfo.free?.toString() || '0') || 0,
+              used: parseFloat(diskInfo.used?.toString() || '0') || 0,
+              read_speed: parseFloat(diskInfo.read_speed?.toString() || '0') || 0,
+              write_speed: parseFloat(diskInfo.write_speed?.toString() || '0') || 0,
+              active_time: parseFloat(diskInfo.active_time?.toString() || '0') || 0,
+              response_time: parseFloat(diskInfo.response_time?.toString() || '0') || 0,
+              is_system_disk: !!diskInfo.is_system_disk,
+              has_page_file: !!diskInfo.has_page_file,
               filesystem_type: diskInfo.filesystem_type || "Unknown",
               interface_type: diskInfo.interface_type || "Unknown"
             };
             
+            console.log("상태 업데이트 예정 데이터:", newDiskData);
+            
             // 상태 업데이트
             setDiskData(newDiskData);
             
-            // 활동 히스토리 업데이트
+            // 디버깅: 상태 업데이트 완료 로그
+            console.log("diskData 상태 업데이트 완료");
+            
+            // 활동 히스토리 업데이트 - 값이 비정상적인 경우 처리
             setActivityHistory(prev => {
               const time = timeCounterRef.current++;
-              const newPoint = { time, activity: newDiskData.active_time };
+              // 활동 시간이 비정상적인 경우 0으로 처리
+              const activity = isNaN(newDiskData.active_time) ? 0 : 
+                            newDiskData.active_time > 100 ? 100 : newDiskData.active_time;
+              
+              const newPoint = { time, activity };
               const newHistory = [...prev, newPoint];
               return newHistory.length > maxPoints ? newHistory.slice(-maxPoints) : newHistory;
             });
             
-            // 속도 히스토리 업데이트
+            // 속도 히스토리 업데이트 - 값이 비정상적인 경우 처리
             setSpeedHistory(prev => {
               const time = timeCounterRef.current;
-              const newPoint = { 
-                time, 
-                read: newDiskData.read_speed, 
-                write: newDiskData.write_speed 
-              };
+              // 읽기/쓰기 속도가 비정상적인 경우 0으로 처리
+              const read = isNaN(newDiskData.read_speed) ? 0 : newDiskData.read_speed;
+              const write = isNaN(newDiskData.write_speed) ? 0 : newDiskData.write_speed;
+              
+              const newPoint = { time, read, write };
               const newHistory = [...prev, newPoint];
               
-              // 최대 속도 자동 조정
+              // 최대 속도 자동 조정 (더 부드럽게)
               const currentMaxSpeed = Math.max(
-                ...newHistory.map(p => Math.max(p.read, p.write)),
+                ...newHistory.map(p => Math.max(p.read || 0, p.write || 0)),
                 50 // 최소 50MB/s
               );
               
@@ -624,6 +616,12 @@ const DiskMonitor = ({ nodeId: propsNodeId, device }: DiskMonitorProps) => {
       });
     }
   }, [clearAllData, device, cleanupConnection, createConnection]);
+
+  // ===== 추가 디버그 로깅 =====
+  // diskData 상태가 업데이트될 때마다 로그
+  useEffect(() => {
+    console.log("현재 diskData 상태:", diskData);
+  }, [diskData]);
 
   // ===== 생명주기 효과 =====
   
@@ -817,14 +815,19 @@ const DiskMonitor = ({ nodeId: propsNodeId, device }: DiskMonitorProps) => {
           {/* 헤더 영역 */}
           <div className={styles.headerSection}>
             <div className={styles.diskTitle}>
-              디스크 ({diskData.device})
+              디스크 {diskData.device ? `(${diskData.device})` : ''}
             </div>
             <div className={styles.diskModel}>
-              {diskData.model}
+              {diskData.model !== "unknown" ? diskData.model : diskData.is_system_disk ? "시스템 디스크" : "디스크"}
+              {diskData.interface_type && diskData.interface_type !== "Unknown" && ` (${diskData.interface_type})`}
+            </div>
+            <div className={styles.diskUsage}>
+              {formatNumber(diskData.usage_percent)}% 사용 중 
+              ({formatNumber(diskData.used)}GB / {formatNumber(diskData.total)}GB)
             </div>
           </div>
           
-          {/* 차트 영역 - 기존 코드와 동일 */}
+          {/* 차트 영역 */}
           <div className={styles.chartSection}>
             {/* 첫 번째 그래프: 디스크 활동률 */}
             <div className={styles.chartContainer}>
@@ -922,38 +925,49 @@ const DiskMonitor = ({ nodeId: propsNodeId, device }: DiskMonitorProps) => {
             </div>
           </div>
           
-          {/* 메트릭 정보 영역 - 기존 코드와 동일 */}
+          {/* 메트릭 정보 영역 */}
           <div className={styles.metricsSection}>
             <div className={styles.metricRow}>
               <div className={styles.metricGroup}>
                 <div className={styles.metricLabel}>활성 시간</div>
-                <div className={styles.metricValue}>{diskData.active_time}%</div>
+                <div className={styles.metricValue}>{formatNumber(diskData.active_time)}%</div>
               </div>
               <div className={styles.metricGroup}>
                 <div className={styles.metricLabel}>평균 응답 시간</div>
-                <div className={styles.metricValue}>{diskData.response_time}ms</div>
+                <div className={styles.metricValue}>{formatNumber(diskData.response_time)}ms</div>
               </div>
             </div>
             
             <div className={styles.metricRow}>
               <div className={styles.metricGroup}>
                 <div className={styles.metricLabel}>읽기 속도</div>
-                <div className={styles.metricValue}>{diskData.read_speed}MB/s</div>
+                <div className={styles.metricValue}>{formatNumber(diskData.read_speed)}MB/s</div>
               </div>
               <div className={styles.metricGroup}>
                 <div className={styles.metricLabel}>쓰기 속도</div>
-                <div className={styles.metricValue}>{diskData.write_speed}MB/s</div>
+                <div className={styles.metricValue}>{formatNumber(diskData.write_speed)}MB/s</div>
               </div>
             </div>
             
             <div className={styles.metricRow}>
               <div className={styles.metricGroup}>
                 <div className={styles.metricLabel}>용량</div>
-                <div className={styles.metricValue}>{diskData.total}GB</div>
+                <div className={styles.metricValue}>{formatNumber(diskData.total)}GB</div>
               </div>
               <div className={styles.metricGroup}>
                 <div className={styles.metricLabel}>포맷</div>
-                <div className={styles.metricValue}>{diskData.filesystem_type}</div>
+                <div className={styles.metricValue}>{diskData.total}GB</div>
+              </div>
+            </div>
+            
+            <div className={styles.metricRow}>
+              <div className={styles.metricGroup}>
+                <div className={styles.metricLabel}>사용량</div>
+                <div className={styles.metricValue}>{formatNumber(diskData.usage_percent)}% ({formatNumber(diskData.used)}GB)</div>
+              </div>
+              <div className={styles.metricGroup}>
+                <div className={styles.metricLabel}>여유 공간</div>
+                <div className={styles.metricValue}>{formatNumber(diskData.free)}GB</div>
               </div>
             </div>
             
@@ -971,7 +985,7 @@ const DiskMonitor = ({ nodeId: propsNodeId, device }: DiskMonitorProps) => {
             <div className={styles.metricRow}>
               <div className={styles.metricGroup}>
                 <div className={styles.metricLabel}>종류</div>
-                <div className={styles.metricValue}>{diskData.interface_type}</div>
+                <div className={styles.metricValue}>{diskData.interface_type || "Unknown"}</div>
               </div>
             </div>
           </div>

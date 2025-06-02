@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Line } from 'react-chartjs-2';
 
 interface MiniGraphProps {
-  type: 'cpu' | 'memory' | 'disk' | 'network';
+  type: 'cpu' | 'memory' | 'disk' | 'network' | 'wifi' | 'ethernet';
   resourceId?: string; // 디스크 ID 등을 위한 식별자
   color: string;
 }
@@ -112,6 +112,12 @@ const MiniPerformanceGraph: React.FC<MiniGraphProps> = ({ type, resourceId = '0'
             } else if (type === 'network') {
               // 네트워크 데이터가 있다면 처리
               newValue = data.data.network?.usage_percent || 0;
+            } else if (type === 'wifi') {
+              // 네트워크 데이터가 있다면 처리
+              newValue = data.data.wifi?.usage_percent || 0;
+            } else if (type === 'ethernet') {
+              // 네트워크 데이터가 있다면 처리
+              newValue = data.data.ethernet?.usage_percent || 0;
             }
             
             // 새 데이터 포인트 추가

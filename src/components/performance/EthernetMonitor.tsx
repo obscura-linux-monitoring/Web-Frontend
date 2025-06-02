@@ -32,18 +32,18 @@ interface EthernetData {
 }
 
 // 이더넷 사용량 히스토리 포인트
-interface WiFiUsagePoint {
+interface EthernetUsagePoint {
   time: number;
   download: number; // Kbps
   upload: number; // Kbps
 }
 
 // 컴포넌트 Props
-interface WiFiMonitorProps {
+interface EthernetMonitorProps {
   nodeId?: string;
 }
 
-const WiFiMonitor = ({ nodeId: propsNodeId }: WiFiMonitorProps = {}) => {
+const EthernetMonitor = ({ nodeId: propsNodeId }: EthernetMonitorProps = {}) => {
   // 노드 및 인증 관련 데이터 가져오기
   const { nodeId: paramNodeId } = useParams<{ nodeId: string }>();
   const { selectedNode, monitoringEnabled = true } = useNodeContext();
@@ -82,7 +82,7 @@ const WiFiMonitor = ({ nodeId: propsNodeId }: WiFiMonitorProps = {}) => {
   });
   
   // 사용량 히스토리 상태
-  const [usageHistory, setUsageHistory] = useState<WiFiUsagePoint[]>([]);
+  const [usageHistory, setUsageHistory] = useState<EthernetUsagePoint[]>([]);
   const [maxPoints] = useState<number>(60);
   const [maxUsage, setMaxUsage] = useState<number>(500); // 초기 최대값 500Kbps
   
@@ -134,7 +134,7 @@ const WiFiMonitor = ({ nodeId: propsNodeId }: WiFiMonitorProps = {}) => {
       }
       
       // WebSocket URL 구성
-      const socket = new WebSocket(`ws://1.209.148.143:8000/performance/ws/wifi/${nodeId}?token=${token}`);
+      const socket = new WebSocket(`ws://1.209.148.143:8000/performance/ws/ethernet/${nodeId}?token=${token}`);
       connectionStatusRef.current = "서버에 연결 중...";
       
       // 이벤트 핸들러 설정
@@ -213,7 +213,7 @@ const WiFiMonitor = ({ nodeId: propsNodeId }: WiFiMonitorProps = {}) => {
             
             // 최대 사용량 동적 조정 (그래프 스케일링)
             const maxValue = Math.max(
-              ...formattedUsage.map((point: WiFiUsagePoint) => 
+              ...formattedUsage.map((point: EthernetUsagePoint) => 
                 Math.max(point.download || 0, point.upload || 0)
               ),
               1 // 최소값 1 보장
@@ -625,4 +625,4 @@ const WiFiMonitor = ({ nodeId: propsNodeId }: WiFiMonitorProps = {}) => {
   );
 };
 
-export default WiFiMonitor;
+export default EthernetMonitor;

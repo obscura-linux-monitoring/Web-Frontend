@@ -7,9 +7,10 @@ import DiskMonitor from './DiskMonitor';
 import NetworkMonitor from './NetworkMonitor';
 import MiniPerformanceGraph from './MiniPerformanceGraph';
 import WiFiMonitor from './WiFiMonitor';
+import EthernetMonitor from './EthernetMonitor';
 
 // 리소스 타입 정의
-type ResourceType = 'cpu' | 'memory' | 'network' | 'wifi' | string;
+type ResourceType = 'cpu' | 'memory' | 'network' | 'wifi' | 'ethernet' | string;
 
 // 디스크 정보 인터페이스
 interface DiskInfo {
@@ -176,6 +177,10 @@ const PerformanceView: React.FC<PerformanceViewProps> = ({
     if (selectedResource === 'wifi') {
       return <WiFiMonitor key="wifi-monitor" />;
     }
+
+    if (selectedResource === 'ethernet') {
+      return <EthernetMonitor key="ethernet" />;
+    }
     
     // 디스크 리소스 표시 - 단일 DiskMonitor 인스턴스 사용
     if (selectedResource.startsWith('disk') && selectedDiskDevice) {
@@ -197,6 +202,7 @@ const PerformanceView: React.FC<PerformanceViewProps> = ({
     if (selectedResource === 'memory') return '메모리';
     if (selectedResource === 'network') return '네트워크';
     if (selectedResource === 'wifi') return 'Wi-Fi';
+    if (selectedResource === 'ethernet') return 'ethernet';
     
     // 디스크인 경우 해당 디스크 이름 표시
     if (selectedResource.startsWith('disk')) {
@@ -309,8 +315,21 @@ const PerformanceView: React.FC<PerformanceViewProps> = ({
               <span className={styles.resourceValue}>로딩 중...</span>
             </div>
           </div>
-        </div>
 
+          {/* Ethernet 리소스 항목 추가 */}
+          <div 
+            className={`${styles.resourceItem} ${selectedResource === 'ethernet' ? styles.selected : ''}`}
+            onClick={() => handleResourceClick('ethernet')}
+          >
+            <div className={styles.miniGraph}>
+              <MiniPerformanceGraph type="ethernet" color="#E91E63" />
+            </div>
+            <div className={styles.resourceDetails}>
+              <span className={styles.resourceName}>이더넷</span>
+              <span className={styles.resourceValue}>로딩 중...</span>
+            </div>
+          </div>
+        </div>
         
         
         {/* 선택된 리소스에 따라 해당 모니터링 컴포넌트 렌더링 */}

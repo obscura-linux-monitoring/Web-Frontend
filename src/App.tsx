@@ -11,6 +11,7 @@ import { NodeProvider } from './context/NodeContext';
 import ProcessView from './components/node/ProcessView';
 import PerformanceView from './components/performance/PerformanceView';
 import NodeTerminal from './components/node/NodeTerminal';
+import NodeServices from './components/node/NodeServices';
 
 const App = () => {
   const {
@@ -37,9 +38,7 @@ const App = () => {
             <Route path="/nodes/process/:nodeId" element={<ProcessView />} />
             <Route path="/nodes/container/:nodeId" element={<PerformanceView />} />
             <Route path="/nodes/performance/:nodeId" element={<PerformanceView />} />
-            <Route path="/nodes/memory/:nodeId" element={<PerformanceView />} />
-            <Route path="/nodes/network/:nodeId" element={<PerformanceView />} />
-            <Route path="/nodes/service/:nodeId" element={<PerformanceView />} />
+            <Route path="/nodes/service/:nodeId" element={<NodeServices />} />
             <Route path="/nodes/terminal/:nodeId" element={<NodeTerminal />} />
             <Route path="/settings" element={<SettingsView />} />
           </Routes>

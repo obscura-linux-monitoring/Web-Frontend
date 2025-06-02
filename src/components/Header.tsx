@@ -41,8 +41,10 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
   // 현재 활성화된 메뉴 경로 확인
   const isMonitoringActive = location.pathname.includes('/nodes/monitoring/');
   const isProcessActive = location.pathname.includes('/nodes/process/');
+  const isDockerActive = location.pathname.includes('/nodes/container/');
   const isTerminalActive = location.pathname.includes('/nodes/terminal/');
-  const isCpuActivate = location.pathname.includes('/nodes/performance/');
+  const isPerformanceActivate = location.pathname.includes('/nodes/performance/');
+  const isServicectivate = location.pathname.includes('/nodes/service/');
   
   return (
     <header className={styles.header}>
@@ -79,25 +81,25 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
                 {isProcessActive && <span className={styles.activeIndicator}></span>}
               </Link>
               <Link 
-                to={`/nodes/container/${currentNodeId}`} 
-                className={`${styles.nodeLink} ${isTerminalActive ? styles.activeLink : ''}`}
-              >
-                Docker
-                {isTerminalActive && <span className={styles.activeIndicator}></span>}
-              </Link>
-              <Link 
                 to={`/nodes/performance/${currentNodeId}`} 
-                className={`${styles.nodeLink} ${isTerminalActive ? styles.activeLink : ''}`}
+                className={`${styles.nodeLink} ${isPerformanceActivate ? styles.activeLink : ''}`}
               >
                 작업관리자
-                {isCpuActivate && <span className={styles.activeIndicator}></span>}
+                {isPerformanceActivate && <span className={styles.activeIndicator}></span>}
+              </Link>
+              <Link 
+                to={`/nodes/container/${currentNodeId}`} 
+                className={`${styles.nodeLink} ${isDockerActive ? styles.activeLink : ''}`}
+              >
+                Docker
+                {isDockerActive && <span className={styles.activeIndicator}></span>}
               </Link>
               <Link 
                 to={`/nodes/service/${currentNodeId}`} 
-                className={`${styles.nodeLink} ${isTerminalActive ? styles.activeLink : ''}`}
+                className={`${styles.nodeLink} ${isServicectivate ? styles.activeLink : ''}`}
               >
                 서비스
-                {isTerminalActive && <span className={styles.activeIndicator}></span>}
+                {isServicectivate && <span className={styles.activeIndicator}></span>}
               </Link>
               <Link 
                 to={`/nodes/terminal/${currentNodeId}`} 
