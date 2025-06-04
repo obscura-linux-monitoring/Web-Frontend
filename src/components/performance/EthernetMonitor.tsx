@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
-import styles from '../../scss/performance/MemoryMonitor.module.scss';
+import styles from '../../scss/performance/WiFiMonitor.module.scss';
 import { useLocation, useParams } from 'react-router-dom';
 import { useNodeContext } from '../../context/NodeContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -12,16 +12,12 @@ interface EthernetData {
   adapterName: string;
   // 연결 상태
   connected: boolean;
-  // SSID (Wi-Fi 이름)
-  ssid: string;
-  // 연결 형식 (802.11ac 등)
+  // 연결 형식
   connectionType: string;
   // IPv4 주소
   ipv4Address: string;
   // IPv6 주소
   ipv6Address: string;
-  // 신호 강도
-  signalStrength: number;
   // 현재 속도
   currentDownload: number; // Kbps
   currentUpload: number; // Kbps
@@ -55,15 +51,13 @@ const EthernetMonitor = ({ nodeId: propsNodeId }: EthernetMonitorProps = {}) => 
   const [error, setError] = useState<string | null>(null);
   const [connected, setConnected] = useState<boolean>(false);
   
-  // 초기 이더넷 데이터 상태 (이미지에 표시된 항목들만)
+  // 초기 이더넷 데이터 상태
   const [ethernetData, setEthernetData] = useState<EthernetData>({ 
     adapterName: '',
     connected: false,
-    ssid: 'Wired Connection',  // 이더넷에 적합한 값
     connectionType: 'Ethernet',
     ipv4Address: '',
     ipv6Address: '',
-    signalStrength: 4,  // 이더넷은 항상 최대 신호 강도
     currentDownload: 0,
     currentUpload: 0
   });
@@ -131,36 +125,39 @@ const EthernetMonitor = ({ nodeId: propsNodeId }: EthernetMonitorProps = {}) => 
         if (!isMounted.current || !monitoringEnabled) return;
         
         try {
+          console.log('📥 이더넷 WebSocket 메시지 수신:', event.data);
           const response = JSON.parse(event.data);
           
           if (response.type === 'ping') {
+            console.log('🏓 Ping 메시지 수신, Pong 응답 전송');
             socket.send(JSON.stringify({ type: 'pong' }));
             return;
           }
           
           if (response.type === 'error') {
+            console.error('❌ 서버 오류 메시지:', response.message);
             setError(response.message || '서버에서 오류가 발생했습니다.');
             return;
           }
           
-          // Wi-Fi 데이터 처리
-          if (response.type === 'wifi_data' && response.wifi) {
-            const wifi = response.wifi;
+          // 이더넷 데이터 처리 
+          if (response.type === 'ethernet_data' && response.ethernet) {
+            const ethernet = response.ethernet;
+            console.log('🔄 이더넷 데이터 수신:', ethernet);
             
             setEthernetData(prevData => ({
-              adapterName: wifi.adapterName || '',
-              connected: wifi.connected || false,
-              ssid: wifi.ssid || 'Wired Connection',
-              connectionType: wifi.connectionType || 'Ethernet',
-              ipv4Address: wifi.ipv4Address || '',
-              ipv6Address: wifi.ipv6Address || '',
-              signalStrength: wifi.signalStrength || 4,  // 이더넷은 항상 최대 신호 강도
-              currentDownload: wifi.currentDownload || 0,
-              currentUpload: wifi.currentUpload || 0
+              adapterName: ethernet.adapterName || '',
+              connected: ethernet.connected || false,
+              connectionType: ethernet.connectionType || 'Ethernet',
+              ipv4Address: ethernet.ipv4Address || '',
+              ipv6Address: ethernet.ipv6Address || '',
+              currentDownload: ethernet.currentDownload || 0,
+              currentUpload: ethernet.currentUpload || 0
             }));
           }
           
           if (response.usage) {
+            console.log('📊 이더넷 사용량 데이터 수신:', response.usage);
             const formattedUsage = response.usage.map((point: any) => ({
               time: timeCounterRef.current++,
               download: point.download || 0,
@@ -183,13 +180,14 @@ const EthernetMonitor = ({ nodeId: propsNodeId }: EthernetMonitorProps = {}) => 
             );
             
             const newMaxUsage = Math.max(500, Math.ceil(maxValue * 1.2 / 100) * 100);
+            console.log(`📈 그래프 최대 사용량 업데이트: ${newMaxUsage}Kbps`);
             setMaxUsage(newMaxUsage);
           }
           
           setLoading(false);
         } catch (err) {
           if (isMounted.current) {
-            console.error('❌ WebSocket 메시지 파싱 실패:', err);
+            console.error('❌ WebSocket 메시지 파싱 실패:', err, '원본 데이터:', event.data);
             setError('데이터 파싱 오류');
           }
         }
@@ -315,31 +313,6 @@ const EthernetMonitor = ({ nodeId: propsNodeId }: EthernetMonitorProps = {}) => 
     }
   };
 
-  // 신호 강도 아이콘 렌더링
-  const renderSignalBars = (strength: number) => {
-    const bars = [];
-    for (let i = 0; i < 4; i++) {
-      bars.push(
-        <div
-          key={i}
-          style={{
-            width: '4px',
-            height: `${8 + i * 4}px`,
-            backgroundColor: i < strength ? '#fff' : 'rgba(255,255,255,0.3)',
-            marginRight: '2px',
-            borderRadius: '1px'
-          }}
-        />
-      );
-    }
-    return (
-      <div style={{ display: 'flex', alignItems: 'end', marginLeft: '8px' }}>
-        {bars}
-      </div>
-    );
-  };
-
-  // 렌더링 부분
   return (
     <div className={styles.mainPanel}>
       {!monitoringEnabled ? (
@@ -438,7 +411,7 @@ const EthernetMonitor = ({ nodeId: propsNodeId }: EthernetMonitorProps = {}) => 
             </div>
           </div>
           
-          {/* Wi-Fi 정보 (이미지 기준) */}
+          {/* 이더넷 정보 */}
           <div className={styles.detailsSection} style={!monitoringEnabled ? disabledStyle : {}}>
             <div className={styles.detailColumn}>
               <div className={styles.detailItem}>
@@ -463,11 +436,6 @@ const EthernetMonitor = ({ nodeId: propsNodeId }: EthernetMonitorProps = {}) => 
               </div>
               
               <div className={styles.detailItem}>
-                <span className={styles.detailLabel}>SSID:</span>
-                <span className={styles.detailValue}>{ethernetData.ssid}</span>
-              </div>
-              
-              <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>연결 형식:</span>
                 <span className={styles.detailValue}>{ethernetData.connectionType}</span>
               </div>
@@ -481,14 +449,6 @@ const EthernetMonitor = ({ nodeId: propsNodeId }: EthernetMonitorProps = {}) => 
                 <span className={styles.detailLabel}>IPv6 주소:</span>
                 <span className={styles.detailValue}>{ethernetData.ipv6Address}</span>
               </div>
-              
-              {/* <div className={styles.detailItem}>
-                <span className={styles.detailLabel}>신호 강도:</span>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <span className={styles.detailValue}></span>
-                  {renderSignalBars(ethernetData.signalStrength)}
-                </div>
-              </div> */}
             </div>
           </div>
         </>

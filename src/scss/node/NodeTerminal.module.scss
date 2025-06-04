@@ -264,7 +264,7 @@ $modal-overlay: rgba(0, 0, 0, 0.7);
     margin-bottom: 4px; // 레이블과 입력 필드 사이 간격 줄임
     font-size: 14px;
     font-weight: 500;
-    color: darken($text-color, 10%);
+    color: #dfdfdf; // darken($text-color, 10%) 대체
   }
   
   input {
@@ -284,7 +284,7 @@ $modal-overlay: rgba(0, 0, 0, 0.7);
     }
     
     &:hover:not(:focus) {
-      border-color: lighten($border-color, 10%);
+      border-color: #4d4d4d; // lighten($border-color, 10%) 대체
     }
   }
 }
@@ -312,7 +312,7 @@ $modal-overlay: rgba(0, 0, 0, 0.7);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   
   &:hover {
-    background-color: darken($accent-color, 10%);
+    background-color: #0061ad; // darken($accent-color, 10%) 대체
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   }
@@ -368,7 +368,7 @@ $modal-overlay: rgba(0, 0, 0, 0.7);
     margin-bottom: 12px;
     font-size: 16px;
     font-weight: 500;
-    color: darken($text-color, 5%);
+    color: #ebebeb; // darken($text-color, 5%) 대체
   }
   
   pre {
@@ -410,7 +410,7 @@ $modal-overlay: rgba(0, 0, 0, 0.7);
     background: rgba($success-color, 0.05);
     
     h3 {
-      color: lighten($success-color, 10%);
+      color: #54d98d; // lighten($success-color, 10%) 대체
     }
   }
   
@@ -419,7 +419,7 @@ $modal-overlay: rgba(0, 0, 0, 0.7);
     background: rgba($error-color, 0.05);
     
     h3 {
-      color: lighten($error-color, 10%);
+      color: #ec7063; // lighten($error-color, 10%) 대체
     }
   }
 }
@@ -530,7 +530,7 @@ $modal-overlay: rgba(0, 0, 0, 0.7);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   
   &:hover {
-    background-color: darken($success-color, 10%);
+    background-color: #26a65b; // darken($success-color, 10%) 대체
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   }
@@ -591,7 +591,7 @@ $modal-overlay: rgba(0, 0, 0, 0.7);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   
   &:hover {
-    background-color: darken($accent-color, 10%);
+    background-color: #0061ad; // darken($accent-color, 10%) 대체
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   }

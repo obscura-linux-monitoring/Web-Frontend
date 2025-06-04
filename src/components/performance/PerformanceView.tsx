@@ -10,7 +10,7 @@ import WiFiMonitor from './WiFiMonitor';
 import EthernetMonitor from './EthernetMonitor';
 
 // 리소스 타입 정의
-type ResourceType = 'cpu' | 'memory' | 'network' | 'wifi' | 'ethernet' | string;
+type ResourceType = 'cpu' | 'memory' | 'disk' | 'network' | 'wifi' | 'ethernet' | string;
 
 // 디스크 정보 인터페이스
 interface DiskInfo {
