@@ -41,7 +41,7 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
   // 현재 활성화된 메뉴 경로 확인
   const isMonitoringActive = location.pathname.includes('/nodes/monitoring/');
   const isProcessActive = location.pathname.includes('/nodes/process/');
-  const isDockerActive = location.pathname.includes('/nodes/container/');
+  const isDockerActive = location.pathname.includes('/nodes/docker/');
   const isTerminalActive = location.pathname.includes('/nodes/terminal/');
   const isPerformanceActivate = location.pathname.includes('/nodes/performance/');
   const isServicectivate = location.pathname.includes('/nodes/service/');
@@ -88,7 +88,7 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
                 {isPerformanceActivate && <span className={styles.activeIndicator}></span>}
               </Link>
               <Link 
-                to={`/nodes/container/${currentNodeId}`} 
+                to={`/nodes/docker/${currentNodeId}`} 
                 className={`${styles.nodeLink} ${isDockerActive ? styles.activeLink : ''}`}
               >
                 Docker

@@ -1,4 +1,4 @@
-.container {
+.dockerContainer {
   padding: 20px;
   background-color: #1e1e1e;
   color: #e0e0e0;
@@ -28,41 +28,75 @@
   }
 }
 
-.controls {
+.filterControls {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .searchBox {
-  input {
-    width: 250px;
-    padding: 8px 12px;
-    border: 1px solid #444;
-    border-radius: 4px;
-    background-color: #2a2a2a;
-    color: #e0e0e0;
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  font-size: 14px;
+  
+  &:focus {
     outline: none;
-    
-    &:focus {
-      border-color: #0078d7;
-      box-shadow: 0 0 0 2px rgba(0, 120, 215, 0.2);
-    }
-    
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    border-color: #0078d7;
+    box-shadow: 0 0 0 2px rgba(0, 120, 215, 0.2);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 
-.actionControls {
+.filterDropdowns {
   display: flex;
   gap: 10px;
 }
 
-.startButton, .stopButton, .restartButton, .retryButton {
+.filterSelect {
+  padding: 8px 12px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  font-size: 14px;
+  min-width: 140px;
+  
+  &:focus {
+    outline: none;
+    border-color: #0078d7;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.bulkActions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.actionButton {
   padding: 6px 12px;
   border-radius: 4px;
   border: none;
@@ -71,7 +105,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  font-size: 14px;
   
   &:disabled {
     opacity: 0.5;
@@ -106,11 +140,23 @@
   }
 }
 
+.clearButton {
+  background-color: #5f5f5f;
+  color: white;
+  
+  &:hover:not(:disabled) {
+    background-color: darken(#5f5f5f, 5%);
+  }
+}
+
 .retryButton {
   background-color: #0078d4;
   color: white;
   padding: 10px 20px;
   font-size: 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
   
   &:hover {
     background-color: darken(#0078d4, 5%);
@@ -122,6 +168,7 @@
   gap: 20px;
   font-size: 0.9rem;
   color: #b0b0b0;
+  flex-wrap: wrap;
 }
 
 .tableContainer {
@@ -131,7 +178,7 @@
   border-radius: 4px;
 }
 
-.serviceTable {
+.dockerTable {
   width: 100%;
   border-collapse: collapse;
   
@@ -174,6 +221,10 @@
       background-color: rgba(0, 120, 215, 0.2);
     }
   }
+  
+  tr.expanded {
+    background-color: rgba(0, 120, 215, 0.1);
+  }
 }
 
 .checkboxColumn {
@@ -185,29 +236,39 @@
   width: 140px;
 }
 
-.serviceName {
-  font-weight: 500;
+.nameColumn {
+  min-width: 200px;
 }
 
-.serviceNameWithIcon {
+.containerName {
+  font-weight: 500;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
+  margin-bottom: 2px;
+  
+  &:hover {
+    color: #0078d7;
+  }
 }
 
-.serviceIcon {
-  font-size: 1.1rem;
+.expandIcon {
+  font-size: 0.8rem;
+  color: #888;
 }
 
-.serviceDescription {
-  max-width: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.imageInfo {
+  font-size: 0.85rem;
+  color: #888;
+  margin-bottom: 2px;
+  margin-left: 15px;
 }
 
-.actionsCell {
-  padding: 5px !important;
+.idInfo {
+  font-size: 0.8rem;
+  color: #666;
+  margin-left: 15px;
 }
 
 .actionButtons {
@@ -216,17 +277,99 @@
   justify-content: center;
 }
 
-.actionButton {
-  padding: 4px 8px;
-  font-size: 0.85rem;
-  border: none;
+.usageBar {
+  width: 100%;
+  height: 18px;
+  background-color: #2a2a2a;
   border-radius: 3px;
-  cursor: pointer;
+  overflow: hidden;
+  position: relative;
   
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  span {
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.8rem;
+    line-height: 18px;
+    color: #fff;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+    z-index: 2;
   }
+}
+
+.cpuBar {
+  height: 100%;
+  background: linear-gradient(to right, #3498db, #2980b9);
+}
+
+.memoryBar {
+  height: 100%;
+  background: linear-gradient(to right, #2ecc71, #27ae60);
+}
+
+.memoryInfo {
+  font-size: 0.75rem;
+  text-align: center;
+  margin-top: 3px;
+  color: #888;
+}
+
+.detailsRow {
+  td {
+    padding: 0 !important;
+  }
+}
+
+.detailsPanel {
+  padding: 15px;
+  background-color: #292929;
+  border-top: 1px solid #444;
+}
+
+.detailsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.detailsSection {
+  h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    color: #0078d7;
+    border-bottom: 1px solid #444;
+    padding-bottom: 5px;
+  }
+}
+
+.detailsItem {
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.detailsLabel {
+  font-size: 0.9rem;
+  color: #888;
+  margin-bottom: 3px;
+}
+
+.detailsValue {
+  font-size: 1rem;
+}
+
+.resourceBar {
+  height: 10px;
+  background-color: #2a2a2a;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 5px;
+}
+
+.resourceBarFill {
+  height: 100%;
+  border-radius: 5px;
 }
 
 .connectionStatus {
@@ -280,65 +423,23 @@
   }
 }
 
-.statusStarting {
+.statusCreated {
+  color: #0078d7;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  
+  &::before {
+    content: '●';
+  }
+}
+
+.statusRestarting {
   color: #10d310;
   font-weight: 500;
   opacity: 0.7;
   animation: pulse 1.5s infinite;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  
-  &::before {
-    content: '●';
-  }
-}
-
-.statusStopping {
-  color: #d13438;
-  font-weight: 500;
-  opacity: 0.7;
-  animation: pulse 1.5s infinite;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  
-  &::before {
-    content: '●';
-  }
-}
-
-.loadingContainer, .errorContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 300px;
-  gap: 20px;
-  font-size: 1.1rem;
-}
-
-.noData {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 200px;
-  color: #8a8a8a;
-  font-size: 1rem;
-  text-align: center;
-}
-
-.monitoringDisabled {
-  padding: 10px;
-  background-color: rgba(209, 52, 56, 0.1);
-  border-left: 4px solid #d13438;
-  margin-bottom: 20px;
-  color: #d13438;
-}
-
-.statusFailed {
-  color: #ff6348;
-  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 5px;
@@ -360,29 +461,14 @@
   }
 }
 
-.enabled {
-  color: #10d310;
-  font-weight: 500;
-}
-
-.disabled {
-  color: #aaaaaa;
-}
-
-.serviceId {
-  font-size: 0.8rem;
-  color: #888;
-  margin-top: 2px;
-  margin-left: 24px; // 아이콘 너비 + 여백
-}
-
-.errorContainer {
+.loadingContainer, .errorContainer, .noData, .monitoringDisabled {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 300px;
   gap: 20px;
+  font-size: 1.1rem;
 }
 
 @keyframes pulse {

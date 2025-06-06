@@ -395,7 +395,7 @@ $file-item-border: rgba(255, 255, 255, 0.05);
 // 다크 테마 최적화
 @media (prefers-color-scheme: dark) {
   .file-explorer {
-    background: darken($background-color, 3%);
+    background: $background-color, 3%;
   }
   
   .autocomplete-suggestions {

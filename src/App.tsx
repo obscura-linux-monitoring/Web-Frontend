@@ -12,6 +12,7 @@ import ProcessView from './components/node/ProcessView';
 import PerformanceView from './components/performance/PerformanceView';
 import NodeTerminal from './components/node/NodeTerminal';
 import NodeServices from './components/node/NodeServices';
+import Docker from './components/node/Docker';
 
 const App = () => {
   const {
@@ -36,7 +37,7 @@ const App = () => {
             <Route path="/" element={<UserDashboard/>} />
             <Route path="/nodes/monitoring/:nodeId" element={<NodeMetrics />} />
             <Route path="/nodes/process/:nodeId" element={<ProcessView />} />
-            <Route path="/nodes/container/:nodeId" element={<PerformanceView />} />
+            <Route path="/nodes/docker/:nodeId" element={<Docker />} />
             <Route path="/nodes/performance/:nodeId" element={<PerformanceView />} />
             <Route path="/nodes/service/:nodeId" element={<NodeServices />} />
             <Route path="/nodes/terminal/:nodeId" element={<NodeTerminal />} />

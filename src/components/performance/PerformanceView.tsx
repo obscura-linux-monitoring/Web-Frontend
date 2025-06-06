@@ -4,7 +4,7 @@ import styles from '../../scss/performance/PerformanceView.module.scss';
 import CpuMonitor from './CpuMonitor';
 import MemoryMonitor from './MemoryMonitor';
 import DiskMonitor from './DiskMonitor';
-import NetworkMonitor from './NetworkMonitor';
+// import NetworkMonitor from './NetworkMonitor';
 import MiniPerformanceGraph from './MiniPerformanceGraph';
 import WiFiMonitor from './WiFiMonitor';
 import EthernetMonitor from './EthernetMonitor';
@@ -170,10 +170,6 @@ const PerformanceView: React.FC<PerformanceViewProps> = ({
       return <MemoryMonitor key="memory-monitor" />;
     }
     
-    if (selectedResource === 'network') {
-      return <NetworkMonitor key="network-monitor" />;
-    }
-
     if (selectedResource === 'wifi') {
       return <WiFiMonitor key="wifi-monitor" />;
     }
@@ -200,9 +196,8 @@ const PerformanceView: React.FC<PerformanceViewProps> = ({
   const selectedResourceName = useMemo(() => {
     if (selectedResource === 'cpu') return 'CPU';
     if (selectedResource === 'memory') return '메모리';
-    if (selectedResource === 'network') return '네트워크';
     if (selectedResource === 'wifi') return 'Wi-Fi';
-    if (selectedResource === 'ethernet') return 'ethernet';
+    if (selectedResource === 'ethernet') return '이더넷';
     
     // 디스크인 경우 해당 디스크 이름 표시
     if (selectedResource.startsWith('disk')) {
@@ -213,7 +208,7 @@ const PerformanceView: React.FC<PerformanceViewProps> = ({
     return selectedResource;
   }, [selectedResource, disks]);
 
-  // 디스크 항목 렌더링 - useMemo로 최적화
+  // diskItems 렌더링 부분 수정 - useMemo로 최적화
   const diskItems = useMemo(() => {
     if (isLoading) {
       return <div className={styles.loadingDisks}>디스크 정보 로딩 중...</div>;
@@ -229,19 +224,12 @@ const PerformanceView: React.FC<PerformanceViewProps> = ({
         className={`${styles.resourceItem} ${selectedResource === `disk${disk.id}` ? styles.selected : ''}`}
         onClick={() => handleResourceClick(`disk${disk.id}`)}
       >
-        <div className={styles.miniGraph}>
-          <MiniPerformanceGraph 
-            type="disk" 
-            resourceId={disk.id.toString()} 
-            color={index % 2 === 0 ? "#4CAF50" : "#FB8C00"} 
-          />
-        </div>
-        <div className={styles.resourceDetails}>
-          <span className={styles.resourceName}>{disk.name}</span>
-          <span className={styles.resourceValue}>
-            {disk.device?.split('/').pop() || disk.device}
-          </span>
-        </div>
+        <MiniPerformanceGraph 
+          type="disk" 
+          resourceId={disk.id.toString()} 
+          color={index % 2 === 0 ? "#4CAF50" : "#FB8C00"} 
+          name={disk.name}
+        />
       </div>
     ));
   }, [disks, isLoading, selectedResource, handleResourceClick]);
@@ -262,58 +250,26 @@ const PerformanceView: React.FC<PerformanceViewProps> = ({
             className={`${styles.resourceItem} ${selectedResource === 'cpu' ? styles.selected : ''}`}
             onClick={() => handleResourceClick('cpu')}
           >
-            <div className={styles.miniGraph}>
-              <MiniPerformanceGraph type="cpu" color="#1E88E5" />
-            </div>
-            <div className={styles.resourceDetails}>
-              <span className={styles.resourceName}>CPU</span>
-              <span className={styles.resourceValue}>로딩 중...</span>
-            </div>
+            <MiniPerformanceGraph type="cpu" resourceId="0" color="#1E88E5" name="CPU" />
           </div>
-          
+
           {/* 메모리 리소스 항목 */}
           <div 
             className={`${styles.resourceItem} ${selectedResource === 'memory' ? styles.selected : ''}`}
             onClick={() => handleResourceClick('memory')}
           >
-            <div className={styles.miniGraph}>
-              <MiniPerformanceGraph type="memory" color="#8E24AA" />
-            </div>
-            <div className={styles.resourceDetails}>
-              <span className={styles.resourceName}>메모리</span>
-              <span className={styles.resourceValue}>로딩 중...</span>
-            </div>
+            <MiniPerformanceGraph type="memory" resourceId="0" color="#8E24AA" name="메모리" />
           </div>
           
           {/* 디스크 항목들 - 동적으로 생성 */}
           {diskItems}
-          
-          {/* 네트워크 리소스 항목 */}
-          <div 
-            className={`${styles.resourceItem} ${selectedResource === 'network' ? styles.selected : ''}`}
-            onClick={() => handleResourceClick('network')}
-          >
-            <div className={styles.miniGraph}>
-              <MiniPerformanceGraph type="network" color="#039BE5" />
-            </div>
-            <div className={styles.resourceDetails}>
-              <span className={styles.resourceName}>네트워크</span>
-              <span className={styles.resourceValue}>로딩 중...</span>
-            </div>
-          </div>
           
           {/* WiFi 리소스 항목 추가 */}
           <div 
             className={`${styles.resourceItem} ${selectedResource === 'wifi' ? styles.selected : ''}`}
             onClick={() => handleResourceClick('wifi')}
           >
-            <div className={styles.miniGraph}>
-              <MiniPerformanceGraph type="wifi" color="#E91E63" />
-            </div>
-            <div className={styles.resourceDetails}>
-              <span className={styles.resourceName}>Wi-Fi</span>
-              <span className={styles.resourceValue}>로딩 중...</span>
-            </div>
+            <MiniPerformanceGraph type="wifi" resourceId="0" color="#E91E63" name="Wi-Fi" />
           </div>
 
           {/* Ethernet 리소스 항목 추가 */}
@@ -321,16 +277,9 @@ const PerformanceView: React.FC<PerformanceViewProps> = ({
             className={`${styles.resourceItem} ${selectedResource === 'ethernet' ? styles.selected : ''}`}
             onClick={() => handleResourceClick('ethernet')}
           >
-            <div className={styles.miniGraph}>
-              <MiniPerformanceGraph type="ethernet" color="#E91E63" />
-            </div>
-            <div className={styles.resourceDetails}>
-              <span className={styles.resourceName}>이더넷</span>
-              <span className={styles.resourceValue}>로딩 중...</span>
-            </div>
+            <MiniPerformanceGraph type="ethernet" resourceId="0" color="#00ACC1" name="이더넷" />
           </div>
         </div>
-        
         
         {/* 선택된 리소스에 따라 해당 모니터링 컴포넌트 렌더링 */}
         <div className={styles.monitorContainer}>

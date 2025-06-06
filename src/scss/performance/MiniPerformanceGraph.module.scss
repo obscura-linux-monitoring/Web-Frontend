@@ -1,0 +1,79 @@
+.resourceItem {
+  display: flex;
+  margin-bottom: 6px; // 12px에서 6px로 감소
+  padding: 6px; // 8px에서 6px로 감소
+  background-color: #1e1e1e;
+  border-radius: 4px;
+  
+  &:hover {
+    background-color: #2a2a2a;
+  }
+}
+
+.miniGraph {
+  width: 60px;
+  height: 36px; // 40px에서 36px로 약간 감소
+  margin-right: 8px; // 10px에서 8px로 감소
+  position: relative;
+  overflow: hidden; // 차트가 컨테이너 밖으로 넘치지 않도록 설정
+}
+
+.loadingGraph, .errorGraph, .disabledGraph {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.loadingText, .disabledText {
+  font-size: 8px;
+  color: #888;
+}
+
+.errorText {
+  font-size: 9px;
+  color: #ff5555;
+}
+
+.resourceInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0; // 텍스트 오버플로우 방지
+}
+
+.resourceName {
+  font-size: 13px; // 14px에서 13px로 감소
+  font-weight: 500;
+  color: #e6e6e6;
+  margin-bottom: 1px; // 2px에서 1px로 감소
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.resourceType {
+  font-size: 11px; // 12px에서 11px로 감소
+  color: #a0a0a0;
+  margin-bottom: 1px; // 2px에서 1px로 감소
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.resourceValue {
+  font-size: 11px; // 12px에서 11px로 감소
+  color: #a0a0a0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.resourceError {
+  font-size: 10px;
+  color: #ff5555;
+}

@@ -1,5 +1,6 @@
 // NodeContext.tsx
 import { createContext, useState, useContext, ReactNode, useCallback } from 'react';
+import WebSocketManager from '../utils/WebSocketManager';
 
 // 노드 타입 정의
 type Node = {
@@ -65,7 +66,27 @@ export const NodeProvider = ({ children }: { children: ReactNode }) => {
   }, []);
   
   const toggleMonitoring = useCallback(() => {
-    setMonitoringEnabled(prev => !prev);
+    setMonitoringEnabled(prev => {
+      const newState = !prev;
+      
+      // WebSocketManager에 모니터링 상태 알림
+      WebSocketManager.setMonitoringEnabled(newState);
+      
+      // 모니터링 비활성화 시 추가 처리
+      if (!newState) {
+        console.log('모니터링 비활성화: WebSocketManager에 알림');
+        
+        try {
+          // 싱글톤 인스턴스의 연결도 모두 정리
+          const wsManager = WebSocketManager.getInstance();
+          wsManager.cleanup();
+        } catch (err) {
+          console.error('WebSocketManager 정리 중 오류:', err);
+        }
+      }
+      
+      return newState;
+    });
   }, []);
   
   const updateNodeMetrics = useCallback((metrics: NodeMetrics) => {

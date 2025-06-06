@@ -45,75 +45,27 @@
   }
   
   .sidebarInfo {
-    width: 240px;
-    padding: 10px;
+    width: 230px; // 240px에서 230px로 변경
+    padding: 8px; // 10px에서 8px로 감소
     border-right: 1px solid rgba(255, 255, 255, 0.1);
+    overflow-y: auto; // 요소가 많을 경우 스크롤바 표시
+    max-height: 100%;
   }
   
   .resourceItem {
-    display: flex;
-    margin-bottom: 24px;
-    align-items: center;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    padding: 0; // 패딩 제거 (MiniPerformanceGraph에 패딩 있음)
+    margin-bottom: 5px; // 간격 축소
     
-    .miniGraph {
-      width: 50px;
-      height: 40px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      margin-right: 10px;
-      position: relative;
-      border-radius: 2px;
-      
-      .cpuMiniGraph {
-        background: linear-gradient(transparent 70%, #0078D4 70%);
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        top: 0;
-      }
-      
-      .memoryMiniGraph {
-        background: linear-gradient(transparent 11%, #5B9BD5 11%);
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        top: 0;
-      }
-      
-      .diskMiniGraph {
-        background: linear-gradient(transparent 92%, #70AD47 92%);
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        top: 0;
-      }
-      
-      .networkMiniGraph {
-        background: linear-gradient(transparent 90%, #ED7D31 90%);
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        top: 0;
-      }
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.05);
     }
     
-    .resourceDetails {
-      display: flex;
-      flex-direction: column;
-      
-      .resourceName {
-        font-size: 14px;
-        font-weight: 500;
-      }
-      
-      .resourceValue {
-        font-size: 12px;
-        opacity: 0.8;
-        margin-top: 2px;
-      }
+    &.selected {
+      background-color: rgba(0, 120, 212, 0.2);
+      border-left: 3px solid #0078D4;
     }
   }
   
@@ -192,20 +144,12 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       flex-wrap: wrap;
-      padding-bottom: 15px;
+      padding: 8px;
       
       .resourceItem {
-        width: 33%;
-        min-width: 200px;
-      }
-    }
-    
-    .detailsSection {
-      flex-direction: column;
-      
-      .detailColumn {
-        width: 100%;
-        margin-bottom: 20px;
+        width: 32%; // 33%에서 32%로 변경하여 간격 확보
+        min-width: 170px; // 최소 너비 줄임 (180px -> 170px)
+        margin-right: 1%;
       }
     }
   }
