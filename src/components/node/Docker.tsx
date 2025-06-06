@@ -77,7 +77,7 @@ const Docker = () => {
     const fetchInitialData = async () => {
       try {
         setLoading(true);
-        const response = await api.get(`/docker/containers/${currentNodeId}`);
+        const response = await api.get(`/influx/containers/${currentNodeId}`);
         if (response.data && Array.isArray(response.data.containers)) {
           setContainers(response.data.containers);
           setError(null);
@@ -97,7 +97,7 @@ const Docker = () => {
     
     const connectWebSocket = () => {
       try {
-        socket = new WebSocket(`ws://1.209.148.143:8000/docker/ws/containers/${currentNodeId}`);
+        socket = new WebSocket(`ws://1.209.148.143:8000/influx/ws/containers/${currentNodeId}`);
         
         socket.onopen = () => {
           console.log('Docker 모니터링 WebSocket 연결됨');
@@ -246,7 +246,7 @@ const Docker = () => {
     setProcessing({ id, action: 'start' });
     
     try {
-      await api.post(`/docker/containers/${currentNodeId}/${id}/start`);
+      await api.post(`/influx/containers/${currentNodeId}/${id}/start`);
       // 상태 업데이트는 WebSocket을 통해 자동으로 이루어짐
     } catch (err) {
       console.error('컨테이너 시작 실패:', err);
@@ -267,7 +267,7 @@ const Docker = () => {
     setProcessing({ id, action: 'stop' });
     
     try {
-      await api.post(`/docker/containers/${currentNodeId}/${id}/stop`);
+      await api.post(`/influx/containers/${currentNodeId}/${id}/stop`);
       // 상태 업데이트는 WebSocket을 통해 자동으로 이루어짐
     } catch (err) {
       console.error('컨테이너 중지 실패:', err);
@@ -288,7 +288,7 @@ const Docker = () => {
     setProcessing({ id, action: 'restart' });
     
     try {
-      await api.post(`/docker/containers/${currentNodeId}/${id}/restart`);
+      await api.post(`/influx/containers/${currentNodeId}/${id}/restart`);
       // 상태 업데이트는 WebSocket을 통해 자동으로 이루어짐
     } catch (err) {
       console.error('컨테이너 재시작 실패:', err);
@@ -576,9 +576,17 @@ const Docker = () => {
                       <div className={styles.usageBar}>
                         <div 
                           className={styles.cpuBar} 
-                          style={{ width: `${Math.min(container.cpu_usage * 100, 100)}%` }}
+                          style={{ 
+                            // 최소 너비 1%로 설정하여 매우 작은 값도 시각적으로 표시
+                            width: `${Math.max(Math.min(container.cpu_usage * 100, 100), container.cpu_usage > 0 ? 1 : 0)}%` 
+                          }}
                         ></div>
-                        <span>{(container.cpu_usage * 100).toFixed(1)}%</span>
+                        <span>
+                          {/* 값이 매우 작으면 더 많은 소수점으로 표시 */}
+                          {container.cpu_usage < 0.001 
+                            ? (container.cpu_usage > 0 ? "< 0.1%" : "0%") 
+                            : (container.cpu_usage * 100).toFixed(1) + "%"}
+                        </span>
                       </div>
                     </td>
                     <td>
