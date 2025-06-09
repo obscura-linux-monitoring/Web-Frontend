@@ -1,6 +1,5 @@
 import './App.css';
 import { Route, Routes } from 'react-router-dom';
-import GoogleLoginButton from './components/user/GoogleLoginButton';
 import UserDashboard from './components/user/UserDashboard';
 import SideBar from './components/SideBar';
 import { useAuth } from './hooks/useAuth';
@@ -13,6 +12,7 @@ import PerformanceView from './components/performance/PerformanceView';
 import NodeTerminal from './components/node/NodeTerminal';
 import NodeServices from './components/node/NodeServices';
 import Docker from './components/node/Docker';
+import LandingPage from './components/main/LandingPage';
 
 const App = () => {
   const {
@@ -21,9 +21,9 @@ const App = () => {
     handleLogout,
   } = useAuth();
 
-  // 로그인하지 않은 경우 로그인 버튼 표시
+  // 로그인하지 않은 경우 소개 페이지 표시
   if (!isAuthenticated) {
-    return <GoogleLoginButton onLogin={() => window.location.reload()} />;
+    return <LandingPage onLogin={() => window.location.reload()} />;
   }
 
   // 로그인된 경우 사이드바와 라우트 표시
@@ -34,7 +34,7 @@ const App = () => {
         <SideBar />
         <div className="main-content">
           <Routes>
-            <Route path="/" element={<UserDashboard/>} />
+            <Route path="/" element={<UserDashboard />} />
             <Route path="/nodes/monitoring/:nodeId" element={<NodeMetrics />} />
             <Route path="/nodes/process/:nodeId" element={<ProcessView />} />
             <Route path="/nodes/docker/:nodeId" element={<Docker />} />

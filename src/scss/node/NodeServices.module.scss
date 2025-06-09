@@ -1,3 +1,5 @@
+@use "sass:color";
+
 .container {
   padding: 20px;
   background-color: #1e1e1e;
@@ -84,7 +86,7 @@
   color: white;
   
   &:hover:not(:disabled) {
-    background-color: darken(#107c10, 5%);
+    background-color: color.adjust(#107c10, $lightness: -5%);
   }
 }
 
@@ -93,7 +95,7 @@
   color: white;
   
   &:hover:not(:disabled) {
-    background-color: darken(#d13438, 5%);
+    background-color: color.adjust(#d13438, $lightness: -5%);
   }
 }
 
@@ -102,7 +104,7 @@
   color: white;
   
   &:hover:not(:disabled) {
-    background-color: darken(#0078d4, 5%);
+    background-color: color.adjust(#0078d4, $lightness: -5%);
   }
 }
 
@@ -113,7 +115,7 @@
   font-size: 1rem;
   
   &:hover {
-    background-color: darken(#0078d4, 5%);
+    background-color: color.adjust(#0078d4, $lightness: -5%);
   }
 }
 
