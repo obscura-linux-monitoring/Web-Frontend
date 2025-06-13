@@ -1,5 +1,10 @@
 .mainPanel {
+    display: flex;
+    flex-direction: column;
     flex: 1;
+    width: 90%;
+    box-sizing: border-box;
+    overflow-x: hidden;
     padding: 15px;
   }
   

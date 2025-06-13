@@ -1,94 +1,315 @@
 .container {
   
-    .commandSection {
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid #eee;
-      
-      h3 {
-        margin-bottom: 15px;
-      }
+  .commandSection {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    
+    h3 {
+      margin-bottom: 15px;
     }
-    padding: 2rem;
-  
-    .profileSection {
-      margin-bottom: 3rem;
-  
-      h2 {
-        margin-bottom: 1.5rem;
+  }
+  padding: 2rem;
+
+  .profileSection {
+    margin-bottom: 3rem;
+
+    h2 {
+      margin-bottom: 1.5rem;
+      color: #d6ffd9;
+    }
+
+    .installCommand {
+      background: #333;
+      padding: 1rem;
+      border-radius: 4px;
+      font-family: monospace;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+  }
+
+  .nodesSection {
+    h3 {
+      margin-bottom: 1.5rem;
+      color: #333;
+    }
+
+    .nodesGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .nodeCard {
+      padding: 1.5rem;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      &.selected {
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+      }
+
+      h4 {
+        margin: 0 0 1rem 0;
         color: #333;
       }
-  
-      .installCommand {
-        background: #333;
-        padding: 1rem;
-        border-radius: 4px;
-        font-family: monospace;
-        overflow-x: auto;
-        white-space: pre-wrap;
-        word-break: break-all;
-      }
-    }
-  
-    .nodesSection {
-      h3 {
-        margin-bottom: 1.5rem;
-        color: #333;
-      }
-  
-      .nodesGrid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 1rem;
-        margin-bottom: 2rem;
-      }
-  
-      .nodeCard {
-        padding: 1.5rem;
-        background: #fff;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-  
-        &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-  
-        &.selected {
-          border-color: #007bff;
-          box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-        }
-  
-        h4 {
-          margin: 0 0 1rem 0;
-          color: #333;
-        }
-  
-        p {
-          margin: 0;
-          color: #666;
-  
-          strong {
-            color: #555;
-            margin-right: 0.5rem;
-          }
-        }
-      }
-  
-      .metricsSection {
-        margin-top: 2rem;
-        padding-top: 2rem;
-        border-top: 1px solid #eee;
-      }
-  
-      .noNodes {
-        text-align: center;
-        padding: 2rem;
-        background: #f8f9fa;
-        border-radius: 8px;
+
+      p {
+        margin: 0;
         color: #666;
+
+        strong {
+          color: #555;
+          margin-right: 0.5rem;
+        }
+      }
+    }
+
+    .metricsSection {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid #eee;
+    }
+
+    .noNodes {
+      text-align: center;
+      padding: 2rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+      color: #666;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem; /* 패딩 축소 */
+  }
+
+  .profileSection {
+    margin-bottom: 2rem; /* 섹션 간격 축소 */
+
+    h2 {
+      font-size: 1.2rem; /* 제목 크기 축소 */
+      margin-bottom: 1rem;
+    }
+
+    .installCommand {
+      font-size: 0.9rem; /* 글꼴 크기 축소 */
+      padding: 0.8rem; /* 내부 패딩 축소 */
+    }
+  }
+
+  .nodesSection {
+    h3 {
+      font-size: 1rem; /* 제목 크기 축소 */
+      margin-bottom: 1rem;
+    }
+
+    .nodesGrid {
+      grid-template-columns: 1fr; /* 단일 열로 변경 */
+      gap: 0.8rem; /* 간격 축소 */
+    }
+
+    .nodeCard {
+      padding: 1rem; /* 내부 패딩 축소 */
+      font-size: 0.9rem; /* 글꼴 크기 축소 */
+
+      h4 {
+        font-size: 1rem; /* 제목 크기 축소 */
+      }
+
+      p {
+        font-size: 0.8rem; /* 본문 글꼴 크기 축소 */
+      }
+    }
+
+    .noNodes {
+      padding: 1.5rem; /* 패딩 축소 */
+      font-size: 0.9rem; /* 글꼴 크기 축소 */
+    }
+  }
+}
+
+.profileContainer {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .profileContainer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: auto;
+    max-width: 250px;
+    margin: 0;
+    padding: 10px;
+    z-index: 1000;
+    background-color: #1a1a1a;
+  }
+
+  .headerContent {
+    display: none; // 모바일에서는 headerContent 숨김
+  }
+
+  .profileImage {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    z-index: 1001;
+  }
+
+  .profileHeader {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    width: 100%;
+
+    .profileImage {
+      width: 100px;
+      height: 100px;
+    }
+
+    .profileInfo {
+      width: 100%;
+      text-align: center;
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      p {
+        font-size: 0.9rem;
       }
     }
   }
+
+  .profileContent {
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .profileSection {
+    width: 100%;
+    padding: 15px;
+    margin: 0;
+
+    h2 {
+      font-size: 1.2rem;
+      color: #fff;
+    }
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    width: 100%;
+
+    .statItem {
+      width: 100%;
+      padding: 10px;
+
+      .statValue {
+        font-size: 1.5rem;
+      }
+
+      .statLabel {
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  .activityList {
+    width: 100%;
+
+    .activityItem {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+
+      .activityHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+
+        .activityTitle {
+          font-size: 1rem;
+        }
+
+        .activityDate {
+          font-size: 0.8rem;
+        }
+      }
+
+      .activityDescription {
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+
+:global {
+  ._profileModalContent_1qny6_180 {
+    max-width: 100%;
+    margin: 0 auto;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    
+    p {
+      word-wrap: break-word;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+    }
+    
+    @media (max-width: 768px) {
+      max-width: 85%;
+      padding: 0 1rem;
+      box-sizing: border-box;
+    }
+  }
+
+  ._profileSection_13a4x_13 {
+    p {
+      word-wrap: break-word;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  :global {
+    ._profileModalContent_1qny6_180 {
+      max-width: 90% !important;
+    }
+  }
+}

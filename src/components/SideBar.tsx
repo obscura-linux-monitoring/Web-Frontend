@@ -20,7 +20,34 @@ const SideBar = () => {
   const location = useLocation();
   const fetchedRef = useRef(false);
   const wsRef = useRef<WebSocket | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   
+  // 화면 크기 변경 감지
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+      if (window.innerWidth > 768) {
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // ESC 키로 사이드바 닫기
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [isOpen]);
+
   // 사용자의 노드 목록을 가져오는 함수 - 최초 한 번만 실행
   useEffect(() => {
     // 이미 데이터를 가져왔다면 중복 요청 방지
@@ -133,45 +160,87 @@ const SideBar = () => {
     );
   };
 
+  // 사이드바 토글 함수
+  const toggleSidebar = () => {
+    setIsOpen(!isOpen);
+  };
+
+  // 오버레이 클릭 시 사이드바 닫기
+  const handleOverlayClick = () => {
+    setIsOpen(false);
+  };
+
   return (
-    <div className={styles.sidebar}>
-      <h3>🔧 메뉴</h3>
-      <ul>
-        <li className={styles.nodeListSection}>
-          <div className={styles.nodeListHeader}>🧩 노드 목록</div>
-          <div className={styles.nodeList}>
-            {loading ? (
-              <div className={styles.nodeItem}>⏳ 로딩 중...</div>
-            ) : error ? (
-              <div className={styles.nodeItem}>❌ {error}</div>
-            ) : nodes.length === 0 ? (
-              <div className={styles.nodeItem}>등록된 노드가 없습니다</div>
-            ) : (
-              nodes.map(node => (
-                <Link 
-                  key={node.node_id}
-                  to={`/nodes/monitoring/${node.node_id}`}
-                  className={`${styles.nodeItem} ${
-                    selectedNode?.node_id === node.node_id ? styles.active : ''
-                  }`}
-                  onClick={() => handleNodeSelect(node)}
-                >
-                  {getStatusIndicator(node.status)}
-                  <span className={styles.nodeInfo}>
-                    {node.node_name}
-                    {node.status === 0 && (
-                      <span className={styles.statusText}> (수집 중단)</span>
-                    )}
-                  </span>
-                </Link>
-              ))
-            )}
-          </div>
-        </li>
-        
-        <li><Link to="/settings">⚙️ 설정</Link></li>
-      </ul>
-    </div>
+    <>
+      {/* 햄버거 메뉴 버튼 (모바일) */}
+      {isMobile && !isOpen && (
+        <button 
+          className={styles.hamburgerButton}
+          onClick={toggleSidebar}
+          aria-label="메뉴"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      )}
+
+      {/* 오버레이 */}
+      <div 
+        className={`${styles.overlay} ${isOpen ? styles.visible : ''}`}
+        onClick={handleOverlayClick}
+      />
+
+      {/* 사이드바 */}
+      <div className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
+        <button 
+          className={styles.closeButton}
+          onClick={handleOverlayClick}
+          aria-label="메뉴 닫기"
+        >
+          ✕
+        </button>
+        <h3>🔧 메뉴</h3>
+        <ul>
+          <li className={styles.nodeListSection}>
+            <div className={styles.nodeListHeader}>🧩 노드 목록</div>
+            <div className={styles.nodeList}>
+              {loading ? (
+                <div className={styles.nodeItem}>⏳ 로딩 중...</div>
+              ) : error ? (
+                <div className={styles.nodeItem}>❌ {error}</div>
+              ) : nodes.length === 0 ? (
+                <div className={styles.nodeItem}>등록된 노드가 없습니다</div>
+              ) : (
+                nodes.map(node => (
+                  <Link 
+                    key={node.node_id}
+                    to={`/nodes/monitoring/${node.node_id}`}
+                    className={`${styles.nodeItem} ${
+                      selectedNode?.node_id === node.node_id ? styles.active : ''
+                    }`}
+                    onClick={() => {
+                      handleNodeSelect(node);
+                      if (isMobile) setIsOpen(false); // 모바일에서 노드 선택 시 사이드바 닫기
+                    }}
+                  >
+                    {getStatusIndicator(node.status)}
+                    <span className={styles.nodeInfo}>
+                      {node.node_name}
+                      {node.status === 0 && (
+                        <span className={styles.statusText}> (수집 중단)</span>
+                      )}
+                    </span>
+                  </Link>
+                ))
+              )}
+            </div>
+          </li>
+          
+          <li><Link to="/settings" onClick={() => isMobile && setIsOpen(false)}>⚙️ 설정</Link></li>
+        </ul>
+      </div>
+    </>
   );
 };
 

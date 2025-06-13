@@ -1,25 +1,42 @@
 .header {
+  background-color: #1a1a1a;
+  color: white;
+  height: 60px;
+  display: flex;
+  align-items: center;
   position: fixed;
   top: 0;
+  left: 0;
   right: 0;
-  height: 60px;
-  background-color: #1a1a1a;
-  width: calc(100% - 250px);
-  z-index: 100;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (min-width: 769px) {
+    width: calc(100% - 250px);
+    left: 250px;
+  }
+
+  @media (max-width: 768px) {
+    padding-left: 4rem;
+  }
 }
 
 .headerContent {
   display: flex;
-  justify-content: space-between; // flex-end에서 변경
+  justify-content: space-between;
   align-items: center;
   height: 100%;
+  width: 100%;
   padding: 0 2rem;
+  box-sizing: border-box;
 }
 
 .headerLeft {
   display: flex;
   align-items: center;
+  gap: 1rem;
   
   a {
     color: #ddd;
@@ -39,6 +56,7 @@
 .headerRight {
   display: flex;
   align-items: center;
+  margin-left: auto;
 }
 
 .profileContainer {
