@@ -1,0 +1,231 @@
+@import '../variables';
+
+.metrics-widget {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  
+  .node-selector {
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    
+    select {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      font-size: 0.9rem;
+      
+      &:disabled {
+        background-color: #eee;
+        cursor: not-allowed;
+      }
+      
+      &:focus {
+        outline: none;
+        border-color: #4a6fa5;
+      }
+    }
+  }
+  
+  .inactive-message, .loading-message, .error-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    padding: 20px;
+    flex-direction: column;
+  }
+  
+  .inactive-message {
+    color: $text-muted;
+    font-style: italic;
+  }
+  
+  .loading-message {
+    color: $text-muted;
+  }
+  
+  .error-message {
+    color: #ff6b6b;
+  }
+  
+  .metrics-content {
+    padding: 10px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 10px;
+      
+      .metric-item {
+        display: flex;
+        flex-direction: column;
+        padding: 8px;
+        background-color: rgba(0, 0, 0, 0.05);
+        border-radius: 4px;
+        
+        .label {
+          font-size: 0.85rem;
+          color: $text-muted;
+          margin-bottom: 4px;
+        }
+        
+        .value {
+          font-size: 1.1rem;
+          font-weight: 500;
+        }
+      }
+    }
+    
+    .graph-toggle {
+      margin: 10px 0;
+      text-align: center;
+      
+      button {
+        padding: 5px 12px;
+        border-radius: 4px;
+        background-color: #4a6fa5;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 0.9rem;
+        
+        &:hover {
+          background-color: #3a5d8f;
+        }
+      }
+    }
+    
+    .chart-section {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      background-color: rgba(0, 0, 0, 0.03);
+      
+      .chart-header {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        margin-bottom: 10px;
+        
+        h4 {
+          margin: 0;
+          font-size: 1rem;
+        }
+        
+        .select-all-button {
+          font-size: 0.8rem;
+          padding: 3px 8px;
+          background-color: #6a8caf;
+          color: white;
+          border: none;
+          border-radius: 3px;
+          cursor: pointer;
+          
+          &:hover {
+            background-color: #5a7c9f;
+          }
+        }
+      }
+      
+      .metrics-selection {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 10px;
+        
+        .metric-checkbox {
+          display: flex;
+          align-items: center;
+          font-size: 0.8rem;
+          cursor: pointer;
+          
+          input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+          }
+          
+          .checkmark {
+            height: 16px;
+            width: 16px;
+            border-radius: 3px;
+            border: 1px solid #ddd;
+            margin-right: 5px;
+            display: inline-block;
+          }
+          
+          &:hover .checkmark {
+            border-color: #999;
+          }
+        }
+      }
+      
+      .chart-container {
+        height: 220px;
+        margin-top: 10px;
+        
+        .no-chart-data {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+          color: $text-muted;
+          font-style: italic;
+        }
+      }
+    }
+    
+    .last-update {
+      margin-top: auto;
+      font-size: 0.8rem;
+      color: $text-muted;
+      text-align: right;
+      padding-top: 8px;
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+// 타이틀에 노드 선택기를 위한 스타일
+.widget-title-with-selector {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  
+  span {
+    margin-right: 10px;
+    flex: 0 0 auto;
+  }
+  
+  .node-select {
+    flex: 1;
+    max-width: 200px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    font-size: 0.85rem;
+    
+    &:disabled {
+      background-color: #eee;
+      cursor: not-allowed;
+    }
+    
+    &:focus {
+      outline: none;
+      border-color: #4a6fa5;
+    }
+  }
+} 

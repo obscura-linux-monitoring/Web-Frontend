@@ -1,0 +1,18 @@
+import React from 'react';
+import Widget from './Widget';
+
+interface WelcomeWidgetProps {
+  id: string;
+  email?: string;
+  onClose?: () => void;
+}
+
+const WelcomeWidget: React.FC<WelcomeWidgetProps> = ({ id, email, onClose }) => {
+  return (
+    <Widget id={id} title="👋 시작하기" onClose={onClose}>
+      <p>환영합니다, {email}님! 좌측 메뉴에서 다양한 기능을 이용할 수 있습니다.</p>
+    </Widget>
+  );
+};
+
+export default WelcomeWidget; 

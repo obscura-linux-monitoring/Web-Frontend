@@ -1,0 +1,82 @@
+.landing {
+  &Container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: auto;
+  }
+
+  &Content {
+    max-width: 620px; // 더 축소
+    padding: 25px 30px; // 상하 패딩 더 축소
+    border-radius: 8px;
+    background-color: #2a2a2a;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  }
+
+  &Title {
+    font-size: 2.8rem; // 더 축소
+    font-weight: bold;
+    color: #4d90fe;
+    margin-bottom: 12px; // 더 축소
+    text-shadow: 0 0 8px #4d90fe;
+  }
+
+  &Subtitle {
+    font-size: 1.1rem; // 더 축소
+    margin-bottom: 25px; // 더 축소
+    color: #cccccc;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); // 더 작게
+  gap: 15px; // 더 축소
+  margin-bottom: 25px; // 더 축소
+  text-align: left;
+}
+
+.featureItem {
+  background-color: #333333;
+  padding: 12px; // 더 축소
+  border-radius: 6px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+  }
+
+  h3 {
+    font-size: 1rem; // 더 축소
+    color: #4d90fe;
+    margin-bottom: 6px; // 더 축소
+  }
+
+  p {
+    font-size: 0.85rem; // 더 축소
+    color: #bbbbbb;
+    line-height: 1.4; // 더 축소
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    margin: 0; // 기본 마진 제거
+  }
+}
+
+.loginSection {
+  margin-top: 20px; // 더 축소
+}

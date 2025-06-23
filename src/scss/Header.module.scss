@@ -284,9 +284,206 @@
   }
 }
 
+.invitationsContainer {
+  position: relative;
+  margin-right: 20px;
+}
+
+.invitationsButton {
+  position: relative;
+  /* width: 40px 제거 */
+  width: auto;  /* 내용물에 맞게 너비 자동 조정 */
+  height: 40px;
+  padding: 0 12px;  /* 좌우 패딩 추가 */
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  color: #ddd;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.bellIcon {
+  transition: transform 0.3s;
+  
+  .invitationsButton:hover & {
+    transform: rotate(10deg);
+  }
+}
+
+.badgeCount {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #ff4d4f;
+  color: white;
+  border-radius: 10px;
+  padding: 0 6px;
+  font-size: 12px;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.invitationsDropdown {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  width: 350px;
+  background-color: #2a2a2a;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  padding: 1rem;
+  z-index: 110;
+  animation: dropDown 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.invitationsTitle {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: white;
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.loadingText, .emptyInvitations {
+  text-align: center;
+  padding: 1.5rem 0;
+  color: #aaa;
+  font-style: italic;
+}
+
+.invitationsList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 400px;
+  overflow-y: auto;
+  
+  // 스크롤바 스타일링
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  }
+}
+
+.invitationItem {
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.invitationContent {
+  margin-bottom: 0.75rem;
+}
+
+.invitationText {
+  margin: 0 0 0.25rem 0;
+  color: #e0e0e0;
+  
+  strong {
+    color: white;
+  }
+}
+
+.invitationDate {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.invitationActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.invitationButton {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &.acceptButton {
+    background-color: #4ecdc4;
+    color: #000;
+    
+    &:hover {
+      background-color: #5fddda;
+      transform: translateY(-1px);
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+  }
+  
+  &.rejectButton {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ddd;
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes dropDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 768px) {

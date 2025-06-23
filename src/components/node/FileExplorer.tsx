@@ -10,7 +10,7 @@ interface FileExplorerProps {
 interface ConnectionForm {
     host: string;
     port: string;
-    username: string;
+    user: string;
     password: string;
     google_id: string;
 }
@@ -60,8 +60,8 @@ function FileExplorer({ connectionForm, isConnected }: FileExplorerProps): React
         setErrorMessage('');
 
         try {
-            const { host, port, username, password, google_id } = connectionForm;
-            const response = await fetch(`http://1.209.148.143:8000/sftp/home?host=${host}&port=${port}&username=${username}&password=${password}&google_id=${google_id || 'default'}`);
+            const { host, port, user, password, google_id } = connectionForm;
+            const response = await fetch(`http://1.209.148.143:8000/sftp/home?host=${host}&port=${port}&user=${user}&password=${password}&google_id=${google_id || 'default'}`);
             const data = await response.json();
 
             if (data.error) {
@@ -93,8 +93,8 @@ function FileExplorer({ connectionForm, isConnected }: FileExplorerProps): React
         setErrorMessage('');
 
         try {
-            const { host, port, username, password, google_id } = connectionForm;
-            const response = await fetch(`http://1.209.148.143:8000/sftp/list?host=${host}&port=${port}&username=${username}&password=${password}&path=${path}&google_id=${google_id || 'default'}`);
+            const { host, port, user, password, google_id } = connectionForm;
+            const response = await fetch(`http://1.209.148.143:8000/sftp/list?host=${host}&port=${port}&user=${user}&password=${password}&path=${path}&google_id=${google_id || 'default'}`);
             const data: FileItem[] | { error: string } = await response.json();
 
             if ('error' in data) {
@@ -122,8 +122,8 @@ function FileExplorer({ connectionForm, isConnected }: FileExplorerProps): React
         // 경로 유효성 검사를 위해 해당 경로의 목록을 조회해봄
         setIsLoading(true);
         try {
-            const { host, port, username, password, google_id } = connectionForm;
-            const response = await fetch(`http://1.209.148.143:8000/sftp/list?host=${host}&port=${port}&username=${username}&password=${password}&path=${newPath}&google_id=${google_id || 'default'}`);
+            const { host, port, user, password, google_id } = connectionForm;
+            const response = await fetch(`http://1.209.148.143:8000/sftp/list?host=${host}&port=${port}&user=${user}&password=${password}&path=${newPath}&google_id=${google_id || 'default'}`);
             const data: FileItem[] | { error: string } = await response.json();
 
             if ('error' in data) {
@@ -174,8 +174,8 @@ function FileExplorer({ connectionForm, isConnected }: FileExplorerProps): React
                 // 다른 경로의 파일/폴더 목록 가져오기
                 setIsLoading(true);
                 try {
-                    const { host, port, username, password, google_id } = connectionForm;
-                    const response = await fetch(`http://1.209.148.143:8000/sftp/list?host=${host}&port=${port}&username=${username}&password=${password}&path=${dirPath}&google_id=${google_id || 'default'}`);
+                    const { host, port, user, password, google_id } = connectionForm;
+                    const response = await fetch(`http://1.209.148.143:8000/sftp/list?host=${host}&port=${port}&user=${user}&password=${password}&path=${dirPath}&google_id=${google_id || 'default'}`);
                     const data: FileItem[] | { error: string } = await response.json();
 
                     if (!('error' in data)) {
@@ -220,8 +220,8 @@ function FileExplorer({ connectionForm, isConnected }: FileExplorerProps): React
             if (parentPath !== currentPath) {
                 setIsLoading(true);
                 try {
-                    const { host, port, username, password, google_id } = connectionForm;
-                    const response = await fetch(`http://1.209.148.143:8000/sftp/list?host=${host}&port=${port}&username=${username}&password=${password}&path=${parentPath}&google_id=${google_id || 'default'}`);
+                    const { host, port, user, password, google_id } = connectionForm;
+                    const response = await fetch(`http://1.209.148.143:8000/sftp/list?host=${host}&port=${port}&user=${user}&password=${password}&path=${parentPath}&google_id=${google_id || 'default'}`);
                     const data: FileItem[] | { error: string } = await response.json();
 
                     if (!('error' in data)) {
@@ -356,11 +356,11 @@ function FileExplorer({ connectionForm, isConnected }: FileExplorerProps): React
 
     // 파일 다운로드
     const downloadFile = (file: FileItem): void => {
-        const { host, port, username, password, google_id } = connectionForm;
+        const { host, port, user, password, google_id } = connectionForm;
         const filePath = currentPath === '/' ? `/${file.name}` : `${currentPath}/${file.name}`;
 
         // 다운로드 URL 생성
-        const downloadUrl = `http://1.209.148.143:8000/sftp/download?host=${host}&port=${port}&username=${username}&password=${password}&path=${encodeURIComponent(filePath)}&google_id=${google_id || 'default'}`;
+        const downloadUrl = `http://1.209.148.143:8000/sftp/download?host=${host}&port=${port}&user=${user}&password=${password}&path=${encodeURIComponent(filePath)}&google_id=${google_id || 'default'}`;
 
         // 새 창에서 다운로드 링크 열기
         window.open(downloadUrl, '_blank');
@@ -394,9 +394,9 @@ function FileExplorer({ connectionForm, isConnected }: FileExplorerProps): React
     return (
         <div className={styles['file-explorer']}>
             <div className={styles['file-explorer-header']}>
-                <button 
+                <button
                     className={styles.parentButton}
-                    onClick={goToParentDirectory} 
+                    onClick={goToParentDirectory}
                     disabled={currentPath === '/' || !currentPath}
                 >
                     ↑ 상위 폴더

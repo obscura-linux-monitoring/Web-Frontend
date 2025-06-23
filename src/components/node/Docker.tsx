@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import { useNodeContext } from '../../context/NodeContext';
 import styles from '../../scss/node/Docker.module.scss';
 import api from '../../api';
+import { useSshContext } from '../../context/SshContext';
+import { getToken } from '../../utils/Auth';
 
 // Docker 컨테이너 데이터 타입 정의
 interface DockerContainer {
@@ -26,6 +28,7 @@ interface DockerContainer {
   status: string;
   sub_state: string;
   type: string;
+  health_status: string;
 }
 
 // 정렬 필드와 방향 타입
@@ -40,40 +43,47 @@ interface FilterState {
 }
 
 const Docker = () => {
-  const { nodeId } = useParams<{ nodeId: string }>();
+  const { nodeId: paramNodeId } = useParams<{ nodeId: string }>();
   const { selectedNode, monitoringEnabled } = useNodeContext();
-  const currentNodeId = nodeId || selectedNode?.node_id || '';
-  
+  const currentNodeId = paramNodeId || selectedNode?.node_id || '';
+
   const [containers, setContainers] = useState<DockerContainer[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [expandedContainer, setExpandedContainer] = useState<string | null>(null);
-  
+
   // 정렬 상태
   const [sortBy, setSortBy] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  
+
   // 필터 상태
   const [filters, setFilters] = useState<FilterState>({
     status: 'all',
     type: 'all',
     search: ''
   });
-  
+
+  // SSH Context 사용
+  const {
+    sshConnection,
+    hasSshConnection,
+    getSshConnection
+  } = useSshContext();
+
   // 선택된 컨테이너
   const [selectedContainers, setSelectedContainers] = useState<string[]>([]);
-  
+
   // 진행 중인 작업
   const [processing, setProcessing] = useState<{ id: string, action: string } | null>(null);
-  
+
   // 컨테이너 데이터 가져오기
   useEffect(() => {
     if (!currentNodeId || !monitoringEnabled) {
       setLoading(false);
       return;
     }
-    
+
     const fetchInitialData = async () => {
       try {
         setLoading(true);
@@ -91,20 +101,20 @@ const Docker = () => {
         setLoading(false);
       }
     };
-    
+
     // WebSocket 연결 설정
     let socket: WebSocket | null = null;
-    
+
     const connectWebSocket = () => {
       try {
         socket = new WebSocket(`ws://1.209.148.143:8000/influx/ws/containers/${currentNodeId}`);
-        
+
         socket.onopen = () => {
           console.log('Docker 모니터링 WebSocket 연결됨');
           setIsConnected(true);
           setError(null);
         };
-        
+
         socket.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
@@ -116,15 +126,15 @@ const Docker = () => {
             console.error('WebSocket 메시지 파싱 실패:', err);
           }
         };
-        
+
         socket.onerror = (err) => {
           console.error('WebSocket 에러:', err);
           setIsConnected(false);
-          
+
           // 연결 실패시 REST API로 데이터 가져오기
           fetchInitialData();
         };
-        
+
         socket.onclose = () => {
           console.log('Docker 모니터링 WebSocket 연결 종료됨');
           setIsConnected(false);
@@ -135,13 +145,13 @@ const Docker = () => {
         fetchInitialData();
       }
     };
-    
+
     // WebSocket 연결 시도
     connectWebSocket();
-    
+
     // 초기 로드 (WebSocket이 실패할 경우 대비)
     fetchInitialData();
-    
+
     // 컴포넌트 언마운트 시 정리
     return () => {
       if (socket) {
@@ -149,29 +159,48 @@ const Docker = () => {
         socket.onmessage = null;
         socket.onerror = null;
         socket.onclose = null;
-        
-        if (socket.readyState === WebSocket.OPEN || 
-            socket.readyState === WebSocket.CONNECTING) {
+
+        if (socket.readyState === WebSocket.OPEN ||
+          socket.readyState === WebSocket.CONNECTING) {
           socket.close();
         }
       }
     };
   }, [currentNodeId, monitoringEnabled]);
-  
+
+  useEffect(() => {
+    const token = getToken();
+    if (!token) {
+      return;
+    }
+
+    api.get('/user/profile', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }).then((res) => {
+      // 기존 getSshConnection 호출을 context의 함수로 대체
+      getSshConnection(res.data.user.sub, paramNodeId || '');
+    }).catch((err) => {
+      console.error('❌ 데이터 로딩 실패:', err);
+    });
+
+  }, [paramNodeId]);
+
   // 컨테이너 상세 정보 토글
   const toggleContainerDetails = (id: string) => {
     setExpandedContainer(expandedContainer === id ? null : id);
   };
-  
+
   // 컨테이너 선택/해제
   const toggleContainerSelection = (id: string) => {
-    setSelectedContainers(prev => 
-      prev.includes(id) 
-        ? prev.filter(containerId => containerId !== id) 
+    setSelectedContainers(prev =>
+      prev.includes(id)
+        ? prev.filter(containerId => containerId !== id)
         : [...prev, id]
     );
   };
-  
+
   // 정렬 처리
   const handleSort = (field: SortField) => {
     if (sortBy === field) {
@@ -181,24 +210,24 @@ const Docker = () => {
       setSortDirection('asc');
     }
   };
-  
+
   // 필터 변경 처리
   const handleFilterChange = (filterName: keyof FilterState, value: string) => {
     setFilters(prev => ({ ...prev, [filterName]: value }));
   };
-  
+
   // 필터링된 컨테이너 목록
   const filteredContainers = containers.filter(container => {
     // 상태 필터
     if (filters.status !== 'all' && container.status.toLowerCase() !== filters.status) {
       return false;
     }
-    
+
     // 타입 필터
     if (filters.type !== 'all' && container.type !== filters.type) {
       return false;
     }
-    
+
     // 검색어 필터
     if (filters.search) {
       const searchTerm = filters.search.toLowerCase();
@@ -209,14 +238,14 @@ const Docker = () => {
         container.status.toLowerCase().includes(searchTerm)
       );
     }
-    
+
     return true;
   });
-  
+
   // 정렬된 컨테이너 목록
   const sortedContainers = [...filteredContainers].sort((a, b) => {
     let comparison = 0;
-    
+
     if (sortBy === 'cpu_usage' || sortBy === 'memory_percent' || sortBy === 'restarts') {
       // 숫자 비교
       comparison = (a[sortBy] as number) - (b[sortBy] as number);
@@ -231,22 +260,39 @@ const Docker = () => {
       const valueB = String(b[sortBy]).toLowerCase();
       comparison = valueA.localeCompare(valueB);
     }
-    
+
     return sortDirection === 'asc' ? comparison : -comparison;
   });
-  
+
   // 컨테이너 시작 함수
   const startContainer = async (id: string) => {
-    if (!currentNodeId || !monitoringEnabled) return;
-    
+    if (!currentNodeId || !monitoringEnabled || !hasSshConnection) return;
+
     if (!window.confirm('컨테이너를 시작하시겠습니까?')) {
       return;
     }
-    
+
     setProcessing({ id, action: 'start' });
-    
+
     try {
-      await api.post(`/influx/containers/${currentNodeId}/${id}/start`);
+      const data = {
+        id: id,
+        google_id: sshConnection?.google_id || '',
+        host: sshConnection?.host || '',
+        key: sshConnection?.key || '',
+        user: sshConnection?.user || '',
+        password: sshConnection?.password || '',
+        port: sshConnection?.port || '',
+        node_id: currentNodeId || ''
+
+      }
+      const response = await api.post(`/ssh/start_docker_container`, data);
+      console.log(response);
+      if (response.data && response.data.success) {
+        alert('컨테이너가 시작되었습니다.');
+      } else {
+        throw new Error(response.data.error || '컨테이너 시작에 실패했습니다');
+      }
       // 상태 업데이트는 WebSocket을 통해 자동으로 이루어짐
     } catch (err) {
       console.error('컨테이너 시작 실패:', err);
@@ -255,19 +301,35 @@ const Docker = () => {
       setProcessing(null);
     }
   };
-  
+
   // 컨테이너 중지 함수
   const stopContainer = async (id: string) => {
-    if (!currentNodeId || !monitoringEnabled) return;
-    
+    if (!currentNodeId || !monitoringEnabled || !hasSshConnection) return;
+
     if (!window.confirm('컨테이너를 중지하시겠습니까?')) {
       return;
     }
-    
+
     setProcessing({ id, action: 'stop' });
-    
+
     try {
-      await api.post(`/influx/containers/${currentNodeId}/${id}/stop`);
+      const data = {
+        id: id,
+        google_id: sshConnection?.google_id || '',
+        host: sshConnection?.host || '',
+        key: sshConnection?.key || '',
+        user: sshConnection?.user || '',
+        password: sshConnection?.password || '',
+        port: sshConnection?.port || '',
+        node_id: currentNodeId || ''
+      }
+      const response = await api.post(`/ssh/stop_docker_container`, data);
+      console.log(response);
+      if (response.data && response.data.success) {
+        alert('컨테이너가 중지되었습니다.');
+      } else {
+        throw new Error(response.data.error || '컨테이너 중지에 실패했습니다');
+      }
       // 상태 업데이트는 WebSocket을 통해 자동으로 이루어짐
     } catch (err) {
       console.error('컨테이너 중지 실패:', err);
@@ -276,19 +338,35 @@ const Docker = () => {
       setProcessing(null);
     }
   };
-  
+
   // 컨테이너 재시작 함수
   const restartContainer = async (id: string) => {
-    if (!currentNodeId || !monitoringEnabled) return;
-    
+    if (!currentNodeId || !monitoringEnabled || !hasSshConnection) return;
+
     if (!window.confirm('컨테이너를 재시작하시겠습니까?')) {
       return;
     }
-    
+
     setProcessing({ id, action: 'restart' });
-    
+
     try {
-      await api.post(`/influx/containers/${currentNodeId}/${id}/restart`);
+      const data = {
+        id: id,
+        google_id: sshConnection?.google_id || '',
+        host: sshConnection?.host || '',
+        key: sshConnection?.key || '',
+        user: sshConnection?.user || '',
+        password: sshConnection?.password || '',
+        port: sshConnection?.port || '',
+        node_id: currentNodeId || ''
+      }
+      const response = await api.post(`/ssh/restart_docker_container`, data);
+      console.log(response);
+      if (response.data && response.data.success) {
+        alert('컨테이너가 재시작되었습니다.');
+      } else {
+        throw new Error(response.data.error || '컨테이너 재시작에 실패했습니다');
+      }
       // 상태 업데이트는 WebSocket을 통해 자동으로 이루어짐
     } catch (err) {
       console.error('컨테이너 재시작 실패:', err);
@@ -297,27 +375,64 @@ const Docker = () => {
       setProcessing(null);
     }
   };
-  
+
+  // 컨테이너 삭제 함수
+  const deleteContainer = async (id: string) => {
+    if (!currentNodeId || !monitoringEnabled || !hasSshConnection) return;
+
+    if (!window.confirm('컨테이너를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+      return;
+    }
+
+    setProcessing({ id, action: 'delete' });
+
+    try {
+      const data = {
+        id: id,
+        google_id: sshConnection?.google_id || '',
+        host: sshConnection?.host || '',
+        key: sshConnection?.key || '',
+        user: sshConnection?.user || '',
+        password: sshConnection?.password || '',
+        port: sshConnection?.port || '',
+        node_id: currentNodeId || ''
+      }
+      const response = await api.post(`/ssh/remove_docker_container`, data);
+      console.log(response);
+      if (response.data && response.data.success) {
+        alert('컨테이너가 삭제되었습니다.');
+      } else {
+        throw new Error(response.data.error || '컨테이너 삭제에 실패했습니다');
+      }
+      // 상태 업데이트는 WebSocket을 통해 자동으로 이루어짐
+    } catch (err) {
+      console.error('컨테이너 삭제 실패:', err);
+      alert('컨테이너 삭제에 실패했습니다.');
+    } finally {
+      setProcessing(null);
+    }
+  };
+
   // 단위 변환 함수
   const formatBytes = (bytes: number): string => {
     if (bytes === 0) return '0 B';
-    
+
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    
+
     return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
   };
-  
+
   // 날짜 포맷팅 함수
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return date.toLocaleString();
   };
-  
+
   // 상태에 따른 클래스 반환
   const getStatusClass = (status: string): string => {
     const lowerStatus = status.toLowerCase();
-    
+
     if (lowerStatus.includes('running') || lowerStatus === 'active') {
       return styles.statusRunning;
     } else if (lowerStatus.includes('exited') || lowerStatus === 'inactive') {
@@ -348,7 +463,7 @@ const Docker = () => {
             )}
           </div>
         </div>
-        
+
         <div className={styles.filterControls}>
           <div className={styles.searchBox}>
             <input
@@ -360,7 +475,7 @@ const Docker = () => {
               className={styles.searchInput}
             />
           </div>
-          
+
           <div className={styles.filterDropdowns}>
             <select
               value={filters.status}
@@ -374,7 +489,7 @@ const Docker = () => {
               <option value="paused">일시 중지됨</option>
               <option value="created">생성됨</option>
             </select>
-            
+
             <select
               value={filters.type}
               onChange={(e) => handleFilterChange('type', e.target.value)}
@@ -387,7 +502,7 @@ const Docker = () => {
             </select>
           </div>
         </div>
-        
+
         {selectedContainers.length > 0 && monitoringEnabled && (
           <div className={styles.bulkActions}>
             <button
@@ -409,7 +524,7 @@ const Docker = () => {
             >
               선택한 컨테이너 시작 ({selectedContainers.length})
             </button>
-            
+
             <button
               className={`${styles.actionButton} ${styles.stopButton}`}
               onClick={() => {
@@ -429,7 +544,7 @@ const Docker = () => {
             >
               선택한 컨테이너 중지 ({selectedContainers.length})
             </button>
-            
+
             <button
               className={`${styles.actionButton} ${styles.clearButton}`}
               onClick={() => setSelectedContainers([])}
@@ -438,7 +553,7 @@ const Docker = () => {
             </button>
           </div>
         )}
-        
+
         <div className={styles.stats}>
           <span>총 컨테이너: {containers.length}</span>
           <span>표시됨: {sortedContainers.length}</span>
@@ -453,12 +568,12 @@ const Docker = () => {
           <p>⏳ Docker 컨테이너 정보를 불러오는 중...</p>
         </div>
       )}
-      
+
       {/* 에러 상태 */}
       {error && (
         <div className={styles.errorContainer}>
           <p>❌ {error}</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className={styles.retryButton}
           >
@@ -466,14 +581,14 @@ const Docker = () => {
           </button>
         </div>
       )}
-      
+
       {/* 모니터링 비활성화 상태 */}
       {!monitoringEnabled && (
         <div className={styles.monitoringDisabled}>
           <p>모니터링이 비활성화되어 있습니다. Docker 컨테이너 정보를 볼 수 없습니다.</p>
         </div>
       )}
-      
+
       {/* 테이블 컨테이너 */}
       <div className={styles.tableContainer}>
         {monitoringEnabled && !loading && !error && sortedContainers.length === 0 ? (
@@ -485,8 +600,8 @@ const Docker = () => {
             <thead>
               <tr>
                 <th className={styles.checkboxColumn}>
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     onChange={(e) => {
                       if (e.target.checked) {
                         setSelectedContainers(sortedContainers.map(c => c.id));
@@ -501,37 +616,37 @@ const Docker = () => {
                     disabled={!monitoringEnabled || sortedContainers.length === 0}
                   />
                 </th>
-                <th 
+                <th
                   className={sortBy === 'name' ? styles.sorted : ''}
                   onClick={() => handleSort('name')}
                 >
                   이름 {sortBy === 'name' && (sortDirection === 'asc' ? '▲' : '▼')}
                 </th>
-                <th 
+                <th
                   className={sortBy === 'status' ? styles.sorted : ''}
                   onClick={() => handleSort('status')}
                 >
                   상태 {sortBy === 'status' && (sortDirection === 'asc' ? '▲' : '▼')}
                 </th>
-                <th 
+                <th
                   className={sortBy === 'cpu_usage' ? styles.sorted : ''}
                   onClick={() => handleSort('cpu_usage')}
                 >
                   CPU {sortBy === 'cpu_usage' && (sortDirection === 'asc' ? '▲' : '▼')}
                 </th>
-                <th 
+                <th
                   className={sortBy === 'memory_percent' ? styles.sorted : ''}
                   onClick={() => handleSort('memory_percent')}
                 >
                   메모리 {sortBy === 'memory_percent' && (sortDirection === 'asc' ? '▲' : '▼')}
                 </th>
-                <th 
+                <th
                   className={sortBy === 'created' ? styles.sorted : ''}
                   onClick={() => handleSort('created')}
                 >
                   생성일 {sortBy === 'created' && (sortDirection === 'asc' ? '▲' : '▼')}
                 </th>
-                <th 
+                <th
                   className={sortBy === 'restarts' ? styles.sorted : ''}
                   onClick={() => handleSort('restarts')}
                 >
@@ -543,16 +658,16 @@ const Docker = () => {
             <tbody>
               {sortedContainers.map((container) => (
                 <React.Fragment key={container.id}>
-                  <tr 
+                  <tr
                     className={`
                       ${selectedContainers.includes(container.id) ? styles.selected : ''}
                       ${expandedContainer === container.id ? styles.expanded : ''}
                     `}
                   >
                     <td>
-                      <input 
-                        type="checkbox" 
-                        checked={selectedContainers.includes(container.id)} 
+                      <input
+                        type="checkbox"
+                        checked={selectedContainers.includes(container.id)}
                         onChange={() => toggleContainerSelection(container.id)}
                         disabled={!monitoringEnabled}
                       />
@@ -568,31 +683,28 @@ const Docker = () => {
                       <div className={styles.idInfo}>ID: {container.id.substring(0, 12)}</div>
                     </td>
                     <td>
-                      <span className={getStatusClass(container.status)}>
-                        {container.status}
+                      <span className={getStatusClass(container.health_status)}>
+                        {container.health_status}
                       </span>
                     </td>
                     <td>
                       <div className={styles.usageBar}>
-                        <div 
-                          className={styles.cpuBar} 
-                          style={{ 
+                        <div
+                          className={styles.cpuBar}
+                          style={{
                             // 최소 너비 1%로 설정하여 매우 작은 값도 시각적으로 표시
-                            width: `${Math.max(Math.min(container.cpu_usage * 100, 100), container.cpu_usage > 0 ? 1 : 0)}%` 
+                            width: `${Math.max(Math.min(container.cpu_usage, 100), container.cpu_usage > 0 ? 1 : 0)}%`
                           }}
                         ></div>
                         <span>
-                          {/* 값이 매우 작으면 더 많은 소수점으로 표시 */}
-                          {container.cpu_usage < 0.001 
-                            ? (container.cpu_usage > 0 ? "< 0.1%" : "0%") 
-                            : (container.cpu_usage * 100).toFixed(1) + "%"}
+                          {container.cpu_usage.toFixed(1)} %
                         </span>
                       </div>
                     </td>
                     <td>
                       <div className={styles.usageBar}>
-                        <div 
-                          className={styles.memoryBar} 
+                        <div
+                          className={styles.memoryBar}
                           style={{ width: `${Math.min(container.memory_percent, 100)}%` }}
                         ></div>
                         <span>{container.memory_percent.toFixed(1)}%</span>
@@ -605,15 +717,15 @@ const Docker = () => {
                     <td>{container.restarts}</td>
                     <td className={styles.actionsCell}>
                       <div className={styles.actionButtons}>
-                        {container.status.toLowerCase().includes('running') ? (
+                        {container.health_status.toLowerCase().includes('running') ? (
                           <>
                             <button
                               className={`${styles.actionButton} ${styles.restartButton}`}
                               onClick={() => restartContainer(container.id)}
                               disabled={processing?.id === container.id || !monitoringEnabled}
                             >
-                              {processing?.id === container.id && processing?.action === 'restart' 
-                                ? '처리중...' 
+                              {processing?.id === container.id && processing?.action === 'restart'
+                                ? '처리중...'
                                 : '재시작'}
                             </button>
                             <button
@@ -621,8 +733,8 @@ const Docker = () => {
                               onClick={() => stopContainer(container.id)}
                               disabled={processing?.id === container.id || !monitoringEnabled}
                             >
-                              {processing?.id === container.id && processing?.action === 'stop' 
-                                ? '처리중...' 
+                              {processing?.id === container.id && processing?.action === 'stop'
+                                ? '처리중...'
                                 : '중지'}
                             </button>
                           </>
@@ -632,15 +744,24 @@ const Docker = () => {
                             onClick={() => startContainer(container.id)}
                             disabled={processing?.id === container.id || !monitoringEnabled}
                           >
-                            {processing?.id === container.id && processing?.action === 'start' 
-                              ? '처리중...' 
+                            {processing?.id === container.id && processing?.action === 'start'
+                              ? '처리중...'
                               : '시작'}
                           </button>
                         )}
+                        <button
+                          className={`${styles.actionButton} ${styles.deleteButton}`}
+                          onClick={() => deleteContainer(container.id)}
+                          disabled={processing?.id === container.id || !monitoringEnabled}
+                        >
+                          {processing?.id === container.id && processing?.action === 'delete'
+                            ? '처리중...'
+                            : '삭제'}
+                        </button>
                       </div>
                     </td>
                   </tr>
-                  
+
                   {/* 상세 정보 패널 */}
                   {expandedContainer === container.id && (
                     <tr className={styles.detailsRow}>
@@ -670,7 +791,7 @@ const Docker = () => {
                                 <span className={styles.detailsValue}>{container.type}</span>
                               </div>
                             </div>
-                            
+
                             <div className={styles.detailsSection}>
                               <h3>상태 정보</h3>
                               <div className={styles.detailsItem}>
@@ -700,7 +821,7 @@ const Docker = () => {
                                 <span className={styles.detailsValue}>{container.restarts}</span>
                               </div>
                             </div>
-                            
+
                             <div className={styles.detailsSection}>
                               <h3>리소스 사용량</h3>
                               <div className={styles.detailsItem}>
@@ -709,9 +830,9 @@ const Docker = () => {
                                   {(container.cpu_usage * 100).toFixed(2)}%
                                 </span>
                                 <div className={styles.resourceBar}>
-                                  <div 
-                                    className={styles.resourceBarFill} 
-                                    style={{ 
+                                  <div
+                                    className={styles.resourceBarFill}
+                                    style={{
                                       width: `${Math.min(container.cpu_usage * 100, 100)}%`,
                                       backgroundColor: '#3498db'
                                     }}
@@ -722,9 +843,9 @@ const Docker = () => {
                                 <span className={styles.detailsLabel}>메모리 사용률:</span>
                                 <span className={styles.detailsValue}>{container.memory_percent.toFixed(2)}%</span>
                                 <div className={styles.resourceBar}>
-                                  <div 
-                                    className={styles.resourceBarFill} 
-                                    style={{ 
+                                  <div
+                                    className={styles.resourceBarFill}
+                                    style={{
                                       width: `${Math.min(container.memory_percent, 100)}%`,
                                       backgroundColor: '#2ecc71'
                                     }}
@@ -742,7 +863,7 @@ const Docker = () => {
                                 <span className={styles.detailsValue}>{container.pids}</span>
                               </div>
                             </div>
-                            
+
                             <div className={styles.detailsSection}>
                               <h3>I/O 정보</h3>
                               <div className={styles.detailsItem}>

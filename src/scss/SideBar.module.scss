@@ -32,7 +32,6 @@
         color: #ddd;
         text-decoration: none;
         display: block;
-        padding: 0.8rem 1rem;
         border-radius: 8px;
         transition: all 0.2s ease;
 
@@ -61,12 +60,12 @@
   .nodeList {
     background-color: #242424;
     border-radius: 8px;
-    margin-top: 0.5rem;
-    margin-left: 1rem;
+    margin-top: 0.3rem;
+    margin-left: 0.8rem;
     
     .nodeItem {
       display: block;
-      padding: 0.6rem 1rem;
+      padding: 0.4rem 0.8rem;
       color: #ddd;
       text-decoration: none;
       font-size: 0.9rem;
@@ -99,15 +98,16 @@
 .nodeItem {
   display: flex;
   align-items: center;
-  padding: 8px 10px;
+  padding: 4px 8px;
   border-radius: 4px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   transition: all 0.2s;
   text-decoration: none;
   color: inherit;
   
   .nodeInfo {
     flex: 1;
+    font-size: 0.9rem;
   }
   
   .statusText {
@@ -128,7 +128,7 @@
 
 .nodeItemContainer {
   width: 100%;
-  margin-bottom: 5px;
+  margin-bottom: 2px;
 }
 
 .nodeEditForm {
@@ -277,14 +277,16 @@
 }
 
 .teamItem {
-  padding: 8px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 10px;
+  margin-bottom: 5px;
   border-radius: 4px;
-  margin-bottom: 4px;
-  cursor: pointer;
-  color: #e0e0e0;
+  background-color: #2a2a2a;
   
   &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: #3a3a3a;
   }
   
   svg {
@@ -359,6 +361,40 @@
 
 .inactiveNode {
   color: #ff4d4f;
+}
+
+.teamItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 10px;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  background-color: #2a2a2a;
+  
+  &:hover {
+    background-color: #3a3a3a;
+  }
+}
+
+.teamContent {
+  flex: 1;
+  cursor: pointer;
+}
+
+.addTeamMemberButton {
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 4px;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
 }
 
 @media (max-width: 768px) {

@@ -1,0 +1,697 @@
+.teamManagementContainer {
+  display: flex;
+  min-height: calc(100vh - 64px);
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* 알림 메시지 스타일 */
+.errorMessage, 
+.successMessage {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 4px;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s, fadeOut 0.3s 2.7s forwards;
+}
+
+.errorMessage {
+  background-color: #ff4d4f;
+  color: white;
+}
+
+.successMessage {
+  background-color: #52c41a;
+  color: white;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-20px); }
+}
+
+/* 왼쪽 팀 목록 영역 */
+.teamSection {
+  width: 250px;
+  min-width: 250px;
+  background-color: #232323;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.teamHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 16px;
+}
+
+.teamTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #e0e0e0;
+}
+
+.addTeamButton {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #e0e0e0;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:hover {
+    background: rgba(78, 205, 196, 0.2);
+    color: #4ecdc4;
+  }
+}
+
+.teamList {
+  flex: 1;
+  overflow-y: auto;
+  
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+  }
+}
+
+.teamItem {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  
+  &.selectedTeam {
+    background-color: rgba(78, 205, 196, 0.1);
+    
+    .teamAvatar {
+      background-color: #4ecdc4;
+      color: #000;
+    }
+  }
+}
+
+.teamAvatar {
+  width: 32px;
+  height: 32px;
+  background-color: #555;
+  color: white;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-weight: bold;
+}
+
+.teamName {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 오른쪽 팀 세부정보 영역 */
+.teamDetailContainer {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.teamDetailHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.teamHeaderLeft {
+  flex: 1;
+}
+
+.teamManageButtons {
+  display: flex;
+  gap: 10px;
+}
+
+.deleteTeamButton, .leaveTeamButton {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.deleteTeamButton {
+  background-color: #f5222d;
+  color: white;
+}
+
+.leaveTeamButton {
+  background-color: #ff7a45;
+  color: white;
+}
+
+.teamDetailTitle {
+  margin-bottom: 8px;
+  color: #e0e0e0;
+}
+
+.teamDetailDescription {
+  color: #999;
+  font-size: 14px;
+}
+
+.teamAvatarContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.teamAvatarLarge {
+  width: 80px;
+  height: 80px;
+  background-color: #4ecdc4;
+  color: #000;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: bold;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+}
+
+/* 팀 회원 섹션 */
+.membersSection {
+  margin-bottom: 32px;
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.membersSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  
+  h3 {
+    margin: 0;
+    color: #e0e0e0;
+    font-weight: 600;
+    font-size: 18px;
+  }
+}
+
+.inviteButton {
+  background-color: #4ecdc4;
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  &:hover {
+    background-color: #3dbdb4;
+  }
+}
+
+.membersList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.memberItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.memberInfo {
+  display: flex;
+  align-items: center;
+}
+
+.memberAvatar {
+  width: 40px;
+  height: 40px;
+  background-color: #555;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-weight: bold;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+}
+
+.memberName {
+  font-weight: 500;
+  color: #e0e0e0;
+}
+
+.memberEmail {
+  font-size: 12px;
+  color: #999;
+}
+
+.memberControls {
+  display: flex;
+  gap: 16px;
+}
+
+.roleControl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.roleTag {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ccc;
+  font-weight: 500;
+  
+  &.adminTag {
+    background-color: rgba(24, 144, 255, 0.2);
+    color: #40a9ff;
+  }
+  
+  &.creatorTag {
+    background-color: rgba(82, 196, 26, 0.2);
+    color: #73d13d;
+  }
+}
+
+/* 커스텀 스위치 */
+.switchContainer {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+  
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    
+    &:checked + .slider {
+      background-color: #4ecdc4;
+    }
+    
+    &:checked + .slider:before {
+      transform: translateX(20px);
+    }
+    
+    &:disabled + .slider {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #444;
+  transition: .4s;
+  border-radius: 20px;
+  
+  &:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+  }
+}
+
+/* ERD 섹션 */
+.nodeSection {
+  margin-top: 32px;
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.nodeSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  
+  h3 {
+    margin: 0;
+    color: #e0e0e0;
+    font-weight: 600;
+    font-size: 18px;
+  }
+}
+
+.addNodeButton {
+  background-color: #4ecdc4;
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  &:hover {
+    background-color: #3dbdb4;
+  }
+}
+
+.nodePlaceholder {
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+}
+
+.emptyNode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: #999;
+  
+  .nodeIcon {
+    font-size: 32px;
+    opacity: 0.5;
+    margin-bottom: 8px;
+  }
+}
+
+// 노드 목록 스타일
+.nodesList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nodeItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+}
+
+.nodeInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nodeName {
+  font-weight: 500;
+  font-size: 16px;
+  color: #e0e0e0;
+}
+
+.nodeIp {
+  font-size: 12px;
+  color: #999;
+  font-family: monospace;
+}
+
+.nodeStatus {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  margin-top: 4px;
+  
+  &.activeNode {
+    background-color: rgba(82, 196, 26, 0.2);
+    color: #73d13d;
+  }
+  
+  &.inactiveNode {
+    background-color: rgba(255, 77, 79, 0.2);
+    color: #ff7875;
+  }
+}
+
+.nodeActions {
+  display: flex;
+  align-items: center;
+}
+
+.viewNodeButton {
+  display: inline-block;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 13px;
+  text-decoration: none;
+  transition: all 0.2s;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
+}
+
+/* 모달 */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: modalFadeIn 0.3s;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  
+  h3 {
+    margin: 0;
+    color: #e0e0e0;
+    font-weight: 600;
+  }
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 18px;
+  cursor: pointer;
+  
+  &:hover {
+    color: white;
+  }
+}
+
+.modalBody {
+  padding: 24px;
+  
+  p {
+    margin-top: 0;
+    color: #ccc;
+  }
+}
+
+.formGroup {
+  margin-bottom: 16px;
+  
+  label {
+    display: block;
+    margin-bottom: 8px;
+    color: #ccc;
+  }
+}
+
+.textInput, 
+.textArea {
+  width: 100%;
+  padding: 8px 12px;
+  background-color: #333;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #e0e0e0;
+  font-size: 14px;
+  
+  &:focus {
+    outline: none;
+    border-color: #4ecdc4;
+    box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.2);
+  }
+}
+
+.textArea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cancelButton {
+  background-color: transparent;
+  border: 1px solid #555;
+  color: #ccc;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: #777;
+  }
+}
+
+.submitButton {
+  background-color: #4ecdc4;
+  color: #000;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #3dbdb4;
+  }
+}
+
+/* 로딩 표시기 */
+.loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #4ecdc4;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.emptyMessage {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  font-style: italic;
+}

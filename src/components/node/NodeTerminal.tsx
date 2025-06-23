@@ -12,6 +12,10 @@ import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 import styles from '../../scss/node/NodeTerminal.module.scss';
 import FileExplorer from './FileExplorer';
+import api from '../../api';
+import { getToken } from '../../utils/Auth';
+import { useParams } from 'react-router';
+import { useSshContext } from '../../context/SshContext';
 
 // 인터페이스 정의
 interface ModalProps {
@@ -22,9 +26,11 @@ interface ModalProps {
 interface ConnectionForm {
     host: string;
     port: string;
-    username: string;
+    user: string;
     password: string;
     google_id: string;
+    node_id: string;
+    key: string;
 }
 
 type CommandStatus = 'success' | 'error' | null;
@@ -50,14 +56,15 @@ function Terminal(): React.ReactElement {
     const socketRef = useRef<WebSocket | null>(null);
     // SSH 연결 상태를 관리하는 상태
     const [isConnected, setIsConnected] = useState<boolean>(false);
-    // SSH 연결 정보를 관리하는 상태
-    const [connectionForm, setConnectionForm] = useState<ConnectionForm>({
-        host: '127.0.0.1',
-        port: '3022',
-        username: 'horizon',
-        password: '',
-        google_id: ''
-    });
+
+    // SSH Context 사용
+    const {
+        sshConnection,
+        hasSshConnection,
+        getSshConnection,
+        saveSshConnection
+    } = useSshContext();
+
     // 호스트 키 대기 상태
     const [pendingHostKey, setPendingHostKey] = useState<string | null>(null);
     // 로딩 상태 관리
@@ -73,9 +80,41 @@ function Terminal(): React.ReactElement {
     // 화면 분할 상태 관리
     const [showFileExplorer, setShowFileExplorer] = useState<boolean>(true);
 
+    const { nodeId: paramNodeId } = useParams<{ nodeId: string }>();
+
+    // connectionForm을 sshConnection에서 가져온 값으로 설정
+    const [connectionForm, setConnectionForm] = useState<ConnectionForm>({
+        host: sshConnection?.host || '',
+        port: sshConnection?.port || '22',
+        user: sshConnection?.user || '',
+        password: sshConnection?.password || '',
+        google_id: sshConnection?.google_id || '',
+        node_id: sshConnection?.node_id || '',
+        key: sshConnection?.key || ''
+    });
+
+    // sshConnection이 변경될 때 connectionForm 업데이트
+    useEffect(() => {
+        if (sshConnection) {
+            setConnectionForm({
+                host: sshConnection.host,
+                port: sshConnection.port,
+                user: sshConnection.user,
+                password: sshConnection.password,
+                google_id: sshConnection.google_id,
+                node_id: sshConnection.node_id,
+                key: sshConnection.key
+            });
+        }
+    }, [sshConnection]);
+
     // 폼 입력 처리
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         const { name, value } = e.target;
+        if (name == 'host' && (value == '127.0.0.1' || value == 'localhost')) {
+            alert('127.0.0.1 또는 localhost는 사용할 수 없습니다.');
+            return;
+        }
         setConnectionForm({
             ...connectionForm,
             [name]: value
@@ -138,11 +177,35 @@ function Terminal(): React.ReactElement {
         setIsConnected(true);
     };
 
+    // 연결 설정 저장 처리
+    const handleSaveConnectionForm = (): void => {
+        saveSshConnection(connectionForm)
+            .then(() => {
+                window.location.reload();
+            });
+    };
+
     /**
      * 터미널 인스턴스 초기화 
      * 컴포넌트 마운트 시 한 번만 실행됩니다.
      */
     useEffect(() => {
+        const token = getToken();
+        if (!token) {
+            return;
+        }
+
+        api.get('/user/profile', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }).then((res) => {
+            // 기존 getSshConnection 호출을 context의 함수로 대체
+            getSshConnection(res.data.user.sub, paramNodeId || '');
+        }).catch((err) => {
+            console.error('❌ 데이터 로딩 실패:', err);
+        });
+
         const terminal = new XTerminal({
             cursorBlink: true,
             theme: {
@@ -243,8 +306,8 @@ function Terminal(): React.ReactElement {
         setIsCommandModalOpen(false);
 
         // 1. 폼 유효성 검사
-        const { host, port, username, password } = connectionForm;
-        if (!host || !port || !username || !password) {
+        const { host, port, user, password } = connectionForm;
+        if (!host || !port || !user || !password) {
             alert('모든 필드를 입력해주세요.');
             return;
         }
@@ -285,7 +348,7 @@ function Terminal(): React.ReactElement {
             await new Promise<void>((resolve, reject) => {
                 socket.onmessage = (event: MessageEvent) => {
                     const data = event.data as string;
-                    
+
                     // 호스트 키 관련 메시지는 실패로 처리
                     if (data.startsWith('HOSTKEY:')) {
                         reject('호스트 키가 아직 신뢰되지 않았습니다. 먼저 일반 SSH 연결을 통해 호스트 키를 신뢰해주세요.');
@@ -388,6 +451,7 @@ function Terminal(): React.ReactElement {
                                         name="host"
                                         value={connectionForm.host}
                                         onChange={handleInputChange}
+                                        disabled={hasSshConnection}
                                     />
                                 </div>
                                 <div className={styles.formGroup}>
@@ -397,15 +461,17 @@ function Terminal(): React.ReactElement {
                                         name="port"
                                         value={connectionForm.port}
                                         onChange={handleInputChange}
+                                        disabled={hasSshConnection}
                                     />
                                 </div>
                                 <div className={styles.formGroup}>
                                     <label>사용자명</label>
                                     <input
                                         type="text"
-                                        name="username"
-                                        value={connectionForm.username}
+                                        name="user"
+                                        value={connectionForm.user}
                                         onChange={handleInputChange}
+                                        disabled={hasSshConnection}
                                     />
                                 </div>
                                 <div className={styles.formGroup}>
@@ -415,31 +481,42 @@ function Terminal(): React.ReactElement {
                                         name="password"
                                         value={connectionForm.password}
                                         onChange={handleInputChange}
+                                        disabled={hasSshConnection}
                                     />
                                 </div>
                                 <div className={styles.formGroup}>
-                                    <label>구글 아이디</label>
+                                    {/* <label>구글 아이디</label> */}
                                     <input
                                         type="text"
                                         name="google_id"
                                         value={connectionForm.google_id}
-                                        onChange={handleInputChange}
+                                        // onChange={handleInputChange}
+                                        disabled={true}
+                                        hidden={true}
+                                    />
+                                    <input
+                                        type="text"
+                                        name="node_id"
+                                        value={connectionForm.node_id}
+                                        // onChange={handleInputChange}
+                                        disabled={true}
+                                        hidden={true}
                                     />
                                 </div>
                                 <div className={styles.formButtons}>
-                                    <button 
-                                        className={styles.connectButton} 
-                                        onClick={handleConnect}
+                                    <button
+                                        className={styles.connectButton}
+                                        onClick={hasSshConnection ? handleConnect : handleSaveConnectionForm}
                                     >
-                                        연결
+                                        {hasSshConnection ? '연결' : '연결 설정'}
                                     </button>
-                                    <button 
-                                        className={styles.commandButton} 
-                                        onClick={openCommandModal} 
+                                    {/* <button
+                                        className={styles.commandButton}
+                                        onClick={openCommandModal}
                                         disabled={isLoading}
                                     >
                                         명령
-                                    </button>
+                                    </button> */}
                                 </div>
 
                                 {/* 명령 실행 결과 표시 */}
@@ -453,7 +530,7 @@ function Terminal(): React.ReactElement {
                         )}
                         {/* 터미널이 렌더링될 컨테이너 */}
                         <div ref={terminalRef} className={styles.terminal} />
-                        
+
                         {/* 호스트 키 신뢰 모달 */}
                         {pendingHostKey && (
                             <Modal onClose={handleCloseModal}>
@@ -461,7 +538,7 @@ function Terminal(): React.ReactElement {
                                     <h3>호스트 키 확인</h3>
                                     <p>최초 접속하는 서버입니다.<br />아래 호스트 키를 신뢰하시겠습니까?</p>
                                     <pre className={styles.hostKeyDisplay}>{pendingHostKey}</pre>
-                                    <button 
+                                    <button
                                         className={styles.trustButton}
                                         onClick={handleTrustHostKey}
                                     >
@@ -470,7 +547,7 @@ function Terminal(): React.ReactElement {
                                 </div>
                             </Modal>
                         )}
-                        
+
                         {/* 명령 입력 모달 */}
                         {isCommandModalOpen && (
                             <Modal onClose={() => setIsCommandModalOpen(false)}>
@@ -484,7 +561,7 @@ function Terminal(): React.ReactElement {
                                         className={styles.commandInput}
                                         autoFocus
                                     />
-                                    <button 
+                                    <button
                                         className={styles.executeButton}
                                         onClick={executeCommand}
                                     >
@@ -493,7 +570,7 @@ function Terminal(): React.ReactElement {
                                 </div>
                             </Modal>
                         )}
-                        
+
                         {/* 로딩 모달 */}
                         {isLoading && (
                             <Modal onClose={() => { }}>

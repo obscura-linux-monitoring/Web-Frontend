@@ -20,7 +20,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
-  
+
   h2 {
     margin: 0;
     font-size: 1.5rem;
@@ -53,13 +53,13 @@
   background-color: #2a2a2a;
   color: #e0e0e0;
   font-size: 14px;
-  
+
   &:focus {
     outline: none;
     border-color: #0078d7;
     box-shadow: 0 0 0 2px rgba(0, 120, 215, 0.2);
   }
-  
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -79,12 +79,12 @@
   color: #e0e0e0;
   font-size: 14px;
   min-width: 140px;
-  
+
   &:focus {
     outline: none;
     border-color: #0078d7;
   }
-  
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -108,7 +108,7 @@
   align-items: center;
   justify-content: center;
   font-size: 14px;
-  
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -118,7 +118,7 @@
 .startButton {
   background-color: #107c10;
   color: white;
-  
+
   &:hover:not(:disabled) {
     background-color: color.adjust(#107c10, $lightness: -5%);
   }
@@ -127,7 +127,7 @@
 .stopButton {
   background-color: #d13438;
   color: white;
-  
+
   &:hover:not(:disabled) {
     background-color: color.adjust(#d13438, $lightness: -5%);
   }
@@ -136,7 +136,7 @@
 .restartButton {
   background-color: #0078d4;
   color: white;
-  
+
   &:hover:not(:disabled) {
     background-color: color.adjust(#0078d4, $lightness: -5%);
   }
@@ -147,7 +147,7 @@
   color: white;
   padding: 10px 20px;
   font-size: 1rem;
-  
+
   &:hover {
     background-color: color.adjust(#0078d4, $lightness: -5%);
   }
@@ -171,47 +171,48 @@
 .dockerTable {
   width: 100%;
   border-collapse: collapse;
-  
-  th, td {
+
+  th,
+  td {
     padding: 10px;
     text-align: left;
     border-bottom: 1px solid #444;
   }
-  
+
   th {
     background-color: #2a2a2a;
     position: sticky;
     top: 0;
     z-index: 1;
     user-select: none;
-    
+
     &:hover {
       cursor: pointer;
       background-color: #333;
     }
-    
+
     &.sorted {
       background-color: #333;
       color: #0078d7;
     }
   }
-  
+
   tr:nth-child(even) {
     background-color: rgba(255, 255, 255, 0.03);
   }
-  
+
   tr:hover {
     background-color: rgba(255, 255, 255, 0.06);
   }
-  
+
   tr.selected {
     background-color: rgba(0, 120, 215, 0.15);
-    
+
     &:hover {
       background-color: rgba(0, 120, 215, 0.2);
     }
   }
-  
+
   tr.expanded {
     background-color: rgba(0, 120, 215, 0.1);
   }
@@ -237,7 +238,7 @@
   align-items: center;
   gap: 5px;
   margin-bottom: 2px;
-  
+
   &:hover {
     color: #0078d7;
   }
@@ -274,7 +275,8 @@
   border-radius: 3px;
   overflow: hidden;
   position: relative;
-  
+  display: flex;
+
   span {
     position: absolute;
     left: 0;
@@ -292,7 +294,7 @@
   height: 100%;
   background: linear-gradient(to right, #3498db, #2980b9);
   min-width: 1px; // 최소 1px 너비를 보장
-  
+
   // 아주 작은 값일 때 구분을 위한 추가 스타일
   &[style*="width: 1%"] {
     background-color: #b3d4fc; // 더 밝은 파란색으로 표시
@@ -375,11 +377,11 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  
+
   .connected {
     color: #10d310;
   }
-  
+
   .disconnected {
     color: #d13438;
   }
@@ -391,7 +393,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  
+
   &::before {
     content: '●';
   }
@@ -403,7 +405,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  
+
   &::before {
     content: '●';
   }
@@ -415,7 +417,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  
+
   &::before {
     content: '●';
   }
@@ -427,7 +429,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  
+
   &::before {
     content: '●';
   }
@@ -441,7 +443,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  
+
   &::before {
     content: '●';
   }
@@ -453,13 +455,16 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  
+
   &::before {
     content: '●';
   }
 }
 
-.loadingContainer, .errorContainer, .noData, .monitoringDisabled {
+.loadingContainer,
+.errorContainer,
+.noData,
+.monitoringDisabled {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -473,9 +478,11 @@
   0% {
     opacity: 0.5;
   }
+
   50% {
     opacity: 1;
   }
+
   100% {
     opacity: 0.5;
   }
