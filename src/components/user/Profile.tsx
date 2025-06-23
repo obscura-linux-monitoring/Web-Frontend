@@ -17,6 +17,16 @@ type Node = {
   statusValue?: number; // 상태 값(1: 활성, 0: 비활성)
 };
 
+// 토스트 알림 타입
+type ToastType = 'success' | 'error' | 'info';
+
+// 토스트 알림 인터페이스
+interface Toast {
+  id: number;
+  message: string;
+  type: ToastType;
+}
+
 // 모달 컴포넌트 인터페이스
 interface ModalProps {
   children: React.ReactNode;
@@ -31,6 +41,31 @@ function Modal({ children, onClose }: ModalProps): React.ReactElement {
         {children}
         <button className={styles.modalClose} onClick={onClose}></button>
       </div>
+    </div>
+  );
+}
+
+// 토스트 알림 컴포넌트
+function ToastNotification({ toast, onClose }: { toast: Toast; onClose: (id: number) => void }): React.ReactElement {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose(toast.id);
+    }, 3000); // 3초 후 자동으로 닫힘
+
+    return () => clearTimeout(timer);
+  }, [toast.id, onClose]);
+
+  return (
+    <div className={`${styles.toast} ${styles[`toast${toast.type.charAt(0).toUpperCase() + toast.type.slice(1)}`]}`}>
+      <div className={styles.toastContent}>
+        <div className={styles.toastIcon}>
+          {toast.type === 'success' && '✅'}
+          {toast.type === 'error' && '❌'}
+          {toast.type === 'info' && 'ℹ️'}
+        </div>
+        <div className={styles.toastMessage}>{toast.message}</div>
+      </div>
+      <button className={styles.toastClose} onClick={() => onClose(toast.id)}>×</button>
     </div>
   );
 }
@@ -54,6 +89,25 @@ const Profile = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [nodeToDelete, setNodeToDelete] = useState<Node | null>(null);
   const [deletingNode, setDeletingNode] = useState(false);
+
+  // 토스트 알림 관련 상태
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const toastIdCounter = useRef(0);
+
+  // 토스트 알림 추가 함수
+  const addToast = (message: string, type: ToastType = 'info') => {
+    const newToast: Toast = {
+      id: toastIdCounter.current++,
+      message,
+      type
+    };
+    setToasts(prevToasts => [...prevToasts, newToast]);
+  };
+
+  // 토스트 알림 제거 함수
+  const removeToast = (id: number) => {
+    setToasts(prevToasts => prevToasts.filter(toast => toast.id !== id));
+  };
 
   useEffect(() => {
     const token = getToken();
@@ -176,10 +230,11 @@ const Profile = () => {
         document.body.removeChild(textArea);
       });
 
-      // 복사 성공 표시 (필요하다면 상태 추가)
-      alert('노드 ID가 클립보드에 복사되었습니다.');
+      // 복사 성공 표시 - 토스트 알림 사용
+      addToast('노드 ID가 클립보드에 복사되었습니다.', 'success');
     } catch (err) {
       console.error('ID 복사 오류:', err);
+      addToast('ID 복사에 실패했습니다.', 'error');
     }
   };
 
@@ -209,10 +264,13 @@ const Profile = () => {
         setNodes(nodes.filter(node => node.id !== nodeToDelete.id));
         setDeleteModalVisible(false);
         setNodeToDelete(null);
+
+        // 성공 알림 추가 - 토스트 알림 사용
+        addToast(response.data.message || '노드가 성공적으로 삭제되었습니다.', 'success');
       }
     } catch (error) {
       console.error('노드 삭제 실패:', error);
-      alert('노드 삭제에 실패했습니다.');
+      addToast('노드 삭제에 실패했습니다.', 'error');
     } finally {
       setDeletingNode(false);
     }
@@ -234,6 +292,17 @@ const Profile = () => {
 
   return (
     <div className={styles.container}>
+      {/* 토스트 알림 컨테이너 */}
+      <div className={styles.toastContainer}>
+        {toasts.map(toast => (
+          <ToastNotification
+            key={toast.id}
+            toast={toast}
+            onClose={removeToast}
+          />
+        ))}
+      </div>
+
       <div className={styles.profileSection}>
         <div className={styles.sectionHeader}>
           <h2>🙋‍♂️ 사용자 프로필</h2>
@@ -316,7 +385,7 @@ const Profile = () => {
             <p>등록된 노드가 없습니다.</p>
           </div>
         ) : (
-          <div className={styles.nodesGrid}>
+          <div className={styles.nodesList}>
             {nodes.map((node) => (
               <div
                 key={node.id}

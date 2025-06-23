@@ -256,18 +256,12 @@
     color: #333;
   }
 
-  .nodesGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  .nodesList {
+    display: flex;
+    flex-direction: column;
     gap: 1.5rem;
     margin-bottom: 2rem;
-    grid-auto-rows: auto;
-    align-items: start;
     width: 100%;
-
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr;
-    }
   }
 
   .nodeCard {
@@ -575,5 +569,111 @@
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
+  }
+}
+
+// 토스트 알림 컨테이너
+.toastContainer {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 350px;
+}
+
+// 토스트 알림 기본 스타일
+.toast {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  animation: slideIn 0.3s ease-out;
+  border-left: 4px solid #333;
+  min-width: 300px;
+  max-width: 100%;
+  overflow: hidden;
+
+  &.toastSuccess {
+    border-left-color: #2ecc71;
+    background-color: rgba(46, 204, 113, 0.05);
+  }
+
+  &.toastError {
+    border-left-color: #e74c3c;
+    background-color: rgba(231, 76, 60, 0.05);
+  }
+
+  &.toastInfo {
+    border-left-color: #3498db;
+    background-color: rgba(52, 152, 219, 0.05);
+  }
+}
+
+// 토스트 내용
+.toastContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+}
+
+// 토스트 아이콘
+.toastIcon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+// 토스트 메시지
+.toastMessage {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+  word-break: break-word;
+}
+
+// 토스트 닫기 버튼
+.toastClose {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 8px;
+  line-height: 1;
+
+  &:hover {
+    color: #333;
+  }
+}
+
+// 토스트 애니메이션
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateX(100%);
+    opacity: 0;
   }
 }

@@ -457,11 +457,40 @@ const TeamManagement: React.FC = () => {
   
   // 팀 탈퇴 함수 (일반 회원도 가능)
   const handleLeaveTeam = async () => {
-    if (!selectedTeam || !userInfo?.google_id || processingAction) return;
+    console.log("🔍 handleLeaveTeam 함수 호출됨");
+  
+    if (!selectedTeam) {
+      console.log("❌ 선택된 팀이 없음:", selectedTeam);
+      return;
+    }
+    
+    if (!userInfo?.google_id) {
+      console.log("❌ 사용자 정보 없음:", userInfo);
+      return;
+    }
+    
+    if (processingAction) {
+      console.log("❌ 이미 처리 중:", processingAction);
+      return;
+    }
+    
+    console.log("✅ 기본 검증 통과");
+    console.log("현재 멤버 목록:", members);
+    console.log("현재 사용자 ID:", userInfo.google_id);
     
     // 팀 소유자는 탈퇴 불가
     const currentUser = members.find(member => member.google_id === userInfo.google_id);
-    if (currentUser?.role === 'owner') {
+    console.log("찾은 현재 사용자 정보:", currentUser);
+    
+    // alert 대신 console.log로 먼저 확인
+    console.log(`현재 사용자: ${currentUser?.name}, 역할: ${currentUser?.role}`);
+    
+    // alert 함수를 setTimeout으로 감싸기
+    setTimeout(() => {
+      alert(`현재 사용자: ${currentUser?.name}, 역할: ${currentUser?.role}`);
+    }, 100);
+    
+    if (currentUser?.role === 'owner') {  // 'admin'이 아닌 'owner'로 변경
       showError('팀 소유자는 팀을 탈퇴할 수 없습니다. 팀을 삭제하거나 소유권을 이전하세요.');
       return;
     }
@@ -470,7 +499,7 @@ const TeamManagement: React.FC = () => {
       setProcessingAction(true);
       const token = getToken();
       
-      await api.delete(`/team/${selectedTeam}/leave`, {
+      await api.delete(`/team/leave/${selectedTeam}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
