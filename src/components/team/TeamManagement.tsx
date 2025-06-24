@@ -5,6 +5,7 @@ import api from '../../api';
 import styles from '../../scss/team/TeamManagement.module.scss';
 // Ant Design 컴포넌트 추가
 import { Modal, Button, Form, Input, Select, message, AutoComplete } from 'antd';
+import EventBus from '../../utils/EventBus';
 
 // 팀 타입 정의 추가
 type Team = {
@@ -72,13 +73,13 @@ const TeamManagement: React.FC = () => {
   const modalRef = useRef<HTMLDivElement>(null);
   const params = useParams();
   const userInfo = getUserInfo();
-  const googleId = userInfo?.google_id || '';
+  const googleId = userInfo?.id || '';
   
   // 현재 사용자가 관리자인지 확인하는 함수
   const isCurrentUserAdmin = () => {
-    if (!selectedTeam || !userInfo?.google_id) return false;
+    if (!selectedTeam || !userInfo?.id) return false;
     
-    const currentUser = members.find(member => member.google_id === userInfo.google_id);
+    const currentUser = members.find(member => member.google_id === userInfo.id);
     return currentUser?.role === 'admin' || currentUser?.role === 'owner';
   };
   
@@ -88,8 +89,24 @@ const TeamManagement: React.FC = () => {
       const token = getToken();
       if (!token) return;
       
+      // 사용자 프로필 정보를 가져와서 obscura_key 얻기
+      const profileRes = await api.get('/user/profile', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      const userObscuraKey = profileRes.data.obscura_key;
+      
+      if (!userObscuraKey) {
+        console.error('사용자의 obscura_key를 찾을 수 없습니다.');
+        showError('사용자 정보를 불러올 수 없습니다.');
+        return;
+      }
+      
+      // 얻은 obscura_key로 노드 목록 API 호출
       const nodesRes = await api.get('/user/nodes', {
-        params: { obscura_key: userInfo?.obscura_key }
+        params: { obscura_key: userObscuraKey }
       });
       
       setNodes(nodesRes.data.nodes || []);
@@ -245,14 +262,10 @@ const TeamManagement: React.FC = () => {
       
       const receiverId = userResponse.data.user.google_id;
       
-      // 현재 선택된 팀 찾기
-      const team = teams.find(t => t.team_id === selectedTeam);
-      
       // 초대 생성 API 호출
       await api.post(`/team/invite_user`, {
         team_id: selectedTeam,
         receiver_id: receiverId,
-        node_id: team?.node_id || null,
         role: 'member'
       }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -271,13 +284,58 @@ const TeamManagement: React.FC = () => {
   };
   
   // 새 팀 생성 모달 표시
-  const showCreateTeamModal = () => {
+  const showCreateTeamModal = async () => {
     setSelectedNodeForNewTeam('');
     setNewTeamName('');
-    setCreateTeamModalVisible(true);
+    
+    try {
+      const token = getToken();
+      if (!token) return;
+      
+      console.log('노드 목록을 가져오는 중...');
+      
+      // 1. 먼저 사용자 프로필 정보를 가져와서 obscura_key 얻기
+      const profileRes = await api.get('/user/profile', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      console.log("프로필 응답 데이터:", profileRes.data);
+      const userObscuraKey = profileRes.data.obscura_key;
+      
+      if (!userObscuraKey) {
+        console.error('사용자의 obscura_key를 찾을 수 없습니다.');
+        showError('사용자 정보를 불러올 수 없습니다.');
+        return;
+      }
+      
+      // 2. 얻은 obscura_key로 노드 목록 API 호출
+      const nodesRes = await api.get('/user/nodes', {
+        params: { obscura_key: userObscuraKey }
+      });
+      
+      console.log('노드 API 응답:', nodesRes.data);
+      setNodes(nodesRes.data.nodes || []);
+      
+      // 3. 노드 데이터가 있는 경우에만 모달 표시
+      if (nodesRes.data.nodes && nodesRes.data.nodes.length > 0) {
+        setCreateTeamModalVisible(true);
+      } else {
+        showError('관리할 수 있는 노드가 없습니다. 먼저 노드를 생성해주세요.');
+      }
+    } catch (error) {
+      console.error('노드 목록 가져오기 오류:', error);
+      
+      // if (error.response) {
+      //   console.error('오류 응답:', error.response.status, error.response.data);
+      // }
+      
+      showError('노드 정보를 불러오는 데 실패했습니다.');
+    }
   };
   
-  // 새 팀 생성 - 개선된 버전
+  // 새 팀 생성
   const handleCreateTeam = async () => {
     if (isSubmitting) return; // 이미 요청 중이면 무시
 
@@ -332,6 +390,9 @@ const TeamManagement: React.FC = () => {
       fetchTeamMembers(newTeam.team_id);
       fetchTeamNodes(newTeam.team_id);
       
+      // 이벤트 발행 - SideBar 컴포넌트에 알림
+      EventBus.publish('team-nodes-updated');
+      
     } catch (err: any) {
       console.error('팀 생성 실패:', err);
       if (err?.response) {
@@ -359,12 +420,15 @@ const TeamManagement: React.FC = () => {
       setAddingNode(true);
       const token = getToken();
       
-      await api.post(`/team/nodes/add`, {
-        team_id: selectedTeam,
-        node_id: selectedNodeForTeam
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.post(`/team/nodes/add`, 
+        {
+          team_id: selectedTeam,
+          node_id: selectedNodeForTeam
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
 
       // 성공 메시지 표시
       showSuccess('팀에 노드가 성공적으로 추가되었습니다.');
@@ -375,6 +439,10 @@ const TeamManagement: React.FC = () => {
       
       // 팀 노드 목록 새로고침
       fetchTeamNodes(selectedTeam);
+      
+      // 이벤트 발행 - SideBar 컴포넌트에 알림
+      console.log('노드 추가 완료: 이벤트 발행');
+      EventBus.publish('team-nodes-updated');
       
     } catch (err: any) {
       console.error('팀에 노드 추가 실패:', err);
@@ -396,7 +464,7 @@ const TeamManagement: React.FC = () => {
       setProcessingAction(true);
       const token = getToken();
       
-      await api.delete(`/team/${selectedTeam}`, {
+      await api.delete(`/team/delete/${selectedTeam}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -417,6 +485,10 @@ const TeamManagement: React.FC = () => {
       }
       
       showSuccess('팀이 성공적으로 삭제되었습니다.');
+      
+      // 이벤트 발행 - SideBar 컴포넌트에 알림
+      EventBus.publish('team-nodes-updated');
+      
     } catch (error) {
       console.error('팀 삭제 오류:', error);
       showError('팀 삭제에 실패했습니다.');
@@ -447,6 +519,10 @@ const TeamManagement: React.FC = () => {
       setNodeToRemove(null);
       
       showSuccess('노드가 팀에서 성공적으로 제거되었습니다.');
+      
+      // 이벤트 발행 - SideBar 컴포넌트에 알림
+      EventBus.publish('team-nodes-updated');
+      
     } catch (error) {
       console.error('노드 제거 오류:', error);
       showError('노드 제거에 실패했습니다.');
@@ -464,7 +540,7 @@ const TeamManagement: React.FC = () => {
       return;
     }
     
-    if (!userInfo?.google_id) {
+    if (!userInfo?.id) {
       console.log("❌ 사용자 정보 없음:", userInfo);
       return;
     }
@@ -476,10 +552,10 @@ const TeamManagement: React.FC = () => {
     
     console.log("✅ 기본 검증 통과");
     console.log("현재 멤버 목록:", members);
-    console.log("현재 사용자 ID:", userInfo.google_id);
+    console.log("현재 사용자 ID:", userInfo.id);
     
     // 팀 소유자는 탈퇴 불가
-    const currentUser = members.find(member => member.google_id === userInfo.google_id);
+    const currentUser = members.find(member => member.google_id === userInfo.id);
     console.log("찾은 현재 사용자 정보:", currentUser);
     
     // alert 대신 console.log로 먼저 확인
@@ -490,7 +566,7 @@ const TeamManagement: React.FC = () => {
       alert(`현재 사용자: ${currentUser?.name}, 역할: ${currentUser?.role}`);
     }, 100);
     
-    if (currentUser?.role === 'owner') {  // 'admin'이 아닌 'owner'로 변경
+    if (currentUser?.role === 'admin') {  // 'admin'이 아닌 'owner'로 변경
       showError('팀 소유자는 팀을 탈퇴할 수 없습니다. 팀을 삭제하거나 소유권을 이전하세요.');
       return;
     }
@@ -776,12 +852,12 @@ const TeamManagement: React.FC = () => {
                       </span>
                     </div>
                     <div className={styles.nodeActions}>
-                      <Link to={`/nodes/${node.node_id}`} className={styles.viewNodeButton}>
+                      {/* <Link to={`/nodes/${node.node_id}`} className={styles.viewNodeButton}>
                         관리
-                      </Link>
+                      </Link> */}
                       {isCurrentUserAdmin() && (
                         <button 
-                          className={styles.removeNodeButton} 
+                          className={styles.viewNodeButton} 
                           onClick={() => showRemoveNodeModal(node)}
                         >
                           제거
@@ -826,6 +902,8 @@ const TeamManagement: React.FC = () => {
                   className={styles.textInput}
                   style={{ width: '100%' }}
                   notFoundContent={searchingEmail ? "검색 중..." : "일치하는 이메일이 없습니다"}
+                  onClick={(e) => e.stopPropagation()} // 이벤트 전파 중지
+                  getPopupContainer={(trigger) => trigger.parentNode} // 드롭다운이 모달 내에 렌더링되도록 함
                 />
                 <div className={styles.modalFooter}>
                   <button 
