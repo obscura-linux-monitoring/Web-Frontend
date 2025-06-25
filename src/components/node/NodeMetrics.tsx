@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import styles from '../../scss/node/NodeMetrics.module.scss';
+import '../../scss/node/node_mobile/NodeMetrics.module.mobile.scss';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, 
   Tooltip, Legend, ResponsiveContainer

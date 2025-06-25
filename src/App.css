@@ -27,10 +27,16 @@
 
 /* 반응형 디자인을 위한 미디어 쿼리 */
 @media (max-width: 768px) {
+  /* 모바일에서는 flex 레이아웃을 해제하여 컨텐츠 높이에 따라 유연하게 늘어나도록 함 */
+  .app-container {
+    display: block;
+    min-height: auto;
+  }
+
   .main-content {
     margin-left: 0;
     padding: 1rem;
-    padding-top: calc(60px + 1rem);
+    padding-top: calc(55px + 1rem); /* 모바일 헤더 높이에 맞춤 */
     width: 100%;
     max-width: 100vw;
     overflow-x: hidden;

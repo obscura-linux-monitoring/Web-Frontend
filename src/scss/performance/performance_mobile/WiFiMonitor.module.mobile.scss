@@ -1,4 +1,3 @@
-// 반응형 스타일링
 @media (max-width: 768px) {
   .detailsSection {
     flex-direction: column;
@@ -8,4 +7,14 @@
   .detailColumn {
     width: 100%;
   }
-}
+
+  .wifiContainer {
+    padding: 0;
+  }
+  .wifiInfo, .wifiMetrics {
+    font-size: 13px;
+  }
+  .wifiGraph {
+    min-height: 200px;
+  }
+} 

@@ -26,6 +26,18 @@
   width: 100%;
   padding: 0 2rem;
   box-sizing: border-box;
+  overflow-x: auto;
+
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }
 
 .headerLeft {
@@ -34,6 +46,12 @@
   gap: 1rem;
   margin-left: 1.5rem;
   
+  .nodeLinks {
+    display: flex;
+    gap: 1rem;
+    white-space: nowrap;
+  }
+
   a {
     color: #ddd;
     text-decoration: none;
@@ -52,7 +70,6 @@
 .headerRight {
   display: flex;
   align-items: center;
-  margin-left: auto;
 }
 
 .profileContainer {
@@ -301,4 +318,57 @@
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* --- Mobile Header Styles --- */
+.mobileHeaderContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 1rem;
+  gap: 0.5rem;
+}
+
+.mobileTopRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.mobileBottomRow {
+  width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding-bottom: 5px; /* 스크롤바 공간 */
+
+  /* 스크롤바 숨기기 */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
+  .nodeLinks {
+    display: flex;
+    gap: 1rem;
+  }
+}
+
+.hamburgerButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .hamburgerBar {
+    display: block;
+    width: 22px;
+    height: 3px;
+    background-color: #fff;
+    border-radius: 2px;
+  }
 }

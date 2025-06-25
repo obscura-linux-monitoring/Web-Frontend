@@ -7,4 +7,15 @@
   .detailColumn {
     width: 100%;
   }
+
+  .memoryContainer {
+    padding: 0;
+  }
+  .memoryInfo {
+    font-size: 14px;
+    padding-bottom: 0.5rem;
+  }
+  .memoryGraph {
+    min-height: 200px;
+  }
 } 

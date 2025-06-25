@@ -1,27 +1,73 @@
+/* Profile Mobile Styles */
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
+    padding-top: 60px; /* 헤더 높이만큼 여백 추가 */
   }
-  .profileSection {
-    margin-bottom: 2rem;
-    h2 {
-      font-size: 1.2rem;
-      margin-bottom: 1rem;
+
+  .profileHeader {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 0; /* 상하 패딩만 적용 */
+    width: 100%;
+    
+    .profileImage {
+      width: 100px;
+      height: 100px;
     }
+    
+    .profileInfo {
+      width: 100%;
+      text-align: center;
+      
+      h1 {
+        font-size: 1.6rem;
+      }
+      p {
+        font-size: 0.9rem;
+        color: #b0b0b0;
+      }
+    }
+  }
+
+  .profileContent {
+    flex-direction: column;
+    gap: 2rem; /* 섹션 간 간격 */
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .profileSection {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    
+    h2 {
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
     .installCommand {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       padding: 0.8rem;
     }
   }
+
   .nodesSection {
     h3 {
-      font-size: 1rem;
+      font-size: 1.1rem;
       margin-bottom: 1rem;
     }
+    
     .nodesGrid {
-      grid-template-columns: 1fr;
-      gap: 0.8rem;
+      grid-template-columns: 1fr; /* 한 줄에 하나씩 */
+      gap: 1rem;
     }
+
     .nodeCard {
       padding: 1rem;
       font-size: 0.9rem;
@@ -29,127 +75,57 @@
         font-size: 1rem;
       }
       p {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
       }
     }
+
     .noNodes {
       padding: 1.5rem;
       font-size: 0.9rem;
     }
   }
-  .profileContainer {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: auto;
-    max-width: 250px;
-    margin: 0;
-    padding: 10px;
-    z-index: 1000;
-    background-color: #1a1a1a;
-  }
-  .headerContent {
-    display: none;
-  }
-  .profileImage {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    z-index: 1001;
-  }
-  .profileHeader {
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    padding: 15px;
-    width: 100%;
-    .profileImage {
-      width: 100px;
-      height: 100px;
-    }
-    .profileInfo {
-      width: 100%;
-      text-align: center;
-      h1 {
-        font-size: 1.5rem;
-      }
-      p {
-        font-size: 0.9rem;
-      }
-    }
-  }
-  .profileContent {
-    flex-direction: column;
-    gap: 20px;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-  }
-  .profileSection {
-    width: 100%;
-    padding: 15px;
-    margin: 0;
-    h2 {
-      font-size: 1.2rem;
-      color: #fff;
-    }
-  }
+
   .statsGrid {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* 화면에 맞게 유연하게 배치 */
+    gap: 1rem;
     width: 100%;
+
     .statItem {
-      width: 100%;
-      padding: 10px;
+      padding: 1rem;
       .statValue {
-        font-size: 1.5rem;
+        font-size: 1.6rem;
       }
       .statLabel {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
       }
     }
   }
+
   .activityList {
     width: 100%;
+    
     .activityItem {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
+      padding: 1rem;
+      margin-bottom: 0.8rem;
+
       .activityHeader {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 5px;
+        flex-direction: row; // 제목과 날짜는 한 줄에 표시
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+
         .activityTitle {
           font-size: 1rem;
         }
         .activityDate {
           font-size: 0.8rem;
+          color: #888;
         }
       }
       .activityDescription {
         font-size: 0.9rem;
+        margin-top: 0.5rem;
       }
     }
   }
 }
-
-:global {
-  ._profileModalContent_1qny6_180 {
-    @media (max-width: 768px) {
-      max-width: 85%;
-      padding: 0 1rem;
-      box-sizing: border-box;
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  :global {
-    ._profileModalContent_1qny6_180 {
-      max-width: 90% !important;
-    }
-  }
-} 

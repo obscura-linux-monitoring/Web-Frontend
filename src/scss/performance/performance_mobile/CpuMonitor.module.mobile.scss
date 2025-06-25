@@ -1,10 +1,61 @@
-@media (max-width: 900px) {
+@media (max-width: 768px) {
+  /* 메인 패널 패딩 조정 */
+  .mainPanel {
+    width: 100%;
+    padding: 0;
+  }
+
+  /* 차트 컨테이너 높이를 유연하게 변경 */
+  .usageSection .chartWrapper {
+    height: auto;
+    min-height: 200px;
+    aspect-ratio: 16 / 10;
+    max-height: 250px;
+    background-color: transparent; // 부모 배경색을 따르도록
+  }
+
+  /* 상세 정보 섹션을 세로로 쌓고, 각 항목을 더 명확하게 표시 */
   .detailsSection {
     flex-direction: column;
+    gap: 0.5rem; // 각 컬럼 간격 줄임
     
     .detailColumn {
       width: 100%;
-      margin-bottom: 20px;
+      margin-bottom: 0; // 컬럼 간 하단 마진 제거
     }
+
+    .detailItem {
+      display: flex;
+      justify-content: space-between; // 라벨과 값을 양쪽으로 분리
+      padding: 0.5rem 0.2rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.9rem;
+
+      .detailLabel {
+        width: auto; // 너비 자동 조절
+        opacity: 0.7;
+      }
+
+      .detailValue {
+        font-weight: 500;
+      }
+    }
+  }
+
+  /* 로딩/에러 상태 박스 크기 조정 */
+  .loadingState, .errorState, .disconnectedState {
+    min-height: 180px;
+    font-size: 1rem;
+  }
+
+  .cpuContainer {
+    padding: 0;
+  }
+  .cpuInfo {
+    font-size: 14px;
+    padding-bottom: 0.5rem;
+  }
+  .cpuGraph {
+    min-height: 200px; 
   }
 } 

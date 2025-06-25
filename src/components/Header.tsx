@@ -51,6 +51,7 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
     <header className={styles.header}>
       <div className={styles.headerContent}>
         <div className={styles.headerLeft}>
+          <Link to="/" className={styles.logo}>Obscura</Link>
           {currentNodeId ? (
             <div className={styles.nodeLinks}>
               {/* 모니터링 토글 버튼 */}
