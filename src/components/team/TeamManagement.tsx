@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getToken, getUserInfo } from '../../utils/Auth';
+import { getToken, getUserInfo, getUserProfileImage } from '../../utils/Auth';
 import api from '../../api';
 import styles from '../../scss/team/TeamManagement.module.scss';
 // Ant Design 컴포넌트 추가
@@ -11,7 +11,7 @@ import EventBus from '../../utils/EventBus';
 type Team = {
   team_id: string;
   team_name: string;
-  owner_id: string;
+  google_id: string;
   created_at: string;
   node_id: string;
   abbreviation?: string;  // 추가: abbreviation 속성
@@ -36,6 +36,7 @@ interface Node {
 }
 
 const TeamManagement: React.FC = () => {
+  const profileImageUrl = getUserProfileImage();
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
   const [members, setMembers] = useState<TeamMember[]>([]);
@@ -80,7 +81,15 @@ const TeamManagement: React.FC = () => {
     if (!selectedTeam || !userInfo?.id) return false;
     
     const currentUser = members.find(member => member.google_id === userInfo.id);
-    return currentUser?.role === 'admin' || currentUser?.role === 'owner';
+    const isAdmin = currentUser?.role === 'admin';
+    
+    console.log('권한 체크:', { 
+      userId: userInfo.id,
+      userRole: currentUser?.role,
+      isAdmin
+    });
+    
+    return isAdmin;
   };
   
   // 모든 노드 가져오기
@@ -623,45 +632,57 @@ const TeamManagement: React.FC = () => {
   
   // 관리자 권한 설정/해제
   const handleRoleChange = async (memberId: string, isAdmin: boolean) => {
-    if (!selectedTeam) return;
+    if (!selectedTeam || !isCurrentUserAdmin()) {
+      showError('권한이 없습니다. 관리자만 역할을 변경할 수 있습니다.');
+      return;
+    }
     
     try {
       const token = getToken();
-      await api.put(`/team/${selectedTeam}/member/${memberId}/role`, {
-        role: isAdmin ? 'admin' : 'member'
-      }, {
+      // 쿼리 파라미터 대신 요청 본문 사용
+      const role = isAdmin ? 'admin' : 'user';
+      await api.put(`/team/${selectedTeam}/member/${memberId}/role`, { role }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       // 멤버 목록 업데이트
       fetchTeamMembers(selectedTeam);
       showSuccess(`사용자 권한이 ${isAdmin ? '관리자' : '일반 멤버'}로 변경되었습니다.`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('권한 변경 오류:', error);
-      showError('권한 변경에 실패했습니다.');
+      
+      // 권한 오류 메시지 구체화
+      if (error?.response?.status === 403) {
+        showError('관리자만 권한을 변경할 수 있습니다.');
+      } else {
+        showError('권한 변경에 실패했습니다.');
+      }
+      
+      // 체크박스 상태 되돌리기 (UI 정합성 유지)
+      fetchTeamMembers(selectedTeam);
     }
   };
   
   // CREATOR 권한 설정/해제
-  const handleCreatorChange = async (memberId: string, isCreator: boolean) => {
-    if (!selectedTeam) return;
+  // const handleCreatorChange = async (memberId: string, isCreator: boolean) => {
+  //   if (!selectedTeam) return;
     
-    try {
-      const token = getToken();
-      await api.put(`/team/${selectedTeam}/member/${memberId}/creator`, {
-        is_creator: isCreator
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+  //   try {
+  //     const token = getToken();
+  //     await api.put(`/team/${selectedTeam}/member/${memberId}/creator`, {
+  //       is_creator: isCreator
+  //     }, {
+  //       headers: { Authorization: `Bearer ${token}` }
+  //     });
       
-      // 멤버 목록 업데이트
-      fetchTeamMembers(selectedTeam);
-      showSuccess(`사용자 ${isCreator ? 'CREATOR 권한이 부여' : 'CREATOR 권한이 제거'}되었습니다.`);
-    } catch (error) {
-      console.error('CREATOR 권한 변경 오류:', error);
-      showError('CREATOR 권한 변경에 실패했습니다.');
-    }
-  };
+  //     // 멤버 목록 업데이트
+  //     fetchTeamMembers(selectedTeam);
+  //     showSuccess(`사용자 ${isCreator ? 'CREATOR 권한이 부여' : 'CREATOR 권한이 제거'}되었습니다.`);
+  //   } catch (error) {
+  //     console.error('CREATOR 권한 변경 오류:', error);
+  //     showError('CREATOR 권한 변경에 실패했습니다.');
+  //   }
+  // };
   
   // 알림 표시 함수
   const showError = (message: string) => {
@@ -695,6 +716,32 @@ const TeamManagement: React.FC = () => {
   
   // 현재 선택된 팀 정보
   const currentTeam = teams.find(team => team.team_id === selectedTeam);
+
+  // 팀 멤버 정렬 - CREATOR 먼저, 그 다음 ADMIN, 마지막으로 일반 사용자
+  const sortedMembers = useMemo(() => {
+    if (!members || members.length === 0) return [];
+    
+    return [...members].sort((a, b) => {
+      // CREATOR가 우선
+      if (a.google_id === currentTeam?.google_id && b.google_id !== currentTeam?.google_id) {
+        return -1;
+      }
+      if (a.google_id !== currentTeam?.google_id && b.google_id === currentTeam?.google_id) {
+        return 1;
+      }
+      
+      // 그 다음 ADMIN 우선
+      if (a.role === 'admin' && b.role !== 'admin') {
+        return -1;
+      }
+      if (a.role !== 'admin' && b.role === 'admin') {
+        return 1;
+      }
+      
+      // 마지막으로 이름 알파벳 순
+      return a.name.localeCompare(b.name);
+    });
+  }, [members, currentTeam]);
 
   return (
     <div className={styles.teamManagementContainer}>
@@ -761,65 +808,91 @@ const TeamManagement: React.FC = () => {
           
           {/* 팀 회원 섹션 */}
           <div className={styles.membersSection}>
+            {/* 팀 회원 섹션 헤더 */}
             <div className={styles.membersSectionHeader}>
               <h3>팀 회원</h3>
-              <button 
-                className={styles.inviteButton}
-                onClick={() => setIsModalVisible(true)}
-              >
-                멤버 초대
-              </button>
+              {isCurrentUserAdmin() && (
+                <button 
+                  className={styles.inviteButton}
+                  onClick={() => setIsModalVisible(true)}
+                >
+                  멤버 초대
+                </button>
+              )}
             </div>
             
             <ul className={styles.membersList}>
-              {members.length === 0 ? (
+              {sortedMembers.length === 0 ? (
                 <li className={styles.emptyMessage}>팀원이 없습니다</li>
               ) : (
-                members.map(member => (
+                sortedMembers.map(member => (
                   <li key={member.google_id} className={styles.memberItem}>
                     <div className={styles.memberInfo}>
                       <div className={styles.memberAvatar}>
-                        {member.profile_image ? (
-                          <img src={member.profile_image} alt={member.name} />
+                        {member.profileImageUrl ? (
+                          <img src={member.profileImageUrl} alt={member.name} />
                         ) : (
                           member.name.charAt(0).toUpperCase()
                         )}
                       </div>
                       <div>
-                        <div className={styles.memberName}>{member.name}</div>
+                        <div className={styles.memberName}>
+                          {member.name}
+                          {/* {member.google_id === currentTeam.google_id && (
+                            <span className={styles.creatorBadge}>Creator</span>
+                          )} */}
+                          {member.google_id === userInfo?.google_id && (
+                            <span className={styles.currentUserBadge}>Me</span>
+                          )}
+                        </div>
                         <div className={styles.memberEmail}>{member.email}</div>
                       </div>
                     </div>
                     
                     <div className={styles.memberControls}>
-                      <div className={styles.roleControl}>
-                        <span className={`${styles.roleTag} ${member.role === 'admin' ? styles.adminTag : ''}`}>
-                          ADMIN
+                      {isCurrentUserAdmin() ? (
+                        <>
+                          {member.google_id === currentTeam.google_id ? (
+                            // Creator인 경우 - 변경 불가 표시만 보여줌
+                            <div className={styles.roleControl}>
+                              <span className={`${styles.roleTag} ${styles.creatorRoleTag}`}>
+                                CREATOR
+                              </span>
+                            </div>
+                          ) : (
+                            // 일반 멤버인 경우 - 역할 변경 체크박스 표시
+                            <div className={styles.roleControl}>
+                              <span className={`${styles.roleTag} ${member.role === 'admin' ? styles.adminTag : ''}`}>
+                                ADMIN
+                              </span>
+                              <label className={styles.switchContainer}>
+                                <input 
+                                  type="checkbox" 
+                                  checked={member.role === 'admin'}
+                                  onChange={(e) => {
+                                    if (!isCurrentUserAdmin()) {
+                                      showError('관리자만 역할을 변경할 수 있습니다.');
+                                      return;
+                                    }
+                                    handleRoleChange(member.google_id, e.target.checked);
+                                  }}
+                                  disabled={member.google_id === userInfo?.google_id || !isCurrentUserAdmin()}
+                                />
+                                <span className={styles.slider}></span>
+                              </label>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <span className={`${styles.roleTag} ${
+                          member.google_id === currentTeam.google_id ? 
+                          styles.creatorRoleTag : 
+                          (member.role === 'admin' ? styles.adminTag : styles.userTag)
+                        }`}>
+                          {member.google_id === currentTeam.google_id ? 'CREATOR' : 
+                           (member.role === 'admin' ? 'ADMIN' : 'USER')}
                         </span>
-                        <label className={styles.switchContainer}>
-                          <input 
-                            type="checkbox" 
-                            checked={member.role === 'admin'}
-                            onChange={(e) => handleRoleChange(member.google_id, e.target.checked)}
-                            disabled={member.google_id === userInfo?.google_id}
-                          />
-                          <span className={styles.slider}></span>
-                        </label>
-                      </div>
-                      
-                      <div className={styles.roleControl}>
-                        <span className={`${styles.roleTag} ${member.is_creator ? styles.creatorTag : ''}`}>
-                          SET CREATOR
-                        </span>
-                        <label className={styles.switchContainer}>
-                          <input 
-                            type="checkbox" 
-                            checked={!!member.is_creator}
-                            onChange={(e) => handleCreatorChange(member.google_id, e.target.checked)}
-                          />
-                          <span className={styles.slider}></span>
-                        </label>
-                      </div>
+                      )}
                     </div>
                   </li>
                 ))
@@ -943,14 +1016,14 @@ const TeamManagement: React.FC = () => {
           >
             생성
           </Button>,
-        ] as React.ReactNode[]}
+        ]}
       >
         <Form layout="vertical">
           <Form.Item label="팀 이름" required>
             <Input
               placeholder="팀 이름 입력"
               value={newTeamName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewTeamName(e.target.value)}
+              onChange={(e) => setNewTeamName(e.target.value)}
               maxLength={30}
             />
           </Form.Item>
@@ -1056,7 +1129,7 @@ const TeamManagement: React.FC = () => {
           >
             삭제
           </Button>,
-        ] as React.ReactNode[]}
+        ]}
       >
         <p>정말로 '{currentTeam?.team_name}' 팀을 삭제하시겠습니까?</p>
         <p style={{ color: 'red' }}>이 작업은 되돌릴 수 없으며, 팀 데이터가 모두 삭제됩니다.</p>
@@ -1085,7 +1158,7 @@ const TeamManagement: React.FC = () => {
           >
             제거
           </Button>,
-        ] as React.ReactNode[]}
+        ]}
       >
         <p>'{nodeToRemove?.node_name}' 노드를 팀에서 제거하시겠습니까?</p>
         <p>노드는 삭제되지 않으며, 팀과의 연결만 해제됩니다.</p>
@@ -1108,7 +1181,7 @@ const TeamManagement: React.FC = () => {
           >
             탈퇴하기
           </Button>,
-        ] as React.ReactNode[]}
+        ]}
       >
         <p>정말로 '{currentTeam?.team_name}' 팀에서 탈퇴하시겠습니까?</p>
         <p>팀 관리자가 다시 초대하기 전까지 팀에 접근할 수 없게 됩니다.</p>

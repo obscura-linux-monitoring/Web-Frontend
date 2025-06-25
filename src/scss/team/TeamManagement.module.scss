@@ -695,3 +695,31 @@
   color: #999;
   font-style: italic;
 }
+
+.creatorBadge {
+  margin-left: 6px;
+  background-color: #722ed1;
+  color: white;
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.currentUserBadge {
+  margin-left: 6px;
+  background-color: #52c41a;
+  color: white;
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 11px;
+}
+
+.creatorRoleTag {
+  background-color: #722ed1;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
