@@ -1,0 +1,10 @@
+@media (max-width: 768px) {
+  .detailsSection {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .detailColumn {
+    width: 100%;
+  }
+} 

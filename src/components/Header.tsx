@@ -1,4 +1,5 @@
 import styles from '../scss/Header.module.scss';
+import '../scss/Header.module.mobile.scss';
 import { getUserInfo, getUserProfileImage } from '../utils/Auth';
 import { useState, useRef, useEffect } from 'react';
 import { Link, useParams, useLocation } from 'react-router-dom';

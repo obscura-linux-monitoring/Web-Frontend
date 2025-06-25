@@ -172,16 +172,16 @@ const SideBar = () => {
 
   return (
     <>
-      {/* 햄버거 메뉴 버튼 (모바일) */}
+      {/* 햄버거 메뉴 버튼 (모바일에서만, 사이드바가 닫혀 있을 때만) */}
       {isMobile && !isOpen && (
         <button 
           className={styles.hamburgerButton}
           onClick={toggleSidebar}
           aria-label="메뉴"
         >
-          <span></span>
-          <span></span>
-          <span></span>
+          <span className={styles.hamburgerBar}></span>
+          <span className={styles.hamburgerBar}></span>
+          <span className={styles.hamburgerBar}></span>
         </button>
       )}
 
@@ -236,7 +236,6 @@ const SideBar = () => {
               )}
             </div>
           </li>
-          
           <li><Link to="/settings" onClick={() => isMobile && setIsOpen(false)}>⚙️ 설정</Link></li>
         </ul>
       </div>

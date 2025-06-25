@@ -93,56 +93,6 @@
   }
 }
 
-@media (max-width: 768px) {
-  .container {
-    padding: 1rem; /* 패딩 축소 */
-  }
-
-  .profileSection {
-    margin-bottom: 2rem; /* 섹션 간격 축소 */
-
-    h2 {
-      font-size: 1.2rem; /* 제목 크기 축소 */
-      margin-bottom: 1rem;
-    }
-
-    .installCommand {
-      font-size: 0.9rem; /* 글꼴 크기 축소 */
-      padding: 0.8rem; /* 내부 패딩 축소 */
-    }
-  }
-
-  .nodesSection {
-    h3 {
-      font-size: 1rem; /* 제목 크기 축소 */
-      margin-bottom: 1rem;
-    }
-
-    .nodesGrid {
-      grid-template-columns: 1fr; /* 단일 열로 변경 */
-      gap: 0.8rem; /* 간격 축소 */
-    }
-
-    .nodeCard {
-      padding: 1rem; /* 내부 패딩 축소 */
-      font-size: 0.9rem; /* 글꼴 크기 축소 */
-
-      h4 {
-        font-size: 1rem; /* 제목 크기 축소 */
-      }
-
-      p {
-        font-size: 0.8rem; /* 본문 글꼴 크기 축소 */
-      }
-    }
-
-    .noNodes {
-      padding: 1.5rem; /* 패딩 축소 */
-      font-size: 0.9rem; /* 글꼴 크기 축소 */
-    }
-  }
-}
-
 .profileContainer {
   width: 100%;
   max-width: 1200px;
@@ -286,12 +236,6 @@
       overflow-wrap: break-word;
       white-space: normal;
     }
-    
-    @media (max-width: 768px) {
-      max-width: 85%;
-      padding: 0 1rem;
-      box-sizing: border-box;
-    }
   }
 
   ._profileSection_13a4x_13 {
@@ -302,14 +246,6 @@
       white-space: normal;
       max-width: 100%;
       box-sizing: border-box;
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  :global {
-    ._profileModalContent_1qny6_180 {
-      max-width: 90% !important;
     }
   }
 }

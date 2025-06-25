@@ -1,0 +1,155 @@
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  .profileSection {
+    margin-bottom: 2rem;
+    h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .installCommand {
+      font-size: 0.9rem;
+      padding: 0.8rem;
+    }
+  }
+  .nodesSection {
+    h3 {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    .nodesGrid {
+      grid-template-columns: 1fr;
+      gap: 0.8rem;
+    }
+    .nodeCard {
+      padding: 1rem;
+      font-size: 0.9rem;
+      h4 {
+        font-size: 1rem;
+      }
+      p {
+        font-size: 0.8rem;
+      }
+    }
+    .noNodes {
+      padding: 1.5rem;
+      font-size: 0.9rem;
+    }
+  }
+  .profileContainer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: auto;
+    max-width: 250px;
+    margin: 0;
+    padding: 10px;
+    z-index: 1000;
+    background-color: #1a1a1a;
+  }
+  .headerContent {
+    display: none;
+  }
+  .profileImage {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    z-index: 1001;
+  }
+  .profileHeader {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    width: 100%;
+    .profileImage {
+      width: 100px;
+      height: 100px;
+    }
+    .profileInfo {
+      width: 100%;
+      text-align: center;
+      h1 {
+        font-size: 1.5rem;
+      }
+      p {
+        font-size: 0.9rem;
+      }
+    }
+  }
+  .profileContent {
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  .profileSection {
+    width: 100%;
+    padding: 15px;
+    margin: 0;
+    h2 {
+      font-size: 1.2rem;
+      color: #fff;
+    }
+  }
+  .statsGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    width: 100%;
+    .statItem {
+      width: 100%;
+      padding: 10px;
+      .statValue {
+        font-size: 1.5rem;
+      }
+      .statLabel {
+        font-size: 0.9rem;
+      }
+    }
+  }
+  .activityList {
+    width: 100%;
+    .activityItem {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      .activityHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+        .activityTitle {
+          font-size: 1rem;
+        }
+        .activityDate {
+          font-size: 0.8rem;
+        }
+      }
+      .activityDescription {
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+
+:global {
+  ._profileModalContent_1qny6_180 {
+    @media (max-width: 768px) {
+      max-width: 85%;
+      padding: 0 1rem;
+      box-sizing: border-box;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  :global {
+    ._profileModalContent_1qny6_180 {
+      max-width: 90% !important;
+    }
+  }
+} 

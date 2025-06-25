@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import api from '../../api'; // axios 인스턴스 import
 import styles from '../../scss/performance/PerformanceView.module.scss';
+import '../../scss/performance/performance_mobile/PerformanceView.module.mobile.scss';
 import CpuMonitor from './CpuMonitor';
 import MemoryMonitor from './MemoryMonitor';
 import DiskMonitor from './DiskMonitor';

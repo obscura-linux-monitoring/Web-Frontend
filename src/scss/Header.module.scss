@@ -12,14 +12,9 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 100%;
   box-sizing: border-box;
-
   @media (min-width: 769px) {
-    width: calc(100% - 250px);
     left: 250px;
-  }
-
-  @media (max-width: 768px) {
-    padding-left: 4rem;
+    width: calc(100% - 250px);
   }
 }
 
@@ -37,6 +32,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  margin-left: 1.5rem;
   
   a {
     color: #ddd;
@@ -305,15 +301,4 @@
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
-}
-
-@media (max-width: 768px) {
-  .header {
-    width: 100%;
-    top: 0;
-  }
-  
-  .dropdown {
-    width: 200px;
-  }
 }

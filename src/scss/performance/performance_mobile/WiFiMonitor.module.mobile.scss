@@ -1,0 +1,11 @@
+// 반응형 스타일링
+@media (max-width: 768px) {
+  .detailsSection {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .detailColumn {
+    width: 100%;
+  }
+}

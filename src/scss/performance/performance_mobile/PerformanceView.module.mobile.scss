@@ -1,0 +1,60 @@
+@media (max-width: 900px) {
+  .mainContent {
+    flex-direction: column;
+  }
+
+  .sidebarInfo {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-wrap: wrap;
+    padding-bottom: 15px;
+    
+    .resourceItem {
+      width: 33%;
+      min-width: 200px;
+    }
+  }
+
+  .detailsSection {
+    flex-direction: column;
+    
+    .detailColumn {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .mainContent {
+    flex-direction: column;
+  }
+
+  .sidebarInfo {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-wrap: wrap;
+    padding-bottom: 10px;
+    
+    .resourceItem {
+      width: 33%;
+      min-width: 180px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .monitorContainer {
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+  }
+} 

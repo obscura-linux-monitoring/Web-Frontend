@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
 import styles from '../../scss/performance/CpuMonitor.module.scss';
+import '../../scss/performance/performance_mobile/CpuMonitor.module.mobile.scss';
 import { useParams, useLocation } from 'react-router-dom';
 import { useNodeContext } from '../../context/NodeContext';
 import { useAuth } from '../../hooks/useAuth';

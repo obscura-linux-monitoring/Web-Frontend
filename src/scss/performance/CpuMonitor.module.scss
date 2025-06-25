@@ -86,14 +86,3 @@
   .disconnectedState {
     color: #f39c12;
   }
-  
-  @media (max-width: 900px) {
-    .detailsSection {
-      flex-direction: column;
-      
-      .detailColumn {
-        width: 100%;
-        margin-bottom: 20px;
-      }
-    }
-  }

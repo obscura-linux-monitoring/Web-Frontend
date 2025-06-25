@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import styles from '../../scss/node/ProcessView.module.scss';
+import '../../scss/node/node_mobile/ProcessView.module.mobile.scss';
 import { useNodeContext } from '../../context/NodeContext';
 import api from '../../api';
 

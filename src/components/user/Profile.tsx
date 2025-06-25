@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../../api';
 import { getToken } from '../../utils/Auth';
 import styles from '../../scss/user/Profile.module.scss';
+import '../../scss/user/user_mobile/Profile.module.mobile.scss';
 
 type Profile = {
   sub: string;
