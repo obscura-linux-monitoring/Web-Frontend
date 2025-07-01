@@ -224,19 +224,71 @@
 
 .installCommand {
   @include copyable-container;
-  background: #2d3748; // Obscura Key와 동일한 배경색으로 변경
+  background: #2d3748;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   width: 100%;
   box-sizing: border-box;
 
   &:hover {
     @include hover-state;
-    transform: translateY(-2px); // 이 효과는 유지
+    transform: translateY(-2px);
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.25);
   }
 
   &.copied {
     @include copied-state;
+  }
+
+  .commandText {
+    @include copyable-value;
+  }
+
+  .copyIndicator {
+    @include copy-indicator;
+  }
+
+  .hiddenTextarea {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+// 삭제 명령어 스타일 추가
+.uninstallCommandContainer {
+  margin-bottom: 2rem;
+}
+
+.uninstallCommand {
+  @include copyable-container;
+  background: #722d2d; // 삭제를 나타내는 약간 빨간 톤
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  box-sizing: border-box;
+
+  &:hover {
+    background: #8a3a3a;
+    border-color: #a64a4a;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.25);
+
+    .copyIndicator {
+      background: rgba(255, 255, 255, 0.15);
+    }
+  }
+
+  &.copied {
+    background: #2a1e1e;
+    border-color: #4a2c2c;
+
+    .copyIndicator {
+      background: rgba(231, 76, 60, 0.3);
+      color: #ff6b6b;
+    }
   }
 
   .commandText {

@@ -82,9 +82,11 @@ const Profile = () => {
   const [error, setError] = useState<string | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
   const [copyKeySuccess, setCopyKeySuccess] = useState(false);
+  const [copyUninstallSuccess, setCopyUninstallSuccess] = useState(false);
   const [expandedNodeId, setExpandedNodeId] = useState<string | null>(null);
   const commandTextRef = useRef<HTMLTextAreaElement>(null);
   const keyTextRef = useRef<HTMLTextAreaElement>(null);
+  const uninstallCommandTextRef = useRef<HTMLTextAreaElement>(null);
 
   // 노드 삭제 관련 상태
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -205,6 +207,30 @@ const Profile = () => {
         console.error('키 복사 오류:', err);
       }
 
+      window.getSelection()?.removeAllRanges();
+    }
+  };
+
+  const copyUninstallCommand = () => {
+    if (uninstallCommandTextRef.current) {
+      // 숨겨진 텍스트 영역에 삭제 명령어 설정
+      uninstallCommandTextRef.current.value = 'sudo uninstall-system-monitor';
+      uninstallCommandTextRef.current.select();
+
+      try {
+        // document.execCommand 사용 (더 넓은 브라우저 호환성)
+        const successful = document.execCommand('copy');
+        if (successful) {
+          setCopyUninstallSuccess(true);
+          setTimeout(() => setCopyUninstallSuccess(false), 2000);
+        } else {
+          console.error('삭제 명령어 복사 실패');
+        }
+      } catch (err) {
+        console.error('삭제 명령어 복사 오류:', err);
+      }
+
+      // 선택 해제 (모바일에서 중요)
       window.getSelection()?.removeAllRanges();
     }
   };
@@ -359,6 +385,29 @@ const Profile = () => {
             </div>
             <textarea
               ref={commandTextRef}
+              className={styles.hiddenTextarea}
+              readOnly
+            />
+          </div>
+        </div>
+
+        <div className={styles.sectionHeader}>
+          <h3>삭제 명령어</h3>
+        </div>
+
+        <div className={styles.uninstallCommandContainer}>
+          <div
+            className={`${styles.uninstallCommand} ${copyUninstallSuccess ? styles.copied : ''}`}
+            onClick={copyUninstallCommand}
+          >
+            <div className={styles.commandText}>
+              sudo uninstall-system-monitor
+            </div>
+            <div className={styles.copyIndicator}>
+              {copyUninstallSuccess ? '복사됨!' : '클릭하여 복사'}
+            </div>
+            <textarea
+              ref={uninstallCommandTextRef}
               className={styles.hiddenTextarea}
               readOnly
             />
