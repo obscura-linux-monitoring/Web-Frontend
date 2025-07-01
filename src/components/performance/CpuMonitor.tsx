@@ -205,7 +205,7 @@ const CpuMonitor = ({ nodeId: propsNodeId }: CpuMonitorProps = {}) => {
               
               // 데이터 유효성 검증 및 정제
               const validCores = data.cores
-                .filter(core => 
+                .filter((core: any) => 
                   core && 
                   typeof core === 'object' && 
                   typeof core.id === 'number' && 
@@ -213,7 +213,7 @@ const CpuMonitor = ({ nodeId: propsNodeId }: CpuMonitorProps = {}) => {
                   !isNaN(core.usage) &&
                   core.id >= 0
                 )
-                .map(core => ({
+                .map((core: any) => ({
                   id: Number(core.id),
                   usage: Number(core.usage),
                   temperature: core.temperature || null
@@ -232,7 +232,7 @@ const CpuMonitor = ({ nodeId: propsNodeId }: CpuMonitorProps = {}) => {
                   };
                   
                   // 각 코어별 사용률도 추가
-                  validCores.forEach((core) => {
+                  validCores.forEach((core: any) => {
                     newPoint[`core${core.id}`] = Number(core.usage);
                   });
                   
@@ -606,7 +606,6 @@ const CpuMonitor = ({ nodeId: propsNodeId }: CpuMonitorProps = {}) => {
                     />
                   </AreaChart>
                 </ResponsiveContainer>
-                <div className={styles.chartLabel}>CPU 작업</div>
               </div>
             ) : (
               // 코어별 개별 그래프들 (작업관리자 스타일)
