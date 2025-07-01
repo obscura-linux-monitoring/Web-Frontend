@@ -231,7 +231,7 @@ export const usePerformanceData = (
       }
       
       // 전체 데이터 구조 로깅
-      console.log(`[${type}:${resourceId}] 전체 데이터 구조:`, data);
+      // console.log(`[${type}:${resourceId}] 전체 데이터 구조:`, data);
       
       // 리소스 타입에 따라 해당 데이터 추출
       let resourceData: any = null;
@@ -239,7 +239,7 @@ export const usePerformanceData = (
       switch (type) {
         case 'cpu':
           if (data.cpu) {
-            console.log(`[${type}:${resourceId}] CPU 데이터:`, data.cpu);
+            // console.log(`[${type}:${resourceId}] CPU 데이터:`, data.cpu);
             resourceData = data.cpu;
           } else {
             console.error(`[${type}:${resourceId}] CPU 데이터가 없음`);
@@ -248,7 +248,7 @@ export const usePerformanceData = (
           
         case 'memory':
           if (data.memory) {
-            console.log(`[${type}:${resourceId}] 메모리 데이터:`, data.memory);
+            // console.log(`[${type}:${resourceId}] 메모리 데이터:`, data.memory);
             resourceData = data.memory;
           } else {
             console.error(`[${type}:${resourceId}] 메모리 데이터가 없음`);
@@ -257,7 +257,7 @@ export const usePerformanceData = (
           
         case 'disk':
           if (data.disks && Array.isArray(data.disks)) {
-            console.log(`[${type}:${resourceId}] 디스크 데이터:`, data.disks);
+            // console.log(`[${type}:${resourceId}] 디스크 데이터:`, data.disks);
             // 여기서 resourceId에 해당하는 디스크만 필터링
             resourceData = data.disks.find((disk: any) => 
               disk.id?.toString() === resourceId
@@ -274,13 +274,13 @@ export const usePerformanceData = (
         case 'ethernet':
           if (data.networks && Array.isArray(data.networks)) {
             // 로그 출력 추가
-            console.log(`[${type}:${resourceId}] 네트워크 데이터:`, data.networks);
+            // console.log(`[${type}:${resourceId}] 네트워크 데이터:`, data.networks);
             
             // 인터페이스별 트래픽 정보 출력
             data.networks.forEach((net: NetworkInterface, idx: number) => {
               const rx = parseFloat(net.rx_kbps?.toString() || '0');
               const tx = parseFloat(net.tx_kbps?.toString() || '0');
-              console.log(`네트워크 ${idx}: ${net.interface}, 활성? ${rx > 0 || tx > 0}, rx: ${rx}, tx: ${tx}`);
+              // console.log(`네트워크 ${idx}: ${net.interface}, 활성? ${rx > 0 || tx > 0}, rx: ${rx}, tx: ${tx}`);
             });
             
             let networkData = null;
@@ -289,7 +289,7 @@ export const usePerformanceData = (
             const index = parseInt(resourceId, 10);
             if (!isNaN(index) && index >= 0 && index < data.networks.length) {
               networkData = data.networks[index];
-              console.log(`[${type}:${resourceId}] 인덱스로 네트워크 찾음:`, networkData.interface);
+              // console.log(`[${type}:${resourceId}] 인덱스로 네트워크 찾음:`, networkData.interface);
               
               // 선택된 인터페이스가 비활성 상태이고, 다른 활성 인터페이스가 있는지 확인
               const rx = parseFloat(networkData.rx_kbps?.toString() || '0');
@@ -304,7 +304,7 @@ export const usePerformanceData = (
                 });
                 
                 if (activeInterface) {
-                  console.log(`[${type}:${resourceId}] 비활성 인터페이스 대신 활성 인터페이스로 전환:`, activeInterface.interface);
+                  // console.log(`[${type}:${resourceId}] 비활성 인터페이스 대신 활성 인터페이스로 전환:`, activeInterface.interface);
                   networkData = activeInterface;
                 }
               }
@@ -317,11 +317,11 @@ export const usePerformanceData = (
               );
               
               if (networkData) {
-                console.log(`[${type}:${resourceId}] 이름/인터페이스로 네트워크 찾음:`, networkData.interface);
+                // console.log(`[${type}:${resourceId}] 이름/인터페이스로 네트워크 찾음:`, networkData.interface);
               } else {
                 // 첫 번째 인터페이스 사용
                 networkData = data.networks[0];
-                console.log(`[${type}:${resourceId}] 일치하는 네트워크 없음, 첫 번째 사용:`, networkData?.interface);
+                // console.log(`[${type}:${resourceId}] 일치하는 네트워크 없음, 첫 번째 사용:`, networkData?.interface);
               }
             }
             
@@ -357,7 +357,7 @@ export const usePerformanceData = (
               model: resourceData.model || ''
             });
             
-            console.log(`[${type}:${resourceId}] CPU 값 추출:`, value);
+            // console.log(`[${type}:${resourceId}] CPU 값 추출:`, value);
           } 
           else if (type === 'memory') {
             value = typeof resourceData.usage_percent === 'string' 
@@ -369,7 +369,7 @@ export const usePerformanceData = (
               total_gb: resourceData.total_gb || 0
             });
             
-            console.log(`[${type}:${resourceId}] 메모리 값 추출:`, value);
+            // console.log(`[${type}:${resourceId}] 메모리 값 추출:`, value);
           }
           else if (type === 'disk') {
             value = typeof resourceData.usage_percent === 'string' 
@@ -382,7 +382,7 @@ export const usePerformanceData = (
               type: resourceData.type || 'Unknown'
             });
             
-            console.log(`[${type}:${resourceId}] 디스크 값 추출:`, value);
+            // console.log(`[${type}:${resourceId}] 디스크 값 추출:`, value);
           }
           else if (type === 'network' || type === 'ethernet' || type === 'wifi') {
             // 이더넷/네트워크의 경우 rx와 tx 합계로 사용하거나 최대값 표시
@@ -401,7 +401,7 @@ export const usePerformanceData = (
               model: resourceData.model || ''
             });
             
-            console.log(`[${type}:${resourceId}] 네트워크 값 추출:`, {rx, tx, total: value});
+            // console.log(`[${type}:${resourceId}] 네트워크 값 추출:`, {rx, tx, total: value});
           }
           
           // 데이터 포인트 추가

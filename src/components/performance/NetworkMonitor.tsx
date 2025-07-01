@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
 import styles from '../../scss/performance/MonitorComponents.module.scss';
+import '../../scss/performance/performance_mobile/MonitorComponents.module.mobile.scss';
 
 interface NetworkData {
   name: string;

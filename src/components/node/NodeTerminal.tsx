@@ -11,6 +11,7 @@ import { Terminal as XTerminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 import styles from '../../scss/node/NodeTerminal.module.scss';
+import '../../scss/node/node_mobile/NodeTerminal.module.mobile.scss';
 import FileExplorer from './FileExplorer';
 import api from '../../api';
 import { getToken } from '../../utils/Auth';
@@ -93,6 +94,15 @@ function Terminal(): React.ReactElement {
         key: sshConnection?.key || ''
     });
 
+    // 연결 상태 개선을 위한 추가 상태
+    const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
+    const [connectionMessage, setConnectionMessage] = useState<string>('');
+    const [retryCount, setRetryCount] = useState<number>(0);
+    const maxRetries = 3;
+
+    // 터미널 표시 상태 추가
+    const [showTerminal, setShowTerminal] = useState<boolean>(false);
+
     // sshConnection이 변경될 때 connectionForm 업데이트
     useEffect(() => {
         if (sshConnection) {
@@ -111,7 +121,7 @@ function Terminal(): React.ReactElement {
     // 폼 입력 처리
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         const { name, value } = e.target;
-        if (name == 'host' && (value == '127.0.0.1' || value == 'localhost')) {
+        if (name === 'host' && (value === '127.0.0.1' || value === 'localhost')) {
             alert('127.0.0.1 또는 localhost는 사용할 수 없습니다.');
             return;
         }
@@ -122,10 +132,14 @@ function Terminal(): React.ReactElement {
     };
 
     /**
-     * SSH 연결 처리 함수
-     * WebSocket을 통해 백엔드 SSH 서버에 연결을 시도합니다.
+     * 개선된 SSH 연결 처리 함수
      */
     const handleConnect = (): void => {
+        // 연결 상태 초기화
+        setConnectionStatus('connecting');
+        setConnectionMessage('SSH 서버에 연결 중...');
+        setRetryCount(0);
+
         // 이미 연결되어 있으면 연결 종료
         if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
             socketRef.current.close();
@@ -137,52 +151,187 @@ function Terminal(): React.ReactElement {
             term.writeln('SSH 서버에 연결 중...');
         }
 
+        connectWebSocket();
+    };
+
+    /**
+     * 연결 오류 처리 함수
+     */
+    const handleConnectionError = (errorMessage: string): void => {
+        setConnectionStatus('error');
+        setConnectionMessage(errorMessage);
+        setIsConnected(false);
+        setShowTerminal(false);
+        
+        // 추가적인 오류 메시지 변환 (WebSocket 연결 중 발생하는 오류용)
+        let userFriendlyMessage = errorMessage;
+        if (errorMessage.includes('CONNECTION_REFUSED')) {
+            userFriendlyMessage = '서버에 연결할 수 없습니다. 호스트 주소와 포트번호를 확인해주세요.';
+        } else if (errorMessage.includes('CONNECTION_TIMEOUT')) {
+            userFriendlyMessage = '연결 시간이 초과되었습니다. 호스트 주소와 포트번호를 확인해주세요.';
+        } else if (errorMessage.includes('INVALID_USER')) {
+            userFriendlyMessage = '존재하지 않는 사용자입니다. 사용자명을 확인해주세요.';
+        } else if (errorMessage.includes('AUTH_FAILED')) {
+            userFriendlyMessage = '사용자명 또는 비밀번호가 올바르지 않습니다. 확인해주세요.';
+        } else if (errorMessage.includes('INVALID_PASSWORD')) {
+            userFriendlyMessage = '비밀번호가 올바르지 않습니다. 비밀번호를 확인해주세요.';
+        } else if (errorMessage.includes('인증 실패') || errorMessage.includes('Permission denied')) {
+            userFriendlyMessage = '사용자명 또는 비밀번호가 올바르지 않습니다.';
+        } else if (errorMessage.includes('연결 거부') || errorMessage.includes('Connection refused')) {
+            userFriendlyMessage = '서버에 연결할 수 없습니다. 호스트 주소와 포트번호를 확인해주세요.';
+        } else if (errorMessage.includes('시간 초과') || errorMessage.includes('timeout')) {
+            userFriendlyMessage = '연결 시간이 초과되었습니다. 네트워크 상태를 확인해주세요.';
+        }
+        
+        setConnectionMessage(userFriendlyMessage);
+    };
+
+    /**
+     * WebSocket 연결 처리 함수
+     */
+    const connectWebSocket = (): void => {
         // WebSocket 연결
         const socket = new WebSocket('ws://1.209.148.143:8000/ssh/ws/ssh');
         socketRef.current = socket;
 
+        // 연결 타임아웃 설정 (10초)
+        const connectionTimeout = setTimeout(() => {
+            if (socket.readyState === WebSocket.CONNECTING) {
+                socket.close();
+                handleConnectionError('연결 시간이 초과되었습니다.');
+            }
+        }, 10000);
+
         // WebSocket 이벤트 핸들러 등록
         socket.onopen = (): void => {
-            console.log('WebSocket 연결됨');
+            clearTimeout(connectionTimeout);
+            setConnectionMessage('연결 정보 전송 중...');
+            
             // 연결 정보 전송
-            socket.send(JSON.stringify(connectionForm));
+            try {
+                socket.send(JSON.stringify(connectionForm));
+            } catch (error) {
+                console.error('연결 정보 전송 실패:', error);
+                handleConnectionError('연결 정보 전송에 실패했습니다.');
+            }
         };
 
-        // 서버로부터 데이터 수신 시 터미널에 출력
+        // 서버로부터 데이터 수신 시 처리
         socket.onmessage = (event: MessageEvent): void => {
             const data = event.data as string;
+            
+            // 상태 메시지 처리
+            if (data.startsWith('CONNECTING:')) {
+                const message = data.replace('CONNECTING:', '');
+                setConnectionStatus('connecting');
+                setConnectionMessage(message);
+                term?.writeln('\r\n' + message);
+                return;
+            }
+            
+            if (data.startsWith('CONNECTED:')) {
+                const message = data.replace('CONNECTED:', '');
+                setConnectionStatus('connected');
+                setConnectionMessage('연결됨');
+                setIsConnected(true);
+                setShowTerminal(true);
+                term?.writeln('\r\n' + message);
+                return;
+            }
+            
+            if (data.startsWith('READY:')) {
+                const message = data.replace('READY:', '');
+                setShowTerminal(true);
+                setConnectionStatus('connected');
+                setIsConnected(true);
+                
+                // 터미널 포커스 설정
+                setTimeout(() => {
+                    if (terminalRef.current) {
+                        term?.focus();
+                    }
+                }, 100);
+                
+                term?.writeln('\r\n' + message);
+                return;
+            }
+            
+            // 오류 메시지 처리
+            if (data.startsWith('ERROR:')) {
+                const errorMsg = data.replace('ERROR:', '');
+                handleConnectionError(errorMsg);
+                term?.writeln('\r\n오류: ' + errorMsg);
+                return;
+            }
+            
             // 호스트 키 신뢰 요청 메시지 처리
             if (data.startsWith('HOSTKEY:')) {
                 setPendingHostKey(data.replace('HOSTKEY:', '').trim());
+                setConnectionStatus('disconnected');
                 setIsConnected(false);
+                setShowTerminal(false);
+                setConnectionMessage('호스트 키 확인 필요');
                 return;
             }
+            
+            // 일반 터미널 데이터 출력
             term?.write(data);
         };
 
         // 오류 발생 시 처리
         socket.onerror = (error: Event): void => {
-            console.error('WebSocket 오류:', error);
-            term?.writeln('\r\n연결 오류가 발생했습니다.');
-            setIsConnected(false);
+            clearTimeout(connectionTimeout);
+            console.error('❌ WebSocket 오류:', error);
+            handleConnectionError('WebSocket 연결 오류가 발생했습니다.');
         };
 
         // 연결 종료 시 처리
-        socket.onclose = (): void => {
-            console.log('WebSocket 연결 종료');
-            term?.writeln('\r\n연결이 종료되었습니다.');
+        socket.onclose = (event: CloseEvent): void => {
+            clearTimeout(connectionTimeout);
+            console.log('🔌 WebSocket 연결 종료, 코드:', event.code);
+            
+            // 연결 종료 시 터미널 숨기기
+            setShowTerminal(false);
+            
+            if (connectionStatus === 'connected') {
+                setConnectionMessage('연결이 종료되었습니다.');
+                term?.writeln('\r\n연결이 종료되었습니다.');
+            }
+            
+            setConnectionStatus('disconnected');
             setIsConnected(false);
+            
+            // 의도하지 않은 연결 종료인 경우 재연결 시도
+            if (event.code !== 1000 && event.code !== 1001 && retryCount < maxRetries && connectionStatus === 'connected') {
+                setTimeout(() => {
+                    console.log(`재연결 시도 중... (${retryCount + 1}/${maxRetries})`);
+                    setRetryCount(prev => prev + 1);
+                    connectWebSocket();
+                }, 2000);
+            }
         };
-
-        setIsConnected(true);
     };
 
-    // 연결 설정 저장 처리
-    const handleSaveConnectionForm = (): void => {
-        saveSshConnection(connectionForm)
-            .then(() => {
-                window.location.reload();
-            });
+    // 연결 설정 저장 및 자동 연결 시도
+    const handleSaveConnectionForm = async (): Promise<void> => {
+        try {
+            setConnectionStatus('connecting');
+            setConnectionMessage('연결 정보 검증 중...');
+            
+            // 연결 정보 저장 (여기서 실제 SSH 연결 테스트도 수행됨)
+            await saveSshConnection(connectionForm);
+            
+            // 저장 후 자동으로 연결 시도
+            setTimeout(() => {
+                handleConnect();
+            }, 500);
+            
+        } catch (error: any) {
+            console.error('연결 시도 실패:', error);
+            setConnectionStatus('error');
+            // SshContext에서 변환된 사용자 친화적 메시지 사용
+            setConnectionMessage(error.message || '연결 시도에 실패했습니다.');
+        }
     };
 
     /**
@@ -200,7 +349,6 @@ function Terminal(): React.ReactElement {
                 Authorization: `Bearer ${token}`,
             },
         }).then((res) => {
-            // 기존 getSshConnection 호출을 context의 함수로 대체
             getSshConnection(res.data.user.sub, paramNodeId || '');
         }).catch((err) => {
             console.error('❌ 데이터 로딩 실패:', err);
@@ -219,7 +367,7 @@ function Terminal(): React.ReactElement {
 
         // 컴포넌트 언마운트 시 터미널 정리
         return () => {
-            if (terminal) {
+            if (terminal && terminal.element) {
                 terminal.dispose();
             }
         };
@@ -227,10 +375,30 @@ function Terminal(): React.ReactElement {
 
     /**
      * 터미널 DOM 연결 및 이벤트 설정
-     * term 상태가 설정된 후 실행됩니다.
+     * showTerminal이 true이고 term이 설정된 후 실행됩니다.
      */
     useEffect(() => {
-        if (!term || !terminalRef.current) return;
+        // showTerminal이 false이면 연결하지 않음
+        if (!showTerminal || !term || !terminalRef.current) {
+            return;
+        }
+
+        // 이미 터미널이 연결되어 있으면 제거
+        if (term.element) {
+            term.dispose();
+            
+            // 새 터미널 인스턴스 생성
+            const newTerminal = new XTerminal({
+                cursorBlink: true,
+                theme: {
+                    background: '#1E1E1E',
+                    foreground: '#FFFFFF'
+                },
+                fontSize: 14
+            });
+            setTerm(newTerminal);
+            return;
+        }
 
         // DOM에 터미널 렌더링
         term.open(terminalRef.current);
@@ -238,7 +406,21 @@ function Terminal(): React.ReactElement {
         // Fit Addon 추가 (터미널 크기 자동 조정)
         const fitAddon = new FitAddon();
         term.loadAddon(fitAddon);
-        fitAddon.fit();
+
+        // 초기 맞춤 시도
+        setTimeout(() => {
+            fitAddon.fit();
+        }, 100);
+
+        // 주기적 크기 조정
+        const fitInterval = setInterval(() => {
+            fitAddon.fit();
+        }, 1000);
+
+        // 3초 후 interval 정리
+        setTimeout(() => {
+            clearInterval(fitInterval);
+        }, 3000);
 
         // 윈도우 크기 변경 시 터미널 크기 조정
         const handleResize = (): void => {
@@ -247,30 +429,39 @@ function Terminal(): React.ReactElement {
         window.addEventListener('resize', handleResize);
 
         // 터미널 입력을 서버로 전송
-        term.onData((data: string) => {
+        const dataHandler = (data: string) => {
             if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
                 socketRef.current.send(data);
             }
-        });
-
-        // 이벤트 리스너 정리 및 연결 종료
-        return () => {
-            window.removeEventListener('resize', handleResize);
-            if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-                socketRef.current.close();
-            }
         };
-    }, [term]);
+        term.onData(dataHandler);
 
-    // 호스트 키 신뢰 버튼 클릭 시
+        // 터미널 포커스
+        term.focus();
+
+        // 정리 함수
+        return () => {
+            clearInterval(fitInterval);
+            window.removeEventListener('resize', handleResize);
+        };
+    }, [showTerminal, term]);
+
+    // 개선된 호스트 키 신뢰 처리
     const handleTrustHostKey = (): void => {
         if (socketRef.current && pendingHostKey) {
-            socketRef.current.send(JSON.stringify({
-                ...connectionForm,
-                trust_hostkey: true
-            }));
-            setPendingHostKey(null);
-            setIsConnected(true);
+            setConnectionMessage('호스트 키 신뢰 처리 중...');
+            
+            try {
+                socketRef.current.send(JSON.stringify({
+                    ...connectionForm,
+                    trust_hostkey: true
+                }));
+                setPendingHostKey(null);
+                setConnectionStatus('connecting');
+            } catch (error) {
+                console.error('호스트 키 신뢰 처리 실패:', error);
+                handleConnectionError('호스트 키 신뢰 처리에 실패했습니다.');
+            }
         }
     };
 
@@ -278,6 +469,7 @@ function Terminal(): React.ReactElement {
     const handleCloseModal = (): void => {
         setPendingHostKey(null);
         setIsConnected(false);
+        setShowTerminal(false); // 모달 닫을 때 터미널 숨기기
         if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
             socketRef.current.close();
         }
@@ -412,9 +604,16 @@ function Terminal(): React.ReactElement {
                 </div>
                 <div className={styles.terminalTitle}>
                     Terminal
-                    {isConnected ? (
+                    {connectionStatus === 'connected' && (
                         <span className={styles.connectedBadge}>연결됨</span>
-                    ) : (
+                    )}
+                    {connectionStatus === 'connecting' && (
+                        <span className={styles.connectingBadge}>연결 중...</span>
+                    )}
+                    {connectionStatus === 'error' && (
+                        <span className={styles.errorBadge}>오류</span>
+                    )}
+                    {connectionStatus === 'disconnected' && (
                         <span className={styles.disconnectedBadge}>연결 안됨</span>
                     )}
                 </div>
@@ -441,9 +640,20 @@ function Terminal(): React.ReactElement {
                     {/* 터미널 컨테이너 */}
                     <div className={styles.terminalContainer}>
                         {/* 연결되지 않은 경우 연결 폼 표시 */}
-                        {!isConnected && (
+                        {!showTerminal && (
                             <div className={styles.connectionForm}>
                                 <h2>SSH 연결 설정</h2>
+                                
+                                {/* 연결 상태 메시지 */}
+                                <div className={`${styles.connectionStatus} ${styles[connectionStatus]}`}>
+                                    {connectionMessage && (
+                                        <p>{connectionMessage}</p>
+                                    )}
+                                    {connectionStatus === 'connecting' && (
+                                        <div className={styles.loadingSpinner}></div>
+                                    )}
+                                </div>
+
                                 <div className={styles.formGroup}>
                                     <label>호스트</label>
                                     <input
@@ -507,16 +717,24 @@ function Terminal(): React.ReactElement {
                                     <button
                                         className={styles.connectButton}
                                         onClick={hasSshConnection ? handleConnect : handleSaveConnectionForm}
+                                        disabled={connectionStatus === 'connecting'}
                                     >
-                                        {hasSshConnection ? '연결' : '연결 설정'}
+                                        {connectionStatus === 'connecting' 
+                                            ? '연결 중...' 
+                                            : hasSshConnection 
+                                                ? '연결' 
+                                                : '연결 설정'}
                                     </button>
-                                    {/* <button
-                                        className={styles.commandButton}
-                                        onClick={openCommandModal}
-                                        disabled={isLoading}
-                                    >
-                                        명령
-                                    </button> */}
+                                    
+                                    {/* 재시도 버튼 (오류 시에만 표시) */}
+                                    {connectionStatus === 'error' && retryCount < maxRetries && (
+                                        <button
+                                            className={styles.retryButton}
+                                            onClick={handleConnect}
+                                        >
+                                            다시 시도 ({retryCount}/{maxRetries})
+                                        </button>
+                                    )}
                                 </div>
 
                                 {/* 명령 실행 결과 표시 */}
@@ -528,8 +746,19 @@ function Terminal(): React.ReactElement {
                                 )}
                             </div>
                         )}
+                        
                         {/* 터미널이 렌더링될 컨테이너 */}
-                        <div ref={terminalRef} className={styles.terminal} />
+                        {showTerminal && (
+                            <div 
+                                ref={terminalRef} 
+                                className={styles.terminal}
+                                style={{
+                                    width: '100%',
+                                    height: '400px',
+                                    minHeight: '400px'
+                                }}
+                            />
+                        )}
 
                         {/* 호스트 키 신뢰 모달 */}
                         {pendingHostKey && (

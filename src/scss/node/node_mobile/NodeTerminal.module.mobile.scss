@@ -1,0 +1,98 @@
+@media (max-width: 768px) {
+  .terminalPageContainer {
+    width: 100vw;
+    min-height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0.5rem 0.25rem 0.25rem 0.25rem;
+    box-shadow: none;
+    border-radius: 0;
+    background-color: #181818;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .terminalHeader {
+    height: 38px;
+    padding: 0 12px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #232323;
+    background: #202124;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+
+    .terminalTitle {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.02em;
+    }
+  }
+
+  .terminalContainer {
+    padding: 8px 4px 4px 4px;
+    flex: 1 1 0;
+    background-color: #181818;
+    overflow-y: auto;
+    min-height: 0;
+    font-size: 14px;
+    color: #e0e0e0;
+    font-family: 'Fira Mono', 'Consolas', monospace;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  .terminalInputArea {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 8px 0 0 0;
+    background: #181818;
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+  }
+
+  .terminalInput {
+    flex: 1 1 0;
+    font-size: 15px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #232323;
+    color: #fff;
+    outline: none;
+    min-width: 0;
+  }
+
+  .sendButton {
+    font-size: 16px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    background: #2d8cf0;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+    min-width: 48px;
+  }
+  .sendButton:active {
+    background: #1565c0;
+  }
+
+  .errorBanner {
+    font-size: 14px;
+    padding: 10px 12px;
+    background: #ffebee;
+    color: #c62828;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    text-align: center;
+    font-weight: 500;
+  }
+} 

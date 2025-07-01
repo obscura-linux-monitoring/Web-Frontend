@@ -4,6 +4,7 @@ import { Chart, registerables } from 'chart.js';
 import { usePerformanceData } from '../../hooks/usePerformanceData';
 import { PerformanceDataType } from '../../utils/WebSocketManager';
 import styles from '../../scss/performance/MiniPerformanceGraph.module.scss';
+import '../../scss/performance/performance_mobile/MiniPerformanceGraph.module.mobile.scss';
 import { useNodeContext } from '../../context/NodeContext';
 
 // 차트 컴포넌트에 필요한 모듈들 등록
@@ -56,7 +57,7 @@ const MiniPerformanceGraph: React.FC<MiniGraphProps> = ({
     // 30초마다 차트 렌더링 재시도
     const timer = setTimeout(() => {
       if ((dataPoints.length === 0 || chartError) && monitoringEnabled && isConnected) {
-        console.log(`[${type}:${resourceId}] 차트 렌더링 재시도`);
+        // console.log(`[${type}:${resourceId}] 차트 렌더링 재시도`);
         setRenderAttempt(prev => prev + 1);
       }
     }, 30000);
@@ -66,18 +67,18 @@ const MiniPerformanceGraph: React.FC<MiniGraphProps> = ({
 
   // 데이터 변경 로깅
   useEffect(() => {
-     console.log(`[${type}:${resourceId}] 데이터 업데이트:`, {
-      dataPoints: dataPoints.length,
-      values: dataPoints.length > 0 ? dataPoints.map(d => d.value) : [],
-      lastValue: dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].value : null,
-      connected: isConnected,
-      details: details ? JSON.stringify(details) : 'no details',
-      chartError
-    });
+    //  console.log(`[${type}:${resourceId}] 데이터 업데이트:`, {
+    //   dataPoints: dataPoints.length,
+    //   values: dataPoints.length > 0 ? dataPoints.map(d => d.value) : [],
+    //   lastValue: dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].value : null,
+    //   connected: isConnected,
+    //   details: details ? JSON.stringify(details) : 'no details',
+    //   chartError
+    // });
     
     // 차트 오류 상태 초기화
     if (dataPoints.length > 0 && chartError) {
-      console.log(`[${type}:${resourceId}] 데이터 수신으로 차트 오류 상태 초기화`);
+      // console.log(`[${type}:${resourceId}] 데이터 수신으로 차트 오류 상태 초기화`);
       setChartError(false);
       setRenderAttempt(prev => prev + 1);
     }
@@ -156,9 +157,9 @@ const MiniPerformanceGraph: React.FC<MiniGraphProps> = ({
   }, []);
 
   useEffect(() => {
-      console.log(`[${type}:${resourceId}] 컴포넌트 마운트됨`);
+      // console.log(`[${type}:${resourceId}] 컴포넌트 마운트됨`);
     return () => {
-      console.log(`[${type}:${resourceId}] 컴포넌트 언마운트됨`);
+      // console.log(`[${type}:${resourceId}] 컴포넌트 언마운트됨`);
     };
   }, []);
 
@@ -295,14 +296,14 @@ const MiniPerformanceGraph: React.FC<MiniGraphProps> = ({
         const values = dataPoints.map(d => d.value);
         const hasInvalidValues = values.some(v => isNaN(v) || v === undefined || v === null);
         
-        console.log(`[${type}:${resourceId}] 차트 렌더링 시도:`, {
-          dataPoints: dataPoints.length,
-          chartId,
-          renderAttempt,
-          values: values.slice(-3), // 마지막 3개 값만 로그 출력
-          hasInvalidValues,
-          chartOptions: JSON.stringify(chartOptions)
-        });
+        // console.log(`[${type}:${resourceId}] 차트 렌더링 시도:`, {
+        //   dataPoints: dataPoints.length,
+        //   chartId,
+        //   renderAttempt,
+        //   values: values.slice(-3), // 마지막 3개 값만 로그 출력
+        //   hasInvalidValues,
+        //   chartOptions: JSON.stringify(chartOptions)
+        // });
         
         if (hasInvalidValues) {
           console.warn(`[${type}:${resourceId}] 유효하지 않은 값이 있어 차트 렌더링에 문제가 발생할 수 있습니다.`);

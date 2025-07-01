@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
 import styles from '../../scss/performance/WiFiMonitor.module.scss';
+import '../../scss/performance/performance_mobile/MemoryMonitor.module.mobile.scss';
 import { useLocation, useParams } from 'react-router-dom';
 import { useNodeContext } from '../../context/NodeContext';
 import { useAuth } from '../../hooks/useAuth';

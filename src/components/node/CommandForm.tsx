@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styles from '../../scss/node/Command.module.scss';
+import '../../scss/node/node_mobile/Command.module.mobile.scss';
 import api from '../../api';
 
 interface CommandFormProps {

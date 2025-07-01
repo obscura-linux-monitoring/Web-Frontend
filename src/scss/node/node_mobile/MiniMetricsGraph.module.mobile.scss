@@ -1,0 +1,85 @@
+@media (max-width: 768px) {
+  .miniMetricsContainer {
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+    gap: 0.5rem;
+    margin: 0.25rem 0 0.25rem 0;
+    padding: 4px 4px 4px 8px;
+    background-color: rgba(0, 0, 0, 0.18);
+    border-radius: 8px;
+    border: 1px solid #333;
+    min-width: 0;
+    max-width: 100vw;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .metricItem {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+    min-width: 90px;
+    padding: 2px 0;
+    transition: all 0.3s ease;
+    &:last-child {
+      margin-right: 0;
+    }
+    &.alert {
+      animation: pulse 1s infinite;
+      .label, .value {
+        color: #ff6b6b;
+      }
+      .sparklinePath {
+        stroke: #ff6b6b;
+      }
+    }
+  }
+
+  .label {
+    font-size: 0.95rem;
+    color: #aaa;
+    margin-right: 4px;
+  }
+
+  .value {
+    font-size: 0.95rem;
+    color: #e0e0e0;
+    font-weight: 600;
+    min-width: 38px;
+    text-align: right;
+  }
+
+  .sparkline {
+    margin: 0 3px;
+    width: 48px !important;
+    height: 18px !important;
+  }
+
+  .sparklinePath {
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .cpuPath {
+    stroke: #4ecdc4;
+  }
+  .memoryPath {
+    stroke: #ff6b6b;
+  }
+
+  .placeholderGraph {
+    width: 48px;
+    height: 18px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    margin: 0 3px;
+  }
+
+  @keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+  }
+}

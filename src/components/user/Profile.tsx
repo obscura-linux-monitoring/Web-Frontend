@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import api from '../../api';
 import { getToken } from '../../utils/Auth';
 import styles from '../../scss/user/Profile.module.scss';
+import '../../scss/user/user_mobile/Profile.module.mobile.scss';
 
 type Profile = {
   sub: string;
@@ -270,7 +271,7 @@ const Profile = () => {
       }
     } catch (error) {
       console.error('노드 삭제 실패:', error);
-      addToast('노드 삭제에 실패했습니다.', 'error');
+      addToast('팀에 등록된 노드를 먼저 제거해 주세요.', 'error');
     } finally {
       setDeletingNode(false);
     }
@@ -342,7 +343,7 @@ const Profile = () => {
         </div>
 
         <div className={styles.sectionHeader}>
-          <h3># system-monitor</h3>
+          <h3>설치 명령어</h3>
         </div>
 
         <div className={styles.installCommandContainer}>
@@ -435,6 +436,7 @@ const Profile = () => {
           <div className={styles.deleteModal}>
             <h3>노드 삭제</h3>
             <p>정말로 '{nodeToDelete.name}' 노드를 삭제하시겠습니까?</p>
+            <p className={styles.teamAlert}>(팀에 등록된 노드가 있다면 해당 팀에서 노드를 제거한 후 삭제할 수 있습니다.)</p>
             <p className={styles.warningText}>이 작업은 되돌릴 수 없으며, 노드 데이터가 모두 삭제됩니다.</p>
 
             <div className={styles.modalButtons}>

@@ -5,7 +5,6 @@ import api from '../api';
 import { getToken } from '../utils/Auth';
 import { useNodeContext } from '../context/NodeContext';
 import { Modal, Button, Form, Select } from 'antd';
-import EventBus from '../utils/EventBus';
 
 type Node = {
   node_id: string;
@@ -27,7 +26,7 @@ type Team = {
   node_status: number;
 };
 
-const SideBar = () => {
+const SideBar = ({ isMobile, isSidebarOpen, setIsSidebarOpen }: { isMobile?: boolean, isSidebarOpen?: boolean, setIsSidebarOpen?: (open: boolean) => void }) => {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +34,7 @@ const SideBar = () => {
   const location = useLocation();
   const fetchedRef = useRef(false);
   const wsRef = useRef<WebSocket | null>(null);
+  const teamWsRef = useRef<WebSocket | null>(null); // 팀 WebSocket 참조 추가
 
   // 노드 이름 변경 관련 상태
   const [editNodeId, setEditNodeId] = useState<string | null>(null);
@@ -70,22 +70,11 @@ const SideBar = () => {
           },
         });
 
-        // profileRes.data에 들어있는 필드 확인을 위한 로깅
         console.log("프로필 응답 데이터:", profileRes.data);
-
         const userObscuraKey = profileRes.data.obscura_key;
-
-        // 수정: google_id 대신 JWT 토큰 디코딩하여 sub 값 사용
-        // JWT는 header.payload.signature 형태로 되어 있음
-        const payload = token.split('.')[1];
-        // base64 디코딩
-        const decodedPayload = JSON.parse(atob(payload));
-
-        console.log("토큰에서 가져온 Google ID (sub):", decodedPayload.sub);
-
         setObscuraKey(userObscuraKey);
 
-        // 노드 목록 가져오기
+        // 노드 목록 가져오기 (초기 로딩용)
         const nodesRes = await api.get('/user/nodes', {
           params: {
             obscura_key: userObscuraKey
@@ -93,24 +82,20 @@ const SideBar = () => {
         });
         setNodes(nodesRes.data.nodes);
 
-        // 팀 목록 가져오기 (추가)
-        await fetchTeamsWithNodes();
-
         fetchedRef.current = true;
 
-        // WebSocket 연결
-        const ws = new WebSocket(`ws://1.209.148.143:8000/user/ws/nodes?obscura_key=${userObscuraKey}&token=${token}`);
-
-        ws.onopen = () => {
-          console.log('WebSocket 연결 성공');
+        // 노드 WebSocket 연결
+        const nodeWs = new WebSocket(`ws://1.209.148.143:8000/user/ws/nodes?obscura_key=${userObscuraKey}&token=${token}`);
+        
+        nodeWs.onopen = () => {
+          console.log('노드 WebSocket 연결 성공');
         };
 
-        ws.onmessage = (event) => {
+        nodeWs.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
 
             if (data.type === 'node_status_update') {
-              // 함수형 업데이트를 사용하여 최신 상태 보장
               setNodes(prevNodes => {
                 // 편집 중인 노드의 이름은 변경되지 않도록 처리
                 if (editNodeId) {
@@ -131,15 +116,45 @@ const SideBar = () => {
           }
         };
 
-        ws.onerror = (error) => {
-          console.error('WebSocket 오류:', error);
+        nodeWs.onerror = (error) => {
+          console.error('노드 WebSocket 오류:', error);
         };
 
-        ws.onclose = () => {
-          console.log('WebSocket 연결 종료');
+        nodeWs.onclose = () => {
+          console.log('노드 WebSocket 연결 종료');
         };
 
-        wsRef.current = ws;
+        wsRef.current = nodeWs;
+
+        // 팀 WebSocket 연결 추가
+        const teamWs = new WebSocket(`ws://1.209.148.143:8000/team/ws/teams_with_nodes?token=${token}`);
+        
+        teamWs.onopen = () => {
+          console.log('팀 WebSocket 연결 성공');
+        };
+
+        teamWs.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            console.log('팀 WebSocket 데이터 수신:', data);
+
+            if (data.type === 'teams_with_nodes_data') {
+              setTeams(data.teams || []);
+            }
+          } catch (err) {
+            console.error('팀 WebSocket 메시지 처리 오류:', err);
+          }
+        };
+
+        teamWs.onerror = (error) => {
+          console.error('팀 WebSocket 오류:', error);
+        };
+
+        teamWs.onclose = () => {
+          console.log('팀 WebSocket 연결 종료');
+        };
+
+        teamWsRef.current = teamWs;
 
       } catch (err) {
         console.error('노드 목록 로딩 실패:', err);
@@ -156,69 +171,11 @@ const SideBar = () => {
       if (wsRef.current) {
         wsRef.current.close();
       }
+      if (teamWsRef.current) {
+        teamWsRef.current.close();
+      }
     };
   }, []);
-
-  // fetchTeamsWithNodes 함수를 useCallback으로 감싸기
-  const fetchTeamsWithNodes = useCallback(async () => {
-    try {
-      const token = getToken();
-      
-      console.log('팀 목록 새로고침 중...');
-      
-      // 새 엔드포인트로 팀 목록과 노드 정보를 한 번에 가져오기
-      const response = await api.get('/team/teams_with_nodes', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      const teamsData = response.data.teams || [];
-      console.log("새로 가져온 팀 및 노드 데이터:", teamsData);
-      
-      // 이미 노드 정보가 포함되어 있으므로 추가 요청 없이 바로 설정
-      setTeams(teamsData);
-    } catch (err) {
-      console.error('팀 목록 로딩 실패:', err);
-    }
-  }, []); // 종속성 없음 - 함수 참조 안정성 유지
-
-  // 이벤트 리스너 설정
-  useEffect(() => {
-    const handleTeamNodesUpdated = () => {
-      console.log('팀-노드 업데이트 이벤트 감지: 데이터 새로고침 시작');
-      fetchTeamsWithNodes();
-    };
-    
-    // 이벤트 구독
-    EventBus.subscribe('team-nodes-updated', handleTeamNodesUpdated);
-    
-    // 컴포넌트 언마운트 시 구독 해제
-    return () => {
-      EventBus.unsubscribe('team-nodes-updated', handleTeamNodesUpdated);
-    };
-  }, [fetchTeamsWithNodes]); // fetchTeamsWithNodes 함수 참조가 변경될 때 이벤트 리스너 업데이트
-
-  // 편집 모드 시작 시 입력 필드에 포커스
-  useEffect(() => {
-    if (editNodeId && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [editNodeId]);
-
-  // URL에서 nodeId 추출하여 현재 선택된 노드 설정
-  useEffect(() => {
-    if (nodes.length === 0) return;
-
-    const path = location.pathname;
-    const match = path.match(/\/nodes\/\w+\/([^/]+)/);
-    if (match && match[1]) {
-      const currentNodeId = match[1];
-      const currentNode = nodes.find(node => node.node_id === currentNodeId);
-
-      if (currentNode && (!selectedNode || selectedNode.node_id !== currentNodeId)) {
-        selectNode(currentNode);
-      }
-    }
-  }, [location.pathname, nodes, selectedNode, selectNode]);
 
   // 노드 선택 핸들러
   const handleNodeSelect = (node: Node) => {
@@ -337,8 +294,8 @@ const SideBar = () => {
       console.log('팀 연결이 저장되었습니다.');
       setTeamModalVisible(false);
       
-      // 팀 목록 새로고침 (노드 정보 포함)
-      fetchTeamsWithNodes();
+      // WebSocket에서 새로운 데이터가 자동으로 전송될 것이므로
+      // 추가 요청은 필요 없음
     } catch (err) {
       console.error('팀 연결 저장 실패:', err);
     }
@@ -376,224 +333,246 @@ const SideBar = () => {
     return acc;
   }, [] as {team_id: string, team_name: string}[]);
 
+  // 오버레이 클릭 시 사이드바 닫기
+  const handleOverlayClick = () => {
+    if (setIsSidebarOpen) setIsSidebarOpen(false);
+  };
+
   return (
-    <div className={styles.sidebar}>
-      {/* 사이드바 레이아웃을 main-content와 footer로 분리 */}
-      <div className={styles.sidebarContent}>
-        <h3><Link to="/">Obscura</Link></h3>
-        <ul>
-          <li className={styles.nodeListSection}>
-            <div className={styles.nodeListHeader}>🧩 노드 목록</div>
-            <div className={styles.nodeList}>
-              {loading ? (
-                <div className={styles.nodeItem}>⏳ 로딩 중...</div>
-              ) : error ? (
-                <div className={styles.nodeItem}>❌ {error}</div>
-              ) : nodes.length === 0 ? (
-                <div className={styles.nodeItem}>등록된 노드가 없습니다</div>
-              ) : (
-                nodes.map(node => (
-                  <div key={node.node_id} className={styles.nodeItemContainer}>
-                    {editNodeId === node.node_id ? (
-                      // 편집 모드
-                      <form onSubmit={saveNodeName} className={styles.nodeEditForm}>
-                        <input
-                          ref={inputRef}
-                          type="text"
-                          value={newNodeName}
-                          onChange={(e) => setNewNodeName(e.target.value)}
-                          className={styles.nodeNameInput}
-                          autoFocus
-                        />
-                        <div className={styles.nodeEditButtons}>
-                          <button
-                            type="submit"
-                            className={styles.saveButton}
-                            title="저장"
-                          >
-                            ✓
-                          </button>
-                          <button
-                            type="button"
-                            className={styles.cancelButton}
-                            title="취소"
-                            onClick={cancelEditNodeName}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                        {renameError && <div className={styles.renameError}>{renameError}</div>}
-                      </form>
-                    ) : (
-                      // 표시 모드
-                      <div className={styles.nodeItemWrapper}>
-                        <Link
-                          to={`/nodes/monitoring/${node.node_id}`}
-                          className={`${styles.nodeItem} ${selectedNode?.node_id === node.node_id ? styles.active : ''}`}
-                          onClick={() => handleNodeSelect(node)}
-                        >
-                          {/* 노드 정보 영역 (왼쪽) */}
-                          <span className={styles.nodeInfo}>
-                            {getStatusIndicator(node.status)}
-                            {node.node_name}
-                            {node.status === 0 && (
-                              <span className={styles.statusText}> (수집 중단)</span>
-                            )}
-
-                            {/* 팀 표시 추가 */}
-                            {node.teams && node.teams.length > 0 && (
-                              <span className={styles.teamBadge} title={`팀: ${node.teams.map(t => t.team_name).join(', ')}`}>
-                                👥 {node.teams.length}
-                              </span>
-                            )}
-                          </span>
-
-                          {/* 액션 버튼 영역 (오른쪽) */}
-                          <div className={styles.nodeActions}>
+    <>
+      {/* 모바일에서만 오버레이 */}
+      {isMobile && isSidebarOpen && (
+        <div className={styles.overlay + ' ' + styles.visible} onClick={handleOverlayClick} />
+      )}
+      {/* 사이드바 */}
+      <div className={styles.sidebar + (isMobile && isSidebarOpen ? ' ' + styles.open : '')}>
+        {/* 모바일에서만 X 버튼 */}
+        {isMobile && isSidebarOpen && setIsSidebarOpen && (
+          <button
+            className={styles.closeButton}
+            onClick={handleOverlayClick}
+            aria-label="메뉴 닫기"
+          >
+            ✕
+          </button>
+        )}
+        {/* 사이드바 레이아웃을 main-content와 footer로 분리 */}
+        <div className={styles.sidebarContent}>
+          <h3><Link to="/">Obscura</Link></h3>
+          <ul>
+            <li className={styles.nodeListSection}>
+              <div className={styles.nodeListHeader}>🧩 노드 목록</div>
+              <div className={styles.nodeList}>
+                {loading ? (
+                  <div className={styles.nodeItem}>⏳ 로딩 중...</div>
+                ) : error ? (
+                  <div className={styles.nodeItem}>❌ {error}</div>
+                ) : nodes.length === 0 ? (
+                  <div className={styles.nodeItem}>등록된 노드가 없습니다</div>
+                ) : (
+                  nodes.map(node => (
+                    <div key={node.node_id} className={styles.nodeItemContainer}>
+                      {editNodeId === node.node_id ? (
+                        // 편집 모드
+                        <form onSubmit={saveNodeName} className={styles.nodeEditForm}>
+                          <input
+                            ref={inputRef}
+                            type="text"
+                            value={newNodeName}
+                            onChange={(e) => setNewNodeName(e.target.value)}
+                            className={styles.nodeNameInput}
+                            autoFocus
+                          />
+                          <div className={styles.nodeEditButtons}>
                             <button
-                              className={styles.editNodeButton}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                startEditNodeName(node, e);
-                              }}
-                              title="노드 이름 변경"
+                              type="submit"
+                              className={styles.saveButton}
+                              title="저장"
                             >
-                              ✏️
+                              ✓
                             </button>
                             <button
-                              className={styles.teamNodeButton}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                showTeamModal(node);
-                              }}
-                              title="팀 관리"
+                              type="button"
+                              className={styles.cancelButton}
+                              title="취소"
+                              onClick={cancelEditNodeName}
                             >
-                              👥
+                              ✕
                             </button>
                           </div>
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          </li>
+                          {renameError && <div className={styles.renameError}>{renameError}</div>}
+                        </form>
+                      ) : (
+                        // 표시 모드
+                        <div className={styles.nodeItemWrapper}>
+                          <Link
+                            to={`/nodes/monitoring/${node.node_id}`}
+                            className={`${styles.nodeItem} ${selectedNode?.node_id === node.node_id ? styles.active : ''}`}
+                            onClick={() => handleNodeSelect(node)}
+                          >
+                            {/* 노드 정보 영역 (왼쪽) */}
+                            <span className={styles.nodeInfo}>
+                              {getStatusIndicator(node.status)}
+                              {node.node_name}
+                              {node.status === 0 && (
+                                <span className={styles.statusText}> (수집 중단)</span>
+                              )}
 
-          {/* 팀 관리 섹션 */}
-          <li className={styles.teamsSection}>
-            <div className={styles.teamListHeader}>
-              <Link to="/team/management" className={styles.teamManagementLink}>
-                <span>👥 팀 관리</span>
-              </Link>
-            </div>
-            <div className={styles.teamList}>
-              {uniqueTeams.length === 0 ? (
-                <div className={styles.emptyTeam}>생성된 팀이 없습니다</div>
-              ) : (
-                uniqueTeams.map((team) => {
-                  // 팀이 관리하는 노드 목록
-                  const teamNodes = getTeamNodes(team.team_id);
-                  const isExpanded = expandedTeams[team.team_id] || false;
-                  
-                  return (
-                    <div key={`team-${team.team_id}`} className={styles.teamContainer}>
-                      {/* 팀 헤더 - 클릭 시 확장/축소 */}
-                      <div 
-                        className={styles.teamItem}
-                        onClick={(e) => toggleTeamExpand(team.team_id, e)}
-                      >
-                        <div className={styles.teamContent}>
-                          <div className={styles.teamName}>
-                            <span className={styles.expandIcon}>
-                              {isExpanded ? '▼' : '▶'}
-                            </span>
-                            👥 {team.team_name}
-                          </div>
-                          <div className={styles.teamNodeCount}>
-                            {teamNodes.length > 0 
-                              ? `${teamNodes.length}개 노드` 
-                              : "연결된 노드 없음"}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* 확장 시 노드 목록 표시 */}
-                      {isExpanded && teamNodes.length > 0 && (
-                        <div className={styles.teamNodesList}>
-                          {teamNodes.map(node => (
-                            <Link
-                              key={`node-${node.node_id}`}
-                              to={`/nodes/monitoring/${node.node_id}`}
-                              className={`${styles.teamNodeItem} ${selectedNode?.node_id === node.node_id ? styles.active : ''}`}
-                              onClick={() => handleNodeSelect({
-                                node_id: node.node_id,
-                                node_name: node.node_name,
-                                status: node.node_status,
-                                server_type: ''
-                              })}
-                            >
-                              <div className={styles.nodeItemContent}>
-                                <span className={styles.nodeDot}>•</span>
-                                <span>{node.node_name}</span>
-                                <span className={node.node_status === 1 ? styles.activeNode : styles.inactiveNode}>
-                                  {node.node_status === 1 ? '🟢' : '🔴'}
+                              {/* 팀 표시 추가 */}
+                              {node.teams && node.teams.length > 0 && (
+                                <span className={styles.teamBadge} title={`팀: ${node.teams.map(t => t.team_name).join(', ')}`}>
+                                  👥 {node.teams.length}
                                 </span>
-                              </div>
-                            </Link>
-                          ))}
+                              )}
+                            </span>
+
+                            {/* 액션 버튼 영역 (오른쪽) */}
+                            <div className={styles.nodeActions}>
+                              <button
+                                className={styles.editNodeButton}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  startEditNodeName(node, e);
+                                }}
+                                title="노드 이름 변경"
+                              >
+                                ✏️
+                              </button>
+                              <button
+                                className={styles.teamNodeButton}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  showTeamModal(node);
+                                }}
+                                title="팀 관리"
+                              >
+                                👥
+                              </button>
+                            </div>
+                          </Link>
                         </div>
                       )}
                     </div>
-                  );
-                })
-              )}
-            </div>
-          </li>
-        </ul>
-      </div>
+                  ))
+                )}
+              </div>
+            </li>
 
-      {/* 하단 고정 설정 메뉴 */}
-      <div className={styles.sidebarFooter}>
-        <Link to="/settings" className={styles.settingsLink}>⚙️ 설정</Link>
-      </div>
+            {/* 팀 관리 섹션 */}
+            <li className={styles.teamsSection}>
+              <div className={styles.teamListHeader}>
+                <Link to="/team/management" className={styles.teamManagementLink}>
+                  <span>👥 팀 관리</span>
+                </Link>
+              </div>
+              <div className={styles.teamList}>
+                {uniqueTeams.length === 0 ? (
+                  <div className={styles.emptyTeam}>생성된 팀이 없습니다</div>
+                ) : (
+                  uniqueTeams.map((team) => {
+                    // 팀이 관리하는 노드 목록
+                    const teamNodes = getTeamNodes(team.team_id);
+                    const isExpanded = expandedTeams[team.team_id] || false;
+                    
+                    return (
+                      <div key={`team-${team.team_id}`} className={styles.teamContainer}>
+                        {/* 팀 헤더 - 클릭 시 확장/축소 */}
+                        <div 
+                          className={styles.teamItem}
+                          onClick={(e) => toggleTeamExpand(team.team_id, e)}
+                        >
+                          <div className={styles.teamContent}>
+                            <div className={styles.teamName}>
+                              <span className={styles.expandIcon}>
+                                {isExpanded ? '▼' : '▶'}
+                              </span>
+                              👥 {team.team_name}
+                            </div>
+                            <div className={styles.teamNodeCount}>
+                              {teamNodes.length > 0 
+                                ? `${teamNodes.length}개 노드` 
+                                : "연결된 노드 없음"}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* 확장 시 노드 목록 표시 */}
+                        {isExpanded && teamNodes.length > 0 && (
+                          <div className={styles.teamNodesList}>
+                            {teamNodes.map(node => (
+                              <Link
+                                key={`node-${node.node_id}`}
+                                to={`/nodes/monitoring/${node.node_id}`}
+                                className={`${styles.teamNodeItem} ${selectedNode?.node_id === node.node_id ? styles.active : ''}`}
+                                onClick={() => handleNodeSelect({
+                                  node_id: node.node_id,
+                                  node_name: node.node_name,
+                                  status: node.node_status,
+                                  server_type: ''
+                                })}
+                              >
+                                <div className={styles.nodeItemContent}>
+                                  <span className={styles.nodeDot}>•</span>
+                                  <span>{node.node_name}</span>
+                                  <span className={node.node_status === 1 ? styles.activeNode : styles.inactiveNode}>
+                                    {node.node_status === 1 ? '🟢' : '🔴'}
+                                  </span>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </li>
+          </ul>
+        </div>
 
-      {/* 노드에 팀 연결 모달 */}
-      <Modal
-        title={`${currentNodeForTeam?.node_name || '노드'} 팀 관리`}
-        open={teamModalVisible}
-        onCancel={() => setTeamModalVisible(false)}
-        footer={[
-          <Button key="cancel" onClick={() => setTeamModalVisible(false)}>
-            취소
-          </Button>,
-          <Button key="submit" type="primary" onClick={handleSaveTeamAssignment}>
-            저장
-          </Button>
-        ]}
-      >
-        <Form layout="vertical">
-          <Form.Item label="이 노드를 관리할 팀 선택:">
-            <Select
-              mode="multiple"
-              style={{ width: '100%' }}
-              placeholder="팀 선택"
-              value={selectedTeams}
-              onChange={setSelectedTeams}
-              optionLabelProp="label"
-            >
-              {teams.map(team => (
-                <Select.Option key={team.team_id} value={team.team_id} label={team.team_name}>
-                  {team.team_name}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Form>
-      </Modal>
-    </div>
+        {/* 하단 고정 설정 메뉴 */}
+        <div className={styles.sidebarFooter}>
+          <Link to="/settings" className={styles.settingsLink}>⚙️ 설정</Link>
+        </div>
+
+        {/* 노드에 팀 연결 모달 */}
+        <Modal
+          title={`${currentNodeForTeam?.node_name || '노드'} 팀 관리`}
+          open={teamModalVisible}
+          onCancel={() => setTeamModalVisible(false)}
+          footer={[
+            <Button key="cancel" onClick={() => setTeamModalVisible(false)}>
+              취소
+            </Button>,
+            <Button key="submit" type="primary" onClick={handleSaveTeamAssignment}>
+              저장
+            </Button>
+          ]}
+        >
+          <Form layout="vertical">
+            <Form.Item label="이 노드를 관리할 팀 선택:">
+              <Select
+                mode="multiple"
+                style={{ width: '100%' }}
+                placeholder="팀 선택"
+                value={selectedTeams}
+                onChange={setSelectedTeams}
+                optionLabelProp="label"
+              >
+                {teams.map(team => (
+                  <Select.Option key={team.team_id} value={team.team_id} label={team.team_name}>
+                    {team.team_name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Form>
+        </Modal>
+      </div>
+    </>
   );
 };
 

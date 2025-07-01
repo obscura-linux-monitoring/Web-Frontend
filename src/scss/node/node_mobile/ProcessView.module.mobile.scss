@@ -1,0 +1,81 @@
+@media (max-width: 768px) {
+  .container {
+    padding: 0.75rem 0.5rem 0.5rem 0.5rem;
+    min-height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    box-sizing: border-box;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .search, .filter {
+    min-width: 120px;
+    font-size: 15px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    margin-bottom: 0.25rem;
+    box-sizing: border-box;
+  }
+
+  .processTableContainer {
+    flex: 1 1 0;
+    overflow-x: auto;
+    min-height: 0;
+    background: #fafbfc;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+
+  .processTable {
+    font-size: 13px;
+    min-width: 700px;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    background: #fff;
+    th, td {
+      padding: 10px 6px;
+      text-align: left;
+      white-space: nowrap;
+    }
+    th {
+      background: #f3f4f6;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      font-weight: 600;
+      font-size: 13.5px;
+    }
+    tr {
+      border-bottom: 1px solid #eee;
+    }
+  }
+
+  /* 가로 스크롤 힌트 */
+  .processTableContainer::after {
+    content: '← 좌우로 스크롤';
+    position: absolute;
+    right: 10px;
+    bottom: 8px;
+    font-size: 11px;
+    color: #bbb;
+    background: rgba(255,255,255,0.8);
+    padding: 2px 6px;
+    border-radius: 8px;
+    pointer-events: none;
+    z-index: 2;
+    display: block;
+  }
+} 

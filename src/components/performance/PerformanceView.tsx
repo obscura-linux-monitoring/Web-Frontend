@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import api from '../../api'; // axios 인스턴스 import
 import styles from '../../scss/performance/PerformanceView.module.scss';
+import '../../scss/performance/performance_mobile/PerformanceView.module.mobile.scss';
 import CpuMonitor from './CpuMonitor';
 import MemoryMonitor from './MemoryMonitor';
 import DiskMonitor from './DiskMonitor';
@@ -265,12 +266,12 @@ const PerformanceView: React.FC<PerformanceViewProps> = ({
           {diskItems}
           
           {/* WiFi 리소스 항목 추가 */}
-          <div 
+          {/* <div 
             className={`${styles.resourceItem} ${selectedResource === 'wifi' ? styles.selected : ''}`}
             onClick={() => handleResourceClick('wifi')}
           >
             <MiniPerformanceGraph type="wifi" resourceId="0" color="#E91E63" name="Wi-Fi" />
-          </div>
+          </div> */}
 
           {/* Ethernet 리소스 항목 추가 */}
           <div 

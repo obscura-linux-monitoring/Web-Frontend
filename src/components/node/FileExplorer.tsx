@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import styles from '../../scss/node/FileExplorer.module.scss';
+import '../../scss/node/node_mobile/FileExplorer.module.mobile.scss';
 
 // 인터페이스 정의
 interface FileExplorerProps {

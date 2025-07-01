@@ -23,7 +23,7 @@
       cursor: move;
       display: flex;
       align-items: center;
-      
+
       h3 {
         margin: 0;
         font-size: 16px;
@@ -31,10 +31,10 @@
         color: #f0f0f0;
       }
     }
-    
+
     .widget-controls {
       margin-left: 8px;
-      
+
       .close-btn {
         background: none;
         border: none;
@@ -44,12 +44,12 @@
         padding: 4px 8px;
         line-height: 1;
         border-radius: 4px;
-        
+
         &:hover {
           color: #fff;
           background-color: rgba(255, 255, 255, 0.1);
         }
-        
+
         &:active {
           background-color: rgba(255, 255, 255, 0.2);
         }
@@ -61,7 +61,7 @@
     padding: 16px;
     flex: 1;
     overflow: auto;
-    
+
     p {
       color: #e0e0e0;
     }
@@ -72,7 +72,8 @@
   padding: 20px;
   background-color: #242424;
   color: #e0e0e0;
-  min-height: 100vh;
+  height: calc(100vh - 150px);
+  overflow: hidden;
 
   h2 {
     color: #f0f0f0;
@@ -81,7 +82,7 @@
 
   .dashboard-controls {
     margin-bottom: 20px;
-    
+
     .add-widget-button {
       display: flex;
       align-items: center;
@@ -96,17 +97,17 @@
       font-weight: 500;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
       transition: background-color 0.2s, transform 0.1s;
-      
+
       .plus-icon {
         font-size: 18px;
         margin-right: 6px;
       }
-      
+
       &:hover {
         background-color: #3a80d2;
         transform: translateY(-1px);
       }
-      
+
       &:active {
         transform: translateY(1px);
       }
@@ -117,7 +118,8 @@
     background-color: #2a2a2a;
     border-radius: 8px;
     padding: 20px;
-    min-height: 600px;
+    height: calc(100% - 60px);
+    overflow: auto;
   }
 }
 
@@ -129,10 +131,10 @@
 }
 
 // 그리드 라인 스타일
-.react-grid-item > .react-resizable-handle {
+.react-grid-item>.react-resizable-handle {
   border-color: #666;
-  
+
   &::after {
     border-color: #888;
   }
-} 
+}

@@ -1,0 +1,181 @@
+@media (max-width: 768px) {
+  .diskMonitorContainer {
+    width: 100vw;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    padding: 0.75rem 0.5rem 0.5rem 0.5rem;
+    margin-bottom: 1rem;
+    box-sizing: border-box;
+  }
+
+  .headerSection {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0;
+    margin-bottom: 1rem;
+
+    .diskTitle {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #222;
+    }
+
+    .diskModel {
+      font-size: 0.95rem;
+      color: #888;
+    }
+  }
+
+  .mainContent {
+    flex-direction: column;
+    gap: 1.2rem;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .diskList {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+
+    .diskItem {
+      width: 100%;
+      margin-bottom: 0.7rem;
+      padding: 0.7rem 1rem;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      background: #f7f8fa;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+
+      .diskHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.2rem;
+
+        .diskName {
+          font-size: 1rem;
+          font-weight: 600;
+          color: #222;
+        }
+
+        .diskType {
+          font-size: 0.85rem;
+          color: #888;
+        }
+      }
+
+      .diskInfo {
+        flex-direction: column;
+        gap: 0.3rem;
+        width: 100%;
+        margin-top: 0.5rem;
+
+        .infoItem {
+          width: 100%;
+          font-size: 0.95rem;
+          color: #222;
+        }
+      }
+    }
+  }
+
+  .chartSection {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+
+    .chartHeader {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: #222;
+    }
+
+    .chartWrapper {
+      width: 100%;
+      min-height: 160px;
+      aspect-ratio: 16 / 9;
+      max-height: 220px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+      margin-bottom: 0.5rem;
+      overflow-x: auto;
+      padding: 0.5rem 0.2rem;
+    }
+  }
+
+  .metricsSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .metricRow {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+
+  .metricGroup {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    border-radius: 6px;
+    padding: 0.5rem 0.7rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    font-size: 15px;
+    color: #222;
+  }
+
+  .metricLabel {
+    font-size: 14px;
+    color: #888;
+  }
+
+  .metricValue {
+    font-size: 14px;
+    font-weight: 600;
+    color: #222;
+  }
+
+  .loadingState, .disconnectedState, .errorState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    width: 100%;
+    text-align: center;
+    color: #aaa;
+    font-size: 15px;
+    background: #f7f8fa;
+    border-radius: 8px;
+    margin: 0.5rem 0;
+  }
+
+  .errorState {
+    color: #e74c3c;
+  }
+
+  .retryButton {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    margin-top: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 15px;
+    transition: background 0.2s;
+  }
+
+  .retryButton:active {
+    background-color: #2980b9;
+  }
+} 

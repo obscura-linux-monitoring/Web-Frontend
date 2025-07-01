@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import styles from '../../scss/node/ProcessView.module.scss';
+import '../../scss/node/node_mobile/ProcessView.module.mobile.scss';
 import { useNodeContext } from '../../context/NodeContext';
 import api from '../../api';
 import { useSshContext } from '../../context/SshContext';
@@ -41,6 +42,14 @@ interface TooltipState {
   pid: number;
 }
 
+// 컨텍스트 메뉴 상태 인터페이스 추가
+interface ContextMenuState {
+  visible: boolean;
+  x: number;
+  y: number;
+  process: Process | null;
+}
+
 type SortField = 'pid' | 'name' | 'user' | 'cpu_usage' | 'memory_rss' | 'cpu_time' | 'threads' | 'start_time';
 type SortDirection = 'asc' | 'desc';
 
@@ -63,7 +72,7 @@ const ProcessView = ({ nodeId: propsNodeId }: ProcessViewProps = {}) => {
   const [connected, setConnected] = useState<boolean>(false);
   const [processingAction, setProcessingAction] = useState<{ pid: number; action: string } | null>(null);
   const [visibleColumns, setVisibleColumns] = useState<string[]>([
-    'pid', 'name', 'user', 'cpu_usage', 'memory_rss', 'status', 'start_time', 'command', 'actions'
+    'pid', 'name', 'user', 'cpu_usage', 'memory_rss', 'status', 'start_time', 'command'
   ]);
 
   // 툴팁 관련 상태 추가
@@ -78,11 +87,16 @@ const ProcessView = ({ nodeId: propsNodeId }: ProcessViewProps = {}) => {
     getSshConnection
   } = useSshContext();
 
-  // Toggle column visibility
-  const toggleColumnVisibility = (column: string) => {
-    // 'actions' 컬럼은 항상 표시되도록 설정
-    if (column === 'actions') return;
+  // 컨텍스트 메뉴 상태 추가
+  const [contextMenu, setContextMenu] = useState<ContextMenuState>({
+    visible: false,
+    x: 0,
+    y: 0,
+    process: null
+  });
 
+  // Toggle column visibility (actions 관련 코드 제거)
+  const toggleColumnVisibility = (column: string) => {
     setVisibleColumns(prev =>
       prev.includes(column)
         ? prev.filter(c => c !== column)
@@ -298,7 +312,11 @@ const ProcessView = ({ nodeId: propsNodeId }: ProcessViewProps = {}) => {
 
   // 프로세스 종료 핸들러
   const handleKillProcess = async () => {
-    if (!nodeId || selectedProcesses.length === 0 || !monitoringEnabled || !hasSshConnection) return;
+    if (!nodeId || selectedProcesses.length === 0 || !monitoringEnabled) return;
+    if (!hasSshConnection) {
+      alert('SSH 연결이 없어 프로세스를 종료할 수 없습니다. SSH 연결을 확인해주세요.');
+      return;
+    }
 
     if (!window.confirm(`선택한 ${selectedProcesses.length}개의 프로세스를 종료하시겠습니까?`)) {
       return;
@@ -332,12 +350,26 @@ const ProcessView = ({ nodeId: propsNodeId }: ProcessViewProps = {}) => {
   };
 
   // 프로세스 재시작 핸들러
-  const handleRestartProcess = async (process: Process) => {
-  };
+  const handleRestartProcess = useCallback(async (process: Process) => {
+    console.log('재시작 프로세스:', process.name); // 디버깅 로그
+    if (!nodeId || !monitoringEnabled) return;
+    if (!hasSshConnection) {
+      alert('SSH 연결이 없어 프로세스를 재시작할 수 없습니다. SSH 연결을 확인해주세요.');
+      return;
+    }
+    
+    // 실제 재시작 로직은 나중에 구현
+    alert(`${process.name} 프로세스 재시작 기능은 개발 중입니다.`);
+  }, [nodeId, monitoringEnabled, hasSshConnection]);
 
   // 프로세스 중지 핸들러
-  const handleStopProcess = async (process: Process) => {
-    if (!nodeId || !monitoringEnabled || !hasSshConnection) return;
+  const handleStopProcess = useCallback(async (process: Process) => {
+    console.log('중지 프로세스:', process.name); // 디버깅 로그
+    if (!nodeId || !monitoringEnabled) return;
+    if (!hasSshConnection) {
+      alert('SSH 연결이 없어 프로세스를 중지할 수 없습니다. SSH 연결을 확인해주세요.');
+      return;
+    }
 
     if (!window.confirm(`"${process.name}" 프로세스를 중지하시겠습니까?`)) {
       return;
@@ -365,7 +397,77 @@ const ProcessView = ({ nodeId: propsNodeId }: ProcessViewProps = {}) => {
     } finally {
       setProcessingAction(null);
     }
-  };
+  }, [nodeId, monitoringEnabled, hasSshConnection, sshConnection]);
+
+  // 우클릭 컨텍스트 메뉴 핸들러 - 화면 경계 처리 추가
+  const handleRowRightClick = useCallback((e: React.MouseEvent, process: Process) => {
+    console.log('우클릭 감지:', process.name, process.pid);
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // 화면 크기 확인
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const menuWidth = 200; // 컨텍스트 메뉴 예상 너비
+    const menuHeight = 120; // 컨텍스트 메뉴 예상 높이
+    
+    // 마우스 위치가 화면 경계에 가까우면 위치 조정
+    let x = e.clientX;
+    let y = e.clientY;
+    
+    if (x + menuWidth > windowWidth) {
+      x = windowWidth - menuWidth - 10;
+    }
+    
+    if (y + menuHeight > windowHeight) {
+      y = windowHeight - menuHeight - 10;
+    }
+    
+    setContextMenu({
+      visible: true,
+      x,
+      y,
+      process
+    });
+  }, []);
+
+  // 컨텍스트 메뉴 닫기
+  const closeContextMenu = useCallback(() => {
+    setContextMenu({ visible: false, x: 0, y: 0, process: null });
+  }, []);
+
+  // 컨텍스트 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (contextMenu.visible) {
+        closeContextMenu();
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    document.addEventListener('contextmenu', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('contextmenu', handleClickOutside);
+    };
+  }, [contextMenu.visible, closeContextMenu]);
+
+  // 컨텍스트 메뉴에서 작업 실행 - 의존성 배열 수정
+  const handleContextMenuAction = useCallback((action: string, process: Process) => {
+    closeContextMenu();
+    
+    switch (action) {
+      case 'restart':
+        handleRestartProcess(process);
+        break;
+      case 'stop':
+        handleStopProcess(process);
+        break;
+      default:
+        break;
+    }
+  }, [closeContextMenu, handleRestartProcess, handleStopProcess]); // 의존성 추가
 
   // 프로세스 필터링 및 정렬
   const filteredAndSortedProcesses = processes
@@ -452,6 +554,40 @@ const ProcessView = ({ nodeId: propsNodeId }: ProcessViewProps = {}) => {
 
   return (
     <div className={styles.container}>
+      {/* 컨텍스트 메뉴 */}
+      {contextMenu.visible && contextMenu.process && (
+        <div
+          className={styles.contextMenu}
+          style={{
+            position: 'fixed',
+            left: `${contextMenu.x}px`,
+            top: `${contextMenu.y}px`,
+            zIndex: 1000
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className={styles.contextMenuHeader}>
+            <strong>{contextMenu.process.name}</strong>
+            <span>PID: {contextMenu.process.pid}</span>
+          </div>
+          <div className={styles.contextMenuDivider}></div>
+          <button
+            className={`${styles.contextMenuItem} ${styles.restartItem}`}
+            onClick={() => handleContextMenuAction('restart', contextMenu.process!)}
+            disabled={processingAction?.pid === contextMenu.process.pid || !monitoringEnabled}
+          >
+            🔄 프로세스 재시작
+          </button>
+          <button
+            className={`${styles.contextMenuItem} ${styles.stopItem}`}
+            onClick={() => handleContextMenuAction('stop', contextMenu.process!)}
+            disabled={processingAction?.pid === contextMenu.process.pid || !monitoringEnabled}
+          >
+            ⏹️ 프로세스 중지
+          </button>
+        </div>
+      )}
+
       {/* 마우스 호버 툴팁 */}
       {tooltip && tooltip.visible && (
         <div
@@ -497,6 +633,9 @@ const ProcessView = ({ nodeId: propsNodeId }: ProcessViewProps = {}) => {
             ) : (
               <span className={styles.disconnected}>● 연결 끊김</span>
             )}
+            {!hasSshConnection && (
+              <span className={styles.disconnected} style={{ marginLeft: '10px' }}>● SSH 연결 없음</span>
+            )}
           </div>
         </div>
 
@@ -504,7 +643,7 @@ const ProcessView = ({ nodeId: propsNodeId }: ProcessViewProps = {}) => {
           <div className={styles.searchBox}>
             <input
               type="text"
-              placeholder="프로세스 검색..."
+              placeholder="프로세스 검색... (우클릭으로 작업 메뉴)"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               disabled={!monitoringEnabled}
@@ -647,13 +786,6 @@ const ProcessView = ({ nodeId: propsNodeId }: ProcessViewProps = {}) => {
                     onChange={() => toggleColumnVisibility('command')}
                     disabled={!monitoringEnabled}
                   /> 명령어
-                </label>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={visibleColumns.includes('actions')}
-                    disabled={true} // 항상 체크되도록 비활성화
-                  /> 작업
                 </label>
               </div>
             </div>
@@ -803,11 +935,6 @@ const ProcessView = ({ nodeId: propsNodeId }: ProcessViewProps = {}) => {
                 {visibleColumns.includes('command') && (
                   <th>명령어</th>
                 )}
-
-                {/* 항상 표시되는 작업 컬럼 */}
-                {visibleColumns.includes('actions') && (
-                  <th className={styles.actionsColumn}>작업</th>
-                )}
               </tr>
             </thead>
             <tbody>
@@ -822,6 +949,11 @@ const ProcessView = ({ nodeId: propsNodeId }: ProcessViewProps = {}) => {
                   <tr
                     key={process.pid}
                     className={selectedProcesses.includes(process.pid) ? styles.selected : ''}
+                    onContextMenu={(e) => {
+                      console.log('onContextMenu 이벤트 발생'); // 디버깅 로그
+                      handleRowRightClick(e, process);
+                    }}
+                    style={{ cursor: 'context-menu' }}
                   >
                     <td>
                       <input
@@ -919,34 +1051,6 @@ const ProcessView = ({ nodeId: propsNodeId }: ProcessViewProps = {}) => {
                           {process.command.length > 30 && (
                             <span className={styles.tooltipText}>{process.command}</span>
                           )}
-                        </div>
-                      </td>
-                    )}
-
-                    {/* 새로운 작업 버튼 컬럼 */}
-                    {visibleColumns.includes('actions') && (
-                      <td className={styles.actionsCell}>
-                        <div className={styles.actionButtons}>
-                          <button
-                            className={`${styles.actionButton} ${styles.restartButton}`}
-                            onClick={() => handleRestartProcess(process)}
-                            disabled={processingAction?.pid === process.pid || !monitoringEnabled}
-                            title="프로세스 재시작"
-                          >
-                            {processingAction?.pid === process.pid && processingAction?.action === 'restart'
-                              ? '처리 중...'
-                              : '재시작'}
-                          </button>
-                          <button
-                            className={`${styles.actionButton} ${styles.stopButton}`}
-                            onClick={() => handleStopProcess(process)}
-                            disabled={processingAction?.pid === process.pid || !monitoringEnabled}
-                            title="프로세스 중지"
-                          >
-                            {processingAction?.pid === process.pid && processingAction?.action === 'stop'
-                              ? '처리 중...'
-                              : '중지'}
-                          </button>
                         </div>
                       </td>
                     )}

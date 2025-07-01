@@ -1,0 +1,97 @@
+// 모바일 전용 사이드바 스타일
+@media (max-width: 768px) {
+  .sidebar {
+    width: 80vw;
+    max-width: 300px;
+    transform: translateX(-100%);
+    display: flex;
+    visibility: hidden;
+    pointer-events: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    background: #181818;
+    z-index: 2200;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.25);
+    border-radius: 0 12px 12px 0;
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    
+    &.open {
+      transform: translateX(0);
+      visibility: visible;
+      pointer-events: auto;
+    }
+  }
+
+  .hamburgerButton {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    z-index: 2100;
+    padding: 0;
+
+    .hamburgerBar {
+      display: block;
+      width: 24px;
+      height: 3px;
+      background-color: #fff;
+      border-radius: 2px;
+      transition: all 0.3s ease-in-out;
+    }
+  }
+
+  // 사이드바가 열릴 때 햄버거 버튼 숨기기
+  .sidebar.open ~ .hamburgerButton,
+  .sidebar.open + .hamburgerButton {
+    display: none !important;
+  }
+
+  .closeButton {
+    display: block;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 2300;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0 8px;
+    line-height: 1;
+    transition: color 0.2s;
+    &:hover {
+      color: #ff6b6b;
+    }
+  }
+
+  .overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(60, 60, 60, 0.3);
+    z-index: 1500;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+
+    &.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+} 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import styles from '../../scss/node/NodeServices.module.scss';
+import '../../scss/node/node_mobile/NodeServices.module.mobile.scss';
 import { useNodeContext } from '../../context/NodeContext';
 import api from '../../api';
 import { useSshContext } from '../../context/SshContext';
@@ -24,6 +25,14 @@ interface NodeServicesProps {
   nodeId?: string;
 }
 
+// 컨텍스트 메뉴 상태 인터페이스 추가
+interface ContextMenuState {
+  visible: boolean;
+  x: number;
+  y: number;
+  service: Service | null;
+}
+
 type SortField = 'name' | 'active_state' | 'status' | 'type' | 'sub_state';
 type SortDirection = 'asc' | 'desc';
 
@@ -44,6 +53,14 @@ const NodeServices = ({ nodeId: propsNodeId }: NodeServicesProps = {}) => {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [connected, setConnected] = useState<boolean>(false);
   const [processingAction, setProcessingAction] = useState<{ name: string; action: string } | null>(null);
+
+  // 컨텍스트 메뉴 상태 추가
+  const [contextMenu, setContextMenu] = useState<ContextMenuState>({
+    visible: false,
+    x: 0,
+    y: 0,
+    service: null
+  });
 
   // SSH Context 사용
   const {
@@ -196,8 +213,13 @@ const NodeServices = ({ nodeId: propsNodeId }: NodeServicesProps = {}) => {
   };
 
   // 서비스 시작 핸들러
-  const handleStartService = async (service: Service) => {
-    if (!nodeId || !monitoringEnabled || !hasSshConnection) return;
+  const handleStartService = useCallback(async (service: Service) => {
+    console.log('시작 서비스:', service.name);
+    if (!nodeId || !monitoringEnabled) return;
+    if (!hasSshConnection) {
+      alert('SSH 연결이 없어 서비스를 시작할 수 없습니다. SSH 연결을 확인해주세요.');
+      return;
+    }
 
     if (!window.confirm(`"${service.name}" 서비스를 시작하시겠습니까?`)) {
       return;
@@ -206,7 +228,6 @@ const NodeServices = ({ nodeId: propsNodeId }: NodeServicesProps = {}) => {
     setProcessingAction({ name: service.name, action: 'start' });
 
     try {
-      // API 호출
       const data = {
         service_name: service.name,
         node_id: nodeId,
@@ -217,18 +238,11 @@ const NodeServices = ({ nodeId: propsNodeId }: NodeServicesProps = {}) => {
         password: sshConnection?.password || '',
         key: sshConnection?.key || ''
       }
-      // API 호출
+      
       const response = await api.post(`/ssh/start_service`, data);
       console.log(response);
 
       if (response.data && response.data.success) {
-        // 서비스 상태 업데이트
-        // setServices(prev => prev.map(s =>
-        //   s.name === service.name
-        //     ? { ...s, active_state: 'active', sub_state: 'running' }
-        //     : s
-        // ));
-
         alert(`${service.name} 서비스가 시작되었습니다.`);
       } else {
         throw new Error(response.data.error || '서비스 시작에 실패했습니다');
@@ -239,11 +253,16 @@ const NodeServices = ({ nodeId: propsNodeId }: NodeServicesProps = {}) => {
     } finally {
       setProcessingAction(null);
     }
-  };
+  }, [nodeId, monitoringEnabled, hasSshConnection, sshConnection]);
 
   // 서비스 중지 핸들러
-  const handleStopService = async (service: Service) => {
+  const handleStopService = useCallback(async (service: Service) => {
+    console.log('중지 서비스:', service.name);
     if (!nodeId || !monitoringEnabled) return;
+    if (!hasSshConnection) {
+      alert('SSH 연결이 없어 서비스를 중지할 수 없습니다. SSH 연결을 확인해주세요.');
+      return;
+    }
 
     if (!window.confirm(`"${service.name}" 서비스를 중지하시겠습니까?`)) {
       return;
@@ -262,18 +281,11 @@ const NodeServices = ({ nodeId: propsNodeId }: NodeServicesProps = {}) => {
         password: sshConnection?.password || '',
         key: sshConnection?.key || ''
       }
-      // API 호출
+      
       const response = await api.post(`/ssh/stop_service`, data);
       console.log(response);
 
       if (response.data && response.data.success) {
-        // 서비스 상태 업데이트
-        // setServices(prev => prev.map(s =>
-        //   s.name === service.name
-        //     ? { ...s, active_state: 'inactive', sub_state: 'dead' }
-        //     : s
-        // ));
-
         alert(`${service.name} 서비스가 중지되었습니다.`);
       } else {
         throw new Error(response.data.error || '서비스 중지에 실패했습니다');
@@ -284,11 +296,16 @@ const NodeServices = ({ nodeId: propsNodeId }: NodeServicesProps = {}) => {
     } finally {
       setProcessingAction(null);
     }
-  };
+  }, [nodeId, monitoringEnabled, hasSshConnection, sshConnection]);
 
   // 서비스 재시작 핸들러
-  const handleRestartService = async (service: Service) => {
+  const handleRestartService = useCallback(async (service: Service) => {
+    console.log('재시작 서비스:', service.name);
     if (!nodeId || !monitoringEnabled) return;
+    if (!hasSshConnection) {
+      alert('SSH 연결이 없어 서비스를 재시작할 수 없습니다. SSH 연결을 확인해주세요.');
+      return;
+    }
 
     if (!window.confirm(`"${service.name}" 서비스를 재시작하시겠습니까?`)) {
       return;
@@ -307,18 +324,11 @@ const NodeServices = ({ nodeId: propsNodeId }: NodeServicesProps = {}) => {
         password: sshConnection?.password || '',
         key: sshConnection?.key || ''
       }
-      // API 호출
+      
       const response = await api.post(`/ssh/restart_service`, data);
       console.log(response);
 
       if (response.data && response.data.success) {
-        // 서비스 상태 업데이트 (실제로는 서버에서 상태 변경 통지가 오기를 기다려야 함)
-        // setServices(prev => prev.map(s =>
-        //   s.name === service.name
-        //     ? { ...s, active_state: 'active', sub_state: 'running' }
-        //     : s
-        // ));
-
         alert(`${service.name} 서비스가 재시작되었습니다.`);
       } else {
         throw new Error(response.data.error || '서비스 재시작에 실패했습니다');
@@ -329,73 +339,80 @@ const NodeServices = ({ nodeId: propsNodeId }: NodeServicesProps = {}) => {
     } finally {
       setProcessingAction(null);
     }
-  };
+  }, [nodeId, monitoringEnabled, hasSshConnection, sshConnection]);
 
-  // 선택된 서비스 일괄 시작
-  const handleStartSelectedServices = async () => {
-    if (selectedServices.length === 0) return;
-
-    if (!window.confirm(`선택한 ${selectedServices.length}개의 서비스를 시작하시겠습니까?`)) {
-      return;
+  // 우클릭 컨텍스트 메뉴 핸들러
+  const handleRowRightClick = useCallback((e: React.MouseEvent, service: Service) => {
+    console.log('우클릭 감지:', service.name);
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // 화면 크기 확인
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const menuWidth = 200;
+    const menuHeight = 150;
+    
+    // 마우스 위치가 화면 경계에 가까우면 위치 조정
+    let x = e.clientX;
+    let y = e.clientY;
+    
+    if (x + menuWidth > windowWidth) {
+      x = windowWidth - menuWidth - 10;
     }
+    
+    if (y + menuHeight > windowHeight) {
+      y = windowHeight - menuHeight - 10;
+    }
+    
+    setContextMenu({
+      visible: true,
+      x,
+      y,
+      service
+    });
+  }, []);
 
-    try {
-      // API 호출
-      const response = await api.post(`/api/node/${nodeId}/services/start`, {
-        services: selectedServices
-      });
+  // 컨텍스트 메뉴 닫기
+  const closeContextMenu = useCallback(() => {
+    setContextMenu({ visible: false, x: 0, y: 0, service: null });
+  }, []);
 
-      if (response.data && response.data.success) {
-        // 서비스 상태 업데이트
-        setServices(prev => prev.map(s =>
-          selectedServices.includes(s.name)
-            ? { ...s, active_state: 'active', sub_state: 'running' }
-            : s
-        ));
-
-        alert(`${selectedServices.length}개의 서비스가 시작되었습니다.`);
-        setSelectedServices([]);
-      } else {
-        throw new Error(response.data.error || '일괄 서비스 시작에 실패했습니다');
+  // 컨텍스트 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (contextMenu.visible) {
+        closeContextMenu();
       }
-    } catch (err) {
-      console.error('서비스 일괄 시작 실패:', err);
-      alert('서비스 시작 명령 전송에 실패했습니다.');
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    document.addEventListener('contextmenu', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('contextmenu', handleClickOutside);
+    };
+  }, [contextMenu.visible, closeContextMenu]);
+
+  // 컨텍스트 메뉴에서 작업 실행
+  const handleContextMenuAction = useCallback((action: string, service: Service) => {
+    closeContextMenu();
+    
+    switch (action) {
+      case 'start':
+        handleStartService(service);
+        break;
+      case 'stop':
+        handleStopService(service);
+        break;
+      case 'restart':
+        handleRestartService(service);
+        break;
+      default:
+        break;
     }
-  };
-
-  // 선택된 서비스 일괄 중지
-  const handleStopSelectedServices = async () => {
-    if (selectedServices.length === 0) return;
-
-    if (!window.confirm(`선택한 ${selectedServices.length}개의 서비스를 중지하시겠습니까?`)) {
-      return;
-    }
-
-    try {
-      // API 호출
-      const response = await api.post(`/api/node/${nodeId}/services/stop`, {
-        services: selectedServices
-      });
-
-      if (response.data && response.data.success) {
-        // 서비스 상태 업데이트
-        setServices(prev => prev.map(s =>
-          selectedServices.includes(s.name)
-            ? { ...s, active_state: 'inactive', sub_state: 'dead' }
-            : s
-        ));
-
-        alert(`${selectedServices.length}개의 서비스가 중지되었습니다.`);
-        setSelectedServices([]);
-      } else {
-        throw new Error(response.data.error || '일괄 서비스 중지에 실패했습니다');
-      }
-    } catch (err) {
-      console.error('서비스 일괄 중지 실패:', err);
-      alert('서비스 중지 명령 전송에 실패했습니다.');
-    }
-  };
+  }, [closeContextMenu, handleStartService, handleStopService, handleRestartService]);
 
   // 서비스 필터링 및 정렬
   const filteredAndSortedServices = services
@@ -455,6 +472,21 @@ const NodeServices = ({ nodeId: propsNodeId }: NodeServicesProps = {}) => {
     return sub_state ? `${status} (${sub_state})` : status;
   };
 
+  // 컨텍스트 메뉴에서 사용할 수 있는 작업들 결정
+  const getAvailableActions = (service: Service) => {
+    const actions = [];
+    
+    if (service.active_state === 'inactive' || service.active_state === 'failed') {
+      actions.push('start');
+    }
+    
+    if (service.active_state === 'active') {
+      actions.push('restart', 'stop');
+    }
+    
+    return actions;
+  };
+
   if (loading && services.length === 0 && monitoringEnabled) {
     return (
       <div className={styles.loadingContainer}>
@@ -465,6 +497,56 @@ const NodeServices = ({ nodeId: propsNodeId }: NodeServicesProps = {}) => {
 
   return (
     <div className={styles.container}>
+      {/* 컨텍스트 메뉴 */}
+      {contextMenu.visible && contextMenu.service && (
+        <div
+          className={styles.contextMenu}
+          style={{
+            position: 'fixed',
+            left: `${contextMenu.x}px`,
+            top: `${contextMenu.y}px`,
+            zIndex: 1000
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className={styles.contextMenuHeader}>
+            <strong>{contextMenu.service.display_name || contextMenu.service.name}</strong>
+            <span>상태: {contextMenu.service.active_state}</span>
+          </div>
+          <div className={styles.contextMenuDivider}></div>
+          
+          {getAvailableActions(contextMenu.service).includes('start') && (
+            <button
+              className={`${styles.contextMenuItem} ${styles.startItem}`}
+              onClick={() => handleContextMenuAction('start', contextMenu.service!)}
+              disabled={processingAction?.name === contextMenu.service.name || !monitoringEnabled}
+            >
+              ▶️ 서비스 시작
+            </button>
+          )}
+          
+          {getAvailableActions(contextMenu.service).includes('restart') && (
+            <button
+              className={`${styles.contextMenuItem} ${styles.restartItem}`}
+              onClick={() => handleContextMenuAction('restart', contextMenu.service!)}
+              disabled={processingAction?.name === contextMenu.service.name || !monitoringEnabled}
+            >
+              🔄 서비스 재시작
+            </button>
+          )}
+          
+          {getAvailableActions(contextMenu.service).includes('stop') && (
+            <button
+              className={`${styles.contextMenuItem} ${styles.stopItem}`}
+              onClick={() => handleContextMenuAction('stop', contextMenu.service!)}
+              disabled={processingAction?.name === contextMenu.service.name || !monitoringEnabled}
+            >
+              ⏹️ 서비스 중지
+            </button>
+          )}
+        </div>
+      )}
+
       <div className={styles.header}>
         <div className={styles.titleRow}>
           <h2>⚙️ 서비스 관리</h2>
@@ -476,6 +558,9 @@ const NodeServices = ({ nodeId: propsNodeId }: NodeServicesProps = {}) => {
             ) : (
               <span className={styles.disconnected}>● 연결 끊김</span>
             )}
+            {!hasSshConnection && (
+              <span className={styles.disconnected} style={{ marginLeft: '10px' }}>● SSH 연결 없음</span>
+            )}
           </div>
         </div>
 
@@ -483,7 +568,7 @@ const NodeServices = ({ nodeId: propsNodeId }: NodeServicesProps = {}) => {
           <div className={styles.searchBox}>
             <input
               type="text"
-              placeholder="서비스 검색..."
+              placeholder="서비스 검색... (우클릭으로 작업 메뉴)"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               disabled={!monitoringEnabled}
@@ -582,21 +667,16 @@ const NodeServices = ({ nodeId: propsNodeId }: NodeServicesProps = {}) => {
                   세부 상태 {sortBy === 'sub_state' && (sortDirection === 'asc' ? '▲' : '▼')}
                 </th>
 
-                <th>
-                  활성화 여부
-                </th>
+                {/* <th>활성화 여부</th> */}
+                <th>로드 상태</th>
 
-                <th>
-                  로드 상태
-                </th>
-
-                <th className={styles.actionsColumn}>작업</th>
+                {/* actions 컬럼 제거 */}
               </tr>
             </thead>
             <tbody>
               {filteredAndSortedServices.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className={styles.noData}>
+                  <td colSpan={7} className={styles.noData}>
                     {searchTerm ? '검색 결과가 없습니다.' : '표시할 서비스가 없습니다.'}
                   </td>
                 </tr>
@@ -605,6 +685,11 @@ const NodeServices = ({ nodeId: propsNodeId }: NodeServicesProps = {}) => {
                   <tr
                     key={service.name}
                     className={selectedServices.includes(service.name) ? styles.selected : ''}
+                    onContextMenu={(e) => {
+                      console.log('onContextMenu 이벤트 발생');
+                      handleRowRightClick(e, service);
+                    }}
+                    style={{ cursor: 'context-menu' }}
                   >
                     <td>
                       <input
@@ -633,55 +718,15 @@ const NodeServices = ({ nodeId: propsNodeId }: NodeServicesProps = {}) => {
 
                     <td>{service.sub_state}</td>
 
-                    <td>
+                    {/* <td>
                       <span className={service.enabled ? styles.enabled : styles.disabled}>
                         {service.enabled ? '활성화됨' : '비활성화됨'}
                       </span>
-                    </td>
+                    </td> */}
 
                     <td>{service.load_state}</td>
 
-                    <td className={styles.actionsCell}>
-                      <div className={styles.actionButtons}>
-                        {(service.active_state === 'inactive' || service.active_state === 'failed') && (
-                          <button
-                            className={`${styles.actionButton} ${styles.startButton}`}
-                            onClick={() => handleStartService(service)}
-                            disabled={processingAction?.name === service.name || !monitoringEnabled}
-                            title="서비스 시작"
-                          >
-                            {processingAction?.name === service.name && processingAction?.action === 'start'
-                              ? '처리 중...'
-                              : '시작'}
-                          </button>
-                        )}
-
-                        {service.active_state === 'active' && (
-                          <>
-                            <button
-                              className={`${styles.actionButton} ${styles.restartButton}`}
-                              onClick={() => handleRestartService(service)}
-                              disabled={processingAction?.name === service.name || !monitoringEnabled}
-                              title="서비스 재시작"
-                            >
-                              {processingAction?.name === service.name && processingAction?.action === 'restart'
-                                ? '처리 중...'
-                                : '재시작'}
-                            </button>
-                            <button
-                              className={`${styles.actionButton} ${styles.stopButton}`}
-                              onClick={() => handleStopService(service)}
-                              disabled={processingAction?.name === service.name || !monitoringEnabled}
-                              title="서비스 중지"
-                            >
-                              {processingAction?.name === service.name && processingAction?.action === 'stop'
-                                ? '처리 중...'
-                                : '중지'}
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
+                    {/* actions 컬럼 제거 */}
                   </tr>
                 ))
               )}

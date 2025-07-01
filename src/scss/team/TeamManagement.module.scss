@@ -8,7 +8,7 @@
 }
 
 /* 알림 메시지 스타일 */
-.errorMessage, 
+.errorMessage,
 .successMessage {
   position: fixed;
   top: 20px;
@@ -31,13 +31,27 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeOut {
-  from { opacity: 1; transform: translateY(0); }
-  to { opacity: 0; transform: translateY(-20px); }
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
 }
 
 /* 왼쪽 팀 목록 영역 */
@@ -79,7 +93,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   &:hover {
     background: rgba(78, 205, 196, 0.2);
     color: #4ecdc4;
@@ -89,15 +103,15 @@
 .teamList {
   flex: 1;
   overflow-y: auto;
-  
+
   &::-webkit-scrollbar {
     width: 4px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 2px;
@@ -110,14 +124,14 @@
   padding: 12px 16px;
   cursor: pointer;
   transition: all 0.2s ease;
-  
+
   &:hover {
     background-color: rgba(255, 255, 255, 0.05);
   }
-  
+
   &.selectedTeam {
     background-color: rgba(78, 205, 196, 0.1);
-    
+
     .teamAvatar {
       background-color: #4ecdc4;
       color: #000;
@@ -168,13 +182,14 @@
   gap: 10px;
 }
 
-.deleteTeamButton, .leaveTeamButton {
+.deleteTeamButton,
+.leaveTeamButton {
   padding: 6px 12px;
   border: none;
   border-radius: 4px;
   font-size: 14px;
   cursor: pointer;
-  
+
   &:hover {
     opacity: 0.9;
   }
@@ -217,7 +232,7 @@
   justify-content: center;
   font-size: 32px;
   font-weight: bold;
-  
+
   img {
     width: 100%;
     height: 100%;
@@ -239,7 +254,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
-  
+
   h3 {
     margin: 0;
     color: #e0e0e0;
@@ -259,7 +274,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  
+
   &:hover {
     background-color: #3dbdb4;
   }
@@ -297,7 +312,7 @@
   justify-content: center;
   margin-right: 12px;
   font-weight: bold;
-  
+
   img {
     width: 100%;
     height: 100%;
@@ -334,12 +349,12 @@
   background-color: rgba(255, 255, 255, 0.1);
   color: #ccc;
   font-weight: 500;
-  
+
   &.adminTag {
     background-color: rgba(24, 144, 255, 0.2);
     color: #40a9ff;
   }
-  
+
   &.creatorTag {
     background-color: rgba(82, 196, 26, 0.2);
     color: #73d13d;
@@ -352,21 +367,21 @@
   display: inline-block;
   width: 40px;
   height: 20px;
-  
+
   input {
     opacity: 0;
     width: 0;
     height: 0;
-    
-    &:checked + .slider {
+
+    &:checked+.slider {
       background-color: #4ecdc4;
     }
-    
-    &:checked + .slider:before {
+
+    &:checked+.slider:before {
       transform: translateX(20px);
     }
-    
-    &:disabled + .slider {
+
+    &:disabled+.slider {
       opacity: 0.5;
       cursor: not-allowed;
     }
@@ -383,7 +398,7 @@
   background-color: #444;
   transition: .4s;
   border-radius: 20px;
-  
+
   &:before {
     position: absolute;
     content: "";
@@ -410,7 +425,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
-  
+
   h3 {
     margin: 0;
     color: #e0e0e0;
@@ -430,7 +445,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  
+
   &:hover {
     background-color: #3dbdb4;
   }
@@ -449,7 +464,7 @@
   justify-content: center;
   padding: 48px;
   color: #999;
-  
+
   .nodeIcon {
     font-size: 32px;
     opacity: 0.5;
@@ -498,12 +513,12 @@
   border-radius: 10px;
   font-size: 11px;
   margin-top: 4px;
-  
+
   &.activeNode {
     background-color: rgba(82, 196, 26, 0.2);
     color: #73d13d;
   }
-  
+
   &.inactiveNode {
     background-color: rgba(255, 77, 79, 0.2);
     color: #ff7875;
@@ -525,7 +540,7 @@
   font-size: 13px;
   text-decoration: none;
   transition: all 0.2s;
-  
+
   &:hover {
     background-color: rgba(255, 255, 255, 0.2);
     color: #fff;
@@ -556,8 +571,15 @@
 }
 
 @keyframes modalFadeIn {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modalHeader {
@@ -566,7 +588,7 @@
   align-items: center;
   padding: 16px 24px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  
+
   h3 {
     margin: 0;
     color: #e0e0e0;
@@ -580,7 +602,7 @@
   color: #999;
   font-size: 18px;
   cursor: pointer;
-  
+
   &:hover {
     color: white;
   }
@@ -588,7 +610,7 @@
 
 .modalBody {
   padding: 24px;
-  
+
   p {
     margin-top: 0;
     color: #ccc;
@@ -597,29 +619,126 @@
 
 .formGroup {
   margin-bottom: 16px;
-  
+
   label {
     display: block;
     margin-bottom: 8px;
     color: #ccc;
+    font-weight: 500;
   }
 }
 
-.textInput, 
-.textArea {
+.textInput {
   width: 100%;
-  padding: 8px 12px;
+  padding: 12px 16px;
   background-color: #333;
   border: 1px solid #444;
-  border-radius: 4px;
+  border-radius: 8px;
   color: #e0e0e0;
   font-size: 14px;
-  
+  transition: all 0.3s ease;
+  margin-top: 8px;
+
+  &:hover {
+    border-color: #4ecdc4;
+    box-shadow: 0 0 0 1px rgba(78, 205, 196, 0.1);
+  }
+
   &:focus {
     outline: none;
     border-color: #4ecdc4;
-    box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.2);
+    box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
   }
+
+  &::placeholder {
+    color: #e0e0e0;
+    opacity: 0.7;
+  }
+
+  /* Ant Design AutoComplete 스타일 오버라이드 */
+  :global(.ant-select-selector) {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  :global(.ant-select-selection-search-input) {
+    color: #e0e0e0 !important;
+  }
+}
+
+/* Ant Design 입력 필드 스타일 오버라이드 - 모든 모달에 적용 */
+:global(.ant-input),
+:global(.ant-select-selector),
+:global(.ant-select-selection-search-input) {
+  background-color: #333 !important;
+  border-color: #444 !important;
+  color: #e0e0e0 !important;
+}
+
+:global(.ant-input:focus),
+:global(.ant-select-focused .ant-select-selector) {
+  border-color: #4ecdc4 !important;
+  box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.2) !important;
+}
+
+:global(.ant-input:hover),
+:global(.ant-select:hover .ant-select-selector) {
+  border-color: #4ecdc4 !important;
+}
+
+:global(.ant-input-affix-wrapper) {
+  background-color: #333 !important;
+  border-color: #444 !important;
+  color: #e0e0e0 !important;
+}
+
+:global(.ant-input-affix-wrapper:focus),
+:global(.ant-input-affix-wrapper-focused) {
+  border-color: #4ecdc4 !important;
+  box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.2) !important;
+}
+
+:global(.ant-input-affix-wrapper:hover) {
+  border-color: #4ecdc4 !important;
+}
+
+/* 플레이스홀더 텍스트 색상 */
+:global(.ant-input::placeholder),
+:global(.ant-select-selection-placeholder) {
+  color: #999 !important;
+}
+
+/* 드롭다운 메뉴 스타일 */
+:global(.ant-select-dropdown) {
+  background-color: #333 !important;
+  border: 1px solid #444 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5) !important;
+}
+
+:global(.ant-select-item) {
+  color: #e0e0e0 !important;
+  padding: 10px 12px !important;
+}
+
+:global(.ant-select-item-option-active) {
+  background-color: rgba(78, 205, 196, 0.1) !important;
+}
+
+:global(.ant-select-item-option-selected) {
+  background-color: rgba(78, 205, 196, 0.2) !important;
+}
+
+/* AutoComplete 드롭다운 메시지 스타일 오버라이드 */
+:global(.ant-select-item-empty) {
+  color: #e0e0e0 !important;
+  background-color: #333 !important;
+}
+
+:global(.ant-empty-description) {
+  color: #e0e0e0 !important;
 }
 
 .textArea {
@@ -641,7 +760,7 @@
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
-  
+
   &:hover {
     background-color: rgba(255, 255, 255, 0.05);
     border-color: #777;
@@ -656,7 +775,7 @@
   border-radius: 4px;
   font-weight: 500;
   cursor: pointer;
-  
+
   &:hover {
     background-color: #3dbdb4;
   }
@@ -686,7 +805,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .emptyMessage {
@@ -722,4 +843,25 @@
   border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
+}
+
+// 위험 버튼 스타일 추가
+.dangerButton {
+  background-color: #f5222d;
+
+  &:hover {
+    background-color: #ff4d4f;
+  }
+}
+
+// formGroup 스타일 추가 (노드 추가 모달용)
+.formGroup {
+  margin-bottom: 16px;
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    color: #ccc;
+    font-weight: 500;
+  }
 }

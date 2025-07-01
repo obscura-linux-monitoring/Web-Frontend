@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNodeContext } from '../../context/NodeContext';
 import styles from '../../scss/node/Docker.module.scss';
+import '../../scss/node/node_mobile/Docker.module.mobile.scss';
 import api from '../../api';
 import { useSshContext } from '../../context/SshContext';
 import { getToken } from '../../utils/Auth';
@@ -76,6 +77,9 @@ const Docker = () => {
 
   // 진행 중인 작업
   const [processing, setProcessing] = useState<{ id: string, action: string } | null>(null);
+
+  // 복사 상태
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // 컨테이너 데이터 가져오기
   useEffect(() => {
@@ -266,9 +270,17 @@ const Docker = () => {
 
   // 컨테이너 시작 함수
   const startContainer = async (id: string) => {
-    if (!currentNodeId || !monitoringEnabled || !hasSshConnection) return;
+    if (!currentNodeId || !monitoringEnabled) return;
+    if (!hasSshConnection) {
+      alert('SSH 연결이 없어 컨테이너를 시작할 수 없습니다. SSH 연결을 확인해주세요.');
+      return;
+    }
 
-    if (!window.confirm('컨테이너를 시작하시겠습니까?')) {
+    // 컨테이너 이름 찾기
+    const container = containers.find(c => c.id === id);
+    if (!container) return;
+
+    if (!window.confirm(`컨테이너 "${container.name}"을(를) 시작하시겠습니까?`)) {
       return;
     }
 
@@ -284,19 +296,18 @@ const Docker = () => {
         password: sshConnection?.password || '',
         port: sshConnection?.port || '',
         node_id: currentNodeId || ''
-
       }
       const response = await api.post(`/ssh/start_docker_container`, data);
       console.log(response);
       if (response.data && response.data.success) {
-        alert('컨테이너가 시작되었습니다.');
+        alert(`컨테이너 "${container.name}"이(가) 시작되었습니다.`);
       } else {
-        throw new Error(response.data.error || '컨테이너 시작에 실패했습니다');
+        throw new Error(response.data.error || `컨테이너 "${container.name}" 시작에 실패했습니다`);
       }
       // 상태 업데이트는 WebSocket을 통해 자동으로 이루어짐
     } catch (err) {
       console.error('컨테이너 시작 실패:', err);
-      alert('컨테이너 시작에 실패했습니다.');
+      alert(`컨테이너 "${container.name}" 시작에 실패했습니다.`);
     } finally {
       setProcessing(null);
     }
@@ -304,9 +315,17 @@ const Docker = () => {
 
   // 컨테이너 중지 함수
   const stopContainer = async (id: string) => {
-    if (!currentNodeId || !monitoringEnabled || !hasSshConnection) return;
+    if (!currentNodeId || !monitoringEnabled) return;
+    if (!hasSshConnection) {
+      alert('SSH 연결이 없어 컨테이너를 중지할 수 없습니다. SSH 연결을 확인해주세요.');
+      return;
+    }
 
-    if (!window.confirm('컨테이너를 중지하시겠습니까?')) {
+    // 컨테이너 이름 찾기
+    const container = containers.find(c => c.id === id);
+    if (!container) return;
+
+    if (!window.confirm(`컨테이너 "${container.name}"을(를) 중지하시겠습니까?`)) {
       return;
     }
 
@@ -326,14 +345,14 @@ const Docker = () => {
       const response = await api.post(`/ssh/stop_docker_container`, data);
       console.log(response);
       if (response.data && response.data.success) {
-        alert('컨테이너가 중지되었습니다.');
+        alert(`컨테이너 "${container.name}"이(가) 중지되었습니다.`);
       } else {
-        throw new Error(response.data.error || '컨테이너 중지에 실패했습니다');
+        throw new Error(response.data.error || `컨테이너 "${container.name}" 중지에 실패했습니다`);
       }
       // 상태 업데이트는 WebSocket을 통해 자동으로 이루어짐
     } catch (err) {
       console.error('컨테이너 중지 실패:', err);
-      alert('컨테이너 중지에 실패했습니다.');
+      alert(`컨테이너 "${container.name}" 중지에 실패했습니다.`);
     } finally {
       setProcessing(null);
     }
@@ -341,9 +360,17 @@ const Docker = () => {
 
   // 컨테이너 재시작 함수
   const restartContainer = async (id: string) => {
-    if (!currentNodeId || !monitoringEnabled || !hasSshConnection) return;
+    if (!currentNodeId || !monitoringEnabled) return;
+    if (!hasSshConnection) {
+      alert('SSH 연결이 없어 컨테이너를 재시작할 수 없습니다. SSH 연결을 확인해주세요.');
+      return;
+    }
 
-    if (!window.confirm('컨테이너를 재시작하시겠습니까?')) {
+    // 컨테이너 이름 찾기
+    const container = containers.find(c => c.id === id);
+    if (!container) return;
+
+    if (!window.confirm(`컨테이너 "${container.name}"을(를) 재시작하시겠습니까?`)) {
       return;
     }
 
@@ -363,14 +390,14 @@ const Docker = () => {
       const response = await api.post(`/ssh/restart_docker_container`, data);
       console.log(response);
       if (response.data && response.data.success) {
-        alert('컨테이너가 재시작되었습니다.');
+        alert(`컨테이너 "${container.name}"이(가) 재시작되었습니다.`);
       } else {
-        throw new Error(response.data.error || '컨테이너 재시작에 실패했습니다');
+        throw new Error(response.data.error || `컨테이너 "${container.name}" 재시작에 실패했습니다`);
       }
       // 상태 업데이트는 WebSocket을 통해 자동으로 이루어짐
     } catch (err) {
       console.error('컨테이너 재시작 실패:', err);
-      alert('컨테이너 재시작에 실패했습니다.');
+      alert(`컨테이너 "${container.name}" 재시작에 실패했습니다.`);
     } finally {
       setProcessing(null);
     }
@@ -378,9 +405,17 @@ const Docker = () => {
 
   // 컨테이너 삭제 함수
   const deleteContainer = async (id: string) => {
-    if (!currentNodeId || !monitoringEnabled || !hasSshConnection) return;
+    if (!currentNodeId || !monitoringEnabled) return;
+    if (!hasSshConnection) {
+      alert('SSH 연결이 없어 컨테이너를 삭제할 수 없습니다. SSH 연결을 확인해주세요.');
+      return;
+    }
 
-    if (!window.confirm('컨테이너를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+    // 컨테이너 이름 찾기
+    const container = containers.find(c => c.id === id);
+    if (!container) return;
+
+    if (!window.confirm(`컨테이너 "${container.name}"을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) {
       return;
     }
 
@@ -400,14 +435,14 @@ const Docker = () => {
       const response = await api.post(`/ssh/remove_docker_container`, data);
       console.log(response);
       if (response.data && response.data.success) {
-        alert('컨테이너가 삭제되었습니다.');
+        alert(`컨테이너 "${container.name}"이(가) 삭제되었습니다.`);
       } else {
-        throw new Error(response.data.error || '컨테이너 삭제에 실패했습니다');
+        throw new Error(response.data.error || `컨테이너 "${container.name}" 삭제에 실패했습니다`);
       }
       // 상태 업데이트는 WebSocket을 통해 자동으로 이루어짐
     } catch (err) {
       console.error('컨테이너 삭제 실패:', err);
-      alert('컨테이너 삭제에 실패했습니다.');
+      alert(`컨테이너 "${container.name}" 삭제에 실패했습니다.`);
     } finally {
       setProcessing(null);
     }
@@ -433,7 +468,7 @@ const Docker = () => {
   const getStatusClass = (status: string): string => {
     const lowerStatus = status.toLowerCase();
 
-    if (lowerStatus.includes('running') || lowerStatus === 'active') {
+    if (lowerStatus.startsWith('up') || lowerStatus === 'active') {
       return styles.statusRunning;
     } else if (lowerStatus.includes('exited') || lowerStatus === 'inactive') {
       return styles.statusStopped;
@@ -448,6 +483,18 @@ const Docker = () => {
     }
   };
 
+  // 복사 함수
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        setCopiedId(text);
+        setTimeout(() => setCopiedId(null), 2000); // 2초 후 복사 상태 초기화
+      })
+      .catch(err => {
+        console.error('클립보드 복사 실패:', err);
+      });
+  };
+
   return (
     <div className={styles.dockerContainer}>
       <div className={styles.header}>
@@ -460,6 +507,9 @@ const Docker = () => {
               <span className={styles.connected}>● 실시간 모니터링 활성화</span>
             ) : (
               <span className={styles.disconnected}>● 연결 끊김</span>
+            )}
+            {!hasSshConnection && (
+              <span className={styles.disconnected} style={{ marginLeft: '10px' }}>● SSH 연결 없음</span>
             )}
           </div>
         </div>
@@ -476,7 +526,7 @@ const Docker = () => {
             />
           </div>
 
-          <div className={styles.filterDropdowns}>
+          {/* <div className={styles.filterDropdowns}>
             <select
               value={filters.status}
               onChange={(e) => handleFilterChange('status', e.target.value)}
@@ -500,7 +550,7 @@ const Docker = () => {
               <option value="container">컨테이너</option>
               <option value="service">서비스</option>
             </select>
-          </div>
+          </div> */}
         </div>
 
         {selectedContainers.length > 0 && monitoringEnabled && (
@@ -508,8 +558,14 @@ const Docker = () => {
             <button
               className={`${styles.actionButton} ${styles.startButton}`}
               onClick={() => {
+                // 선택된 모든 컨테이너 이름 가져오기
+                const selectedNames = selectedContainers
+                  .map(id => containers.find(c => c.id === id)?.name)
+                  .filter(Boolean)
+                  .join(", ");
+
                 // 선택된 모든 컨테이너 시작
-                if (window.confirm(`선택한 ${selectedContainers.length}개의 컨테이너를 시작하시겠습니까?`)) {
+                if (window.confirm(`선택한 컨테이너(${selectedNames})를 시작하시겠습니까?`)) {
                   Promise.all(selectedContainers.map(id => api.post(`/docker/containers/${currentNodeId}/${id}/start`)))
                     .then(() => {
                       // 성공적으로 처리됨
@@ -528,8 +584,14 @@ const Docker = () => {
             <button
               className={`${styles.actionButton} ${styles.stopButton}`}
               onClick={() => {
+                // 선택된 모든 컨테이너 이름 가져오기
+                const selectedNames = selectedContainers
+                  .map(id => containers.find(c => c.id === id)?.name)
+                  .filter(Boolean)
+                  .join(", ");
+
                 // 선택된 모든 컨테이너 중지
-                if (window.confirm(`선택한 ${selectedContainers.length}개의 컨테이너를 중지하시겠습니까?`)) {
+                if (window.confirm(`선택한 컨테이너(${selectedNames})를 중지하시겠습니까?`)) {
                   Promise.all(selectedContainers.map(id => api.post(`/docker/containers/${currentNodeId}/${id}/stop`)))
                     .then(() => {
                       // 성공적으로 처리됨
@@ -557,7 +619,7 @@ const Docker = () => {
         <div className={styles.stats}>
           <span>총 컨테이너: {containers.length}</span>
           <span>표시됨: {sortedContainers.length}</span>
-          <span>실행 중: {containers.filter(c => c.status.toLowerCase().includes('running')).length}</span>
+          <span>실행 중: {containers.filter(c => c.status.toLowerCase().startsWith('up')).length}</span>
           <span>중지됨: {containers.filter(c => c.status.toLowerCase().includes('exited')).length}</span>
         </div>
       </div>
@@ -683,8 +745,8 @@ const Docker = () => {
                       <div className={styles.idInfo}>ID: {container.id.substring(0, 12)}</div>
                     </td>
                     <td>
-                      <span className={getStatusClass(container.health_status)}>
-                        {container.health_status}
+                      <span className={getStatusClass(container.status)}>
+                        {container.status}
                       </span>
                     </td>
                     <td>
@@ -717,7 +779,7 @@ const Docker = () => {
                     <td>{container.restarts}</td>
                     <td className={styles.actionsCell}>
                       <div className={styles.actionButtons}>
-                        {container.health_status.toLowerCase().includes('running') ? (
+                        {container.status.toLowerCase().startsWith('up') ? (
                           <>
                             <button
                               className={`${styles.actionButton} ${styles.restartButton}`}
@@ -772,7 +834,9 @@ const Docker = () => {
                               <h3>기본 정보</h3>
                               <div className={styles.detailsItem}>
                                 <span className={styles.detailsLabel}>ID:</span>
-                                <span className={styles.detailsValue}>{container.id}</span>
+                                <div className={styles.idContainer}>
+                                  <span className={styles.detailsValue}>{container.id}</span>
+                                </div>
                               </div>
                               <div className={styles.detailsItem}>
                                 <span className={styles.detailsLabel}>이름:</span>
@@ -801,20 +865,8 @@ const Docker = () => {
                                 </span>
                               </div>
                               <div className={styles.detailsItem}>
-                                <span className={styles.detailsLabel}>활성 상태:</span>
-                                <span className={styles.detailsValue}>{container.active_state}</span>
-                              </div>
-                              <div className={styles.detailsItem}>
-                                <span className={styles.detailsLabel}>하위 상태:</span>
-                                <span className={styles.detailsValue}>{container.sub_state || '-'}</span>
-                              </div>
-                              <div className={styles.detailsItem}>
-                                <span className={styles.detailsLabel}>로드 상태:</span>
-                                <span className={styles.detailsValue}>{container.load_state}</span>
-                              </div>
-                              <div className={styles.detailsItem}>
                                 <span className={styles.detailsLabel}>활성화 여부:</span>
-                                <span className={styles.detailsValue}>{container.enabled ? '활성화됨' : '비활성화됨'}</span>
+                                <span className={styles.detailsValue}>{container.status.toLowerCase().startsWith('up') ? '활성화됨' : '비활성화됨'}</span>
                               </div>
                               <div className={styles.detailsItem}>
                                 <span className={styles.detailsLabel}>재시작 횟수:</span>
@@ -825,15 +877,22 @@ const Docker = () => {
                             <div className={styles.detailsSection}>
                               <h3>리소스 사용량</h3>
                               <div className={styles.detailsItem}>
-                                <span className={styles.detailsLabel}>CPU 사용률:</span>
+                                <span
+                                  className={`${styles.detailsLabel} ${container.cpu_usage > 80 ? styles.highUsage :
+                                    container.cpu_usage > 50 ? styles.mediumUsage :
+                                      styles.lowUsage
+                                    }`}
+                                >
+                                  CPU 사용률:
+                                </span>
                                 <span className={styles.detailsValue}>
-                                  {(container.cpu_usage * 100).toFixed(2)}%
+                                  {(container.cpu_usage).toFixed(2)}%
                                 </span>
                                 <div className={styles.resourceBar}>
                                   <div
                                     className={styles.resourceBarFill}
                                     style={{
-                                      width: `${Math.min(container.cpu_usage * 100, 100)}%`,
+                                      width: `${Math.min(container.cpu_usage, 100)}%`,
                                       backgroundColor: '#3498db'
                                     }}
                                   ></div>

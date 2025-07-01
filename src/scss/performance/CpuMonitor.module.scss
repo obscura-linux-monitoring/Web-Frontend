@@ -3,6 +3,41 @@
     padding: 15px;
   }
   
+  .viewModeSelector {
+    display: flex;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.1);
+    padding: 4px;
+  }
+  
+  .viewModeButton {
+    flex: 1;
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: #888;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #ccc;
+    }
+    
+    &.active {
+      background-color: #0078D4;
+      color: white;
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+  
   .usageSection {
     margin-bottom: 20px;
     
@@ -26,15 +61,94 @@
       
       .chartLabel {
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+        bottom: 10px;
+        left: 10px;
         background-color: rgba(0, 0, 0, 0.6);
         padding: 4px 10px;
         border-radius: 4px;
         font-size: 12px;
+        color: white;
       }
     }
+  }
+  
+  .coreDetailsSection {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 20px;
+    
+    h4 {
+      margin: 0 0 15px 0;
+      font-size: 16px;
+      font-weight: 500;
+      color: #fff;
+    }
+  }
+  
+  .coreGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 10px;
+    
+    /* 스크롤바 스타일 */
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 3px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.5);
+      }
+    }
+  }
+  
+  .coreItem {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+  
+  .coreColor {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
+  
+  .coreLabel {
+    flex: 1;
+    font-size: 13px;
+    color: #ccc;
+    margin-right: 10px;
+  }
+  
+  .coreUsage {
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+    min-width: 40px;
+    text-align: right;
   }
   
   .detailsSection {
@@ -90,5 +204,202 @@
         width: 100%;
         margin-bottom: 20px;
       }
+    }
+    
+    .coreGrid {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 8px;
+    }
+    
+    .coreItem {
+      padding: 6px 10px;
+    }
+    
+    .coreLabel, .coreUsage {
+      font-size: 12px;
+    }
+  }
+  
+  @media (max-width: 600px) {
+    .viewModeSelector {
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .viewModeButton {
+      border-radius: 4px;
+    }
+    
+    .coreGrid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .coresChartContainer {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    padding: 15px;
+    position: relative;
+  }
+
+  .coresHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    position: relative;
+    
+    .coresTitle {
+      font-size: 16px;
+      font-weight: 500;
+      color: #fff;
+    }
+    
+    .coresTimeLabel {
+      font-size: 12px;
+      color: #888;
+      position: absolute;
+      left: 0;
+      bottom: -20px;
+    }
+    
+    .coresMaxUsage {
+      font-size: 12px;
+      color: #888;
+    }
+  }
+
+  .coresGrid {
+    display: grid;
+    gap: 6px;
+    width: 100%;
+    min-height: 400px;
+    
+    /* 각 그리드 아이템이 정사각형이 되도록 aspect-ratio 사용 */
+    > * {
+      aspect-ratio: 1;
+    }
+  }
+
+  .coreChartItem {
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 3px;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    
+    /* 정사각형 비율 유지 */
+    aspect-ratio: 1;
+    min-height: 0; /* flexbox에서 aspect-ratio가 제대로 작동하도록 */
+  }
+
+  .coreChartHeader {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    font-size: 10px;
+    color: #888;
+    z-index: 2;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 2px 4px;
+    border-radius: 2px;
+  }
+
+  .coreChartWrapper {
+    flex: 1;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 2px;
+    position: relative;
+    min-height: 0;
+    
+    /* 차트 영역도 정사각형 비율에 맞춤 */
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+  }
+
+  .coreUsageLabel {
+    text-align: center;
+    font-size: 11px;
+    color: #fff;
+    font-weight: 600;
+    padding: 2px 0;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 0 0 2px 2px;
+    position: absolute;
+    bottom: 6px;
+    left: 6px;
+    right: 6px;
+  }
+
+  /* 반응형 조정 - 화면 크기에 따라 그리드 크기 조정 */
+  @media (max-width: 1400px) {
+    .coresGrid {
+      min-height: 350px;
+      gap: 5px;
+    }
+    
+    .coreChartItem {
+      padding: 5px;
+    }
+    
+    .coreChartHeader {
+      font-size: 9px;
+      padding: 1px 3px;
+    }
+    
+    .coreUsageLabel {
+      font-size: 10px;
+    }
+  }
+
+  @media (max-width: 1000px) {
+    .coresGrid {
+      min-height: 300px;
+      gap: 4px;
+    }
+    
+    .coreChartItem {
+      padding: 4px;
+    }
+    
+    .coreChartHeader {
+      font-size: 8px;
+    }
+    
+    .coreUsageLabel {
+      font-size: 9px;
+    }
+  }
+
+  @media (max-width: 800px) {
+    .coresGrid {
+      min-height: 250px;
+      gap: 3px;
+    }
+    
+    .coreChartItem {
+      padding: 3px;
+    }
+    
+    .coreUsageLabel {
+      font-size: 8px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .coresGrid {
+      min-height: 200px;
+      gap: 2px;
+    }
+    
+    .coreChartItem {
+      padding: 2px;
+    }
+    
+    .coreChartHeader {
+      display: none; /* 작은 화면에서는 CPU 라벨 숨김 */
     }
   }

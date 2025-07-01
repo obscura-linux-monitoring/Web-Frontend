@@ -1,4 +1,5 @@
 import styles from '../scss/Header.module.scss';
+import '../scss/Header.module.mobile.scss';
 import { getUserInfo, getUserProfileImage, getToken } from '../utils/Auth';
 import { useState, useRef, useEffect } from 'react';
 import { Link, useParams, useLocation } from 'react-router-dom';
@@ -13,7 +14,7 @@ interface Invitation {
   team_id: string;
   team_name: string;
   invited_by: string;
-  inviter_name: string;
+  name: string;
   role: string;
   created_at: string;
 }
@@ -21,9 +22,12 @@ interface Invitation {
 interface HeaderProps {
   onLogout: () => void | Promise<void>;
   isAdmin?: boolean;
+  isMobile?: boolean;
+  isSidebarOpen?: boolean;
+  setIsSidebarOpen?: (open: boolean) => void;
 }
 
-const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
+const Header = ({ onLogout, isAdmin = false, isMobile, isSidebarOpen, setIsSidebarOpen }: HeaderProps) => {
   const profileImageUrl = getUserProfileImage();
   const userInfo = getUserInfo();
   const [showDropdown, setShowDropdown] = useState(false);
@@ -105,7 +109,7 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
   const handleRejectInvitation = async (invitationId: string) => {
     try {
       const token = getToken();
-      await api.delete(`/team/invitations/${invitationId}`, {
+      await api.delete(`/team/invitations/reject/${invitationId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -118,8 +122,26 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
     }
   };
 
-  // 현재 URL의 nodeId 또는 context의 selectedNode 사용
-  const currentNodeId = nodeId || selectedNode?.node_id;
+  // URL에서 nodeId 추출하는 함수 추가
+  const getNodeIdFromUrl = (): string | null => {
+    const pathSegments = location.pathname.split('/');
+    const nodeIndex = pathSegments.findIndex(segment => segment === 'nodes');
+    
+    if (nodeIndex !== -1 && pathSegments[nodeIndex + 2]) {
+      // /nodes/{page}/{nodeId} 형태에서 nodeId 추출
+      const supportedPages = ['monitoring', 'terminal', 'services', 'process', 'docker', 'performance'];
+      const pageName = pathSegments[nodeIndex + 1];
+      
+      if (supportedPages.includes(pageName)) {
+        return pathSegments[nodeIndex + 2];
+      }
+    }
+    return null;
+  };
+
+  // 현재 URL의 nodeId 또는 context의 selectedNode 사용 - 개선된 버전
+  const urlNodeId = getNodeIdFromUrl();
+  const currentNodeId = urlNodeId || nodeId || selectedNode?.node_id;
 
   // 현재 활성화된 메뉴 경로 확인
   const isMonitoringActive = location.pathname.includes('/nodes/monitoring/');
@@ -127,12 +149,24 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
   const isDockerActive = location.pathname.includes('/nodes/docker/');
   const isTerminalActive = location.pathname.includes('/nodes/terminal/');
   const isPerformanceActivate = location.pathname.includes('/nodes/performance/');
-  const isServicectivate = location.pathname.includes('/nodes/service/');
+  const isServiceActivate = location.pathname.includes('/nodes/services/');
 
   return (
     <header className={styles.header}>
       <div className={styles.headerContent}>
         <div className={styles.headerLeft}>
+          {/* 모바일에서만 햄버거 버튼 */}
+          {isMobile && !isSidebarOpen && setIsSidebarOpen && (
+            <button
+              className={styles.hamburgerButton}
+              onClick={() => setIsSidebarOpen(true)}
+              aria-label="메뉴 열기"
+            >
+              <span className={styles.hamburgerBar}></span>
+              <span className={styles.hamburgerBar}></span>
+              <span className={styles.hamburgerBar}></span>
+            </button>
+          )}
           {currentNodeId ? (
             <div className={styles.nodeLinks}>
               {/* 모니터링 토글 버튼 */}
@@ -147,7 +181,7 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
                 </span>
               </button>
 
-              {monitoringEnabled && <MiniMetricsGraph />}
+              {monitoringEnabled && <MiniMetricsGraph nodeId={currentNodeId} />}
 
               <Link
                 to={`/nodes/monitoring/${currentNodeId}`}
@@ -178,11 +212,11 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
                 {isDockerActive && <span className={styles.activeIndicator}></span>}
               </Link>
               <Link
-                to={`/nodes/service/${currentNodeId}`}
-                className={`${styles.nodeLink} ${isServicectivate ? styles.activeLink : ''}`}
+                to={`/nodes/services/${currentNodeId}`}
+                className={`${styles.nodeLink} ${isServiceActivate ? styles.activeLink : ''}`}
               >
                 서비스
-                {isServicectivate && <span className={styles.activeIndicator}></span>}
+                {isServiceActivate && <span className={styles.activeIndicator}></span>}
               </Link>
               <Link
                 to={`/nodes/terminal/${currentNodeId}`}
@@ -237,7 +271,7 @@ const Header = ({ onLogout, isAdmin = false }: HeaderProps) => {
                       <li key={invitation.invitation_id} className={styles.invitationItem}>
                         <div className={styles.invitationContent}>
                           <p className={styles.invitationText}>
-                            <strong>{invitation.inviter_name}</strong>님이
+                            <strong>{invitation.name}</strong>님이
                             <strong> {invitation.team_name}</strong> 팀에 초대했습니다.
                           </p>
                           <p className={styles.invitationDate}>

@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { getToken, getUserInfo, getUserProfileImage } from '../../utils/Auth';
 import api from '../../api';
 import styles from '../../scss/team/TeamManagement.module.scss';
+import '../../scss/team/team_mobile/TeamManagement.module.mobile.scss';
 // Ant Design 컴포넌트 추가
 import { Modal, Button, Form, Input, Select, message, AutoComplete } from 'antd';
 import EventBus from '../../utils/EventBus';
@@ -572,7 +573,7 @@ const TeamManagement: React.FC = () => {
     
     // alert 함수를 setTimeout으로 감싸기
     setTimeout(() => {
-      alert(`현재 사용자: ${currentUser?.name}, 역할: ${currentUser?.role}`);
+      // alert(`현재 사용자: ${currentUser?.name}, 역할: ${currentUser?.role}`);
     }, 100);
     
     if (currentUser?.role === 'admin') {  // 'admin'이 아닌 'owner'로 변경
@@ -920,9 +921,9 @@ const TeamManagement: React.FC = () => {
                   <li key={node.node_id} className={styles.nodeItem}>
                     <div className={styles.nodeInfo}>
                       <div className={styles.nodeName}>{node.node_name}</div>
-                      <span className={`${styles.nodeStatus} ${node.status === 'active' ? styles.activeNode : styles.inactiveNode}`}>
+                      {/* <span className={`${styles.nodeStatus} ${node.status === 'active' ? styles.activeNode : styles.inactiveNode}`}>
                         {node.status === 'active' ? '활성' : '비활성'}
-                      </span>
+                      </span> */}
                     </div>
                     <div className={styles.nodeActions}>
                       {/* <Link to={`/nodes/${node.node_id}`} className={styles.viewNodeButton}>
@@ -999,193 +1000,255 @@ const TeamManagement: React.FC = () => {
         </div>
       )}
       
-      {/* 팀 생성 모달 (Ant Design) */}
-      <Modal
-        title="새 팀 만들기"
-        open={createTeamModalVisible}
-        onCancel={() => setCreateTeamModalVisible(false)}
-        footer={[
-          <Button key="cancel" onClick={() => setCreateTeamModalVisible(false)}>
-            취소
-          </Button>,
-          <Button 
-            key="submit" 
-            type="primary" 
-            onClick={handleCreateTeam}
-            loading={isSubmitting}
-          >
-            생성
-          </Button>,
-        ]}
-      >
-        <Form layout="vertical">
-          <Form.Item label="팀 이름" required>
-            <Input
-              placeholder="팀 이름 입력"
-              value={newTeamName}
-              onChange={(e) => setNewTeamName(e.target.value)}
-              maxLength={30}
-            />
-          </Form.Item>
+      {/* 팀 생성 모달 */}
+      <div className={styles.modalOverlay} style={{ display: createTeamModalVisible ? 'flex' : 'none' }}>
+        <div className={styles.modal}>
+          <div className={styles.modalHeader}>
+            <h3>새 팀 만들기</h3>
+            <button className={styles.closeButton} onClick={() => setCreateTeamModalVisible(false)}>
+              ✕
+            </button>
+          </div>
+          
+          <div className={styles.modalBody}>
+            <form>
+              <div className={styles.formGroup}>
+                <label>팀 이름</label>
+                <Input
+                  className={styles.textInput}
+                  placeholder="팀 이름 입력"
+                  value={newTeamName}
+                  onChange={(e) => setNewTeamName(e.target.value)}
+                  maxLength={30}
+                />
+              </div>
 
-          <Form.Item label="관리할 노드 선택" required>
-            <Select
-              style={{ width: '100%' }}
-              placeholder="관리할 노드 선택"
-              value={selectedNodeForNewTeam}
-              onChange={setSelectedNodeForNewTeam}
-              optionLabelProp="label"
-            >
-              {nodes.map(node => (
-                <Select.Option key={node.node_id} value={node.node_id} label={node.node_name}>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <span style={{ marginRight: '8px' }}>
-                      {node.status === '1' ? '🟢' : '🔴'}
-                    </span>
-                    {node.node_name}
-                  </div>
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Form>
-      </Modal>
+              <div className={styles.formGroup}>
+                <label>관리할 노드 선택</label>
+                <Select
+                  style={{ width: '100%' }}
+                  placeholder="관리할 노드 선택"
+                  value={selectedNodeForNewTeam}
+                  onChange={setSelectedNodeForNewTeam}
+                  optionLabelProp="label"
+                >
+                  {nodes.map(node => (
+                    <Select.Option key={node.node_id} value={node.node_id} label={node.node_name}>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span style={{ marginRight: '8px' }}>
+                          {/* {node.status === '1' ? '🟢' : '🔴'} */}
+                        </span>
+                        {node.node_name}
+                      </div>
+                    </Select.Option>
+                  ))}
+                </Select>
+              </div>
+              
+              <div className={styles.modalFooter}>
+                <button 
+                  type="button" 
+                  className={styles.cancelButton} 
+                  onClick={() => setCreateTeamModalVisible(false)}
+                >
+                  취소
+                </button>
+                <button 
+                  type="button" 
+                  className={styles.submitButton}
+                  onClick={handleCreateTeam}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? '처리 중...' : '생성'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
       
       {/* 노드 추가 모달 */}
-      <Modal
-        title="팀에 노드 추가"
-        open={addNodeModalVisible}
-        onCancel={() => setAddNodeModalVisible(false)}
-        footer={[
-          <Button key="cancel" onClick={() => setAddNodeModalVisible(false)}>
-            취소
-          </Button>,
-          <Button 
-            key="submit" 
-            type="primary" 
-            onClick={handleAddNodeToTeam}
-            loading={addingNode}
-            disabled={!selectedNodeForTeam}
-          >
-            추가
-          </Button>,
-        ] as React.ReactNode[]}
-      >
-        <Form layout="vertical">
-          <Form.Item label="추가할 노드 선택" required>
-            {getAvailableNodes().length > 0 ? (
-              <Select
-                style={{ width: '100%' }}
-                placeholder="추가할 노드 선택"
-                value={selectedNodeForTeam}
-                onChange={setSelectedNodeForTeam}
-                optionLabelProp="label"
-              >
-                {getAvailableNodes().map(node => (
-                  <Select.Option key={node.node_id} value={node.node_id} label={node.node_name}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span>{node.node_name}</span>
-                      <span style={{ marginLeft: '8px', color: node.status === '1' ? '#52c41a' : '#f5222d' }}>
-                        {node.status === '1' ? '🟢 활성' : '🔴 비활성'}
-                      </span>
-                    </div>
-                  </Select.Option>
-                ))}
-              </Select>
-            ) : (
-              <div style={{ 
-                padding: '12px', 
-                background: '#f6f6f6', 
-                borderRadius: '4px',
-                color: '#666'
-              }}>
-                추가 가능한 노드가 없습니다. 모든 노드가 이미 팀에 등록되었습니다.
-              </div>
-            )}
-          </Form.Item>
+      <div className={styles.modalOverlay} style={{ display: addNodeModalVisible ? 'flex' : 'none' }}>
+        <div className={styles.modal}>
+          <div className={styles.modalHeader}>
+            <h3>팀에 노드 추가</h3>
+            <button className={styles.closeButton} onClick={() => setAddNodeModalVisible(false)}>
+              ✕
+            </button>
+          </div>
           
-          {/* 설명 추가 */}
-          <p style={{ fontSize: '13px', color: '#888' }}>
-            선택한 노드를 현재 팀에 연결하면 팀 멤버들이 노드를 모니터링할 수 있습니다.
-          </p>
-        </Form>
-      </Modal>
+          <div className={styles.modalBody}>
+            <form>
+              <div className={styles.formGroup}>
+                <label>추가할 노드 선택</label>
+                {getAvailableNodes().length > 0 ? (
+                  <Select
+                    style={{ width: '100%' }}
+                    placeholder="추가할 노드 선택"
+                    value={selectedNodeForTeam}
+                    onChange={setSelectedNodeForTeam}
+                    optionLabelProp="label"
+                  >
+                    {getAvailableNodes().map(node => (
+                      <Select.Option key={node.node_id} value={node.node_id} label={node.node_name}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span>{node.node_name}</span>
+                          <span style={{ marginLeft: '8px', color: node.status === '1' ? '#52c41a' : '#f5222d' }}>
+                            {/* {node.status === '1' ? '🟢 활성' : '🔴 비활성'} */}
+                          </span>
+                        </div>
+                      </Select.Option>
+                    ))}
+                  </Select>
+                ) : (
+                  <div style={{ 
+                    padding: '12px', 
+                    background: '#333', 
+                    borderRadius: '4px',
+                    color: '#999'
+                  }}>
+                    추가 가능한 노드가 없습니다. 모든 노드가 이미 팀에 등록되었습니다.
+                  </div>
+                )}
+              </div>
+              
+              {/* 설명 추가 */}
+              <p style={{ fontSize: '13px', color: '#999', marginTop: '12px' }}>
+                선택한 노드를 현재 팀에 연결하면 팀 멤버들이 노드를 모니터링할 수 있습니다.
+              </p>
+              
+              <div className={styles.modalFooter}>
+                <button 
+                  type="button" 
+                  className={styles.cancelButton} 
+                  onClick={() => setAddNodeModalVisible(false)}
+                >
+                  취소
+                </button>
+                <button 
+                  type="button" 
+                  className={styles.submitButton}
+                  onClick={handleAddNodeToTeam}
+                  disabled={!selectedNodeForTeam || addingNode}
+                >
+                  {addingNode ? '처리 중...' : '추가'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
       
       {/* 팀 삭제 확인 모달 */}
-      <Modal
-        title="팀 삭제"
-        open={deleteTeamModalVisible}
-        onCancel={() => setDeleteTeamModalVisible(false)}
-        footer={[
-          <Button key="cancel" onClick={() => setDeleteTeamModalVisible(false)}>
-            취소
-          </Button>,
-          <Button 
-            key="submit" 
-            type="primary" 
-            danger
-            onClick={handleDeleteTeam}
-            loading={processingAction}
-          >
-            삭제
-          </Button>,
-        ]}
-      >
-        <p>정말로 '{currentTeam?.team_name}' 팀을 삭제하시겠습니까?</p>
-        <p style={{ color: 'red' }}>이 작업은 되돌릴 수 없으며, 팀 데이터가 모두 삭제됩니다.</p>
-      </Modal>
+      <div className={styles.modalOverlay} style={{ display: deleteTeamModalVisible ? 'flex' : 'none' }}>
+        <div className={styles.modal}>
+          <div className={styles.modalHeader}>
+            <h3>팀 삭제</h3>
+            <button className={styles.closeButton} onClick={() => setDeleteTeamModalVisible(false)}>
+              ✕
+            </button>
+          </div>
+          
+          <div className={styles.modalBody}>
+            <p>정말로 '{currentTeam?.team_name}' 팀을 삭제하시겠습니까?</p>
+            <p style={{ color: '#ff4d4f' }}>이 작업은 되돌릴 수 없으며, 팀 데이터가 모두 삭제됩니다.</p>
+            
+            <div className={styles.modalFooter}>
+              <button 
+                type="button" 
+                className={styles.cancelButton} 
+                onClick={() => setDeleteTeamModalVisible(false)}
+              >
+                취소
+              </button>
+              <button 
+                type="button" 
+                className={`${styles.submitButton} ${styles.dangerButton}`}
+                onClick={handleDeleteTeam}
+                disabled={processingAction}
+              >
+                {processingAction ? '처리 중...' : '삭제'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* 노드 제거 확인 모달 */}
-      <Modal
-        title="노드 연결 해제"
-        open={removeNodeModalVisible}
-        onCancel={() => {
-          setRemoveNodeModalVisible(false);
-          setNodeToRemove(null);
-        }}
-        footer={[
-          <Button key="cancel" onClick={() => {
-            setRemoveNodeModalVisible(false);
-            setNodeToRemove(null);
-          }}>
-            취소
-          </Button>,
-          <Button 
-            key="submit" 
-            type="primary" 
-            onClick={handleRemoveNode}
-            loading={processingAction}
-          >
-            제거
-          </Button>,
-        ]}
-      >
-        <p>'{nodeToRemove?.node_name}' 노드를 팀에서 제거하시겠습니까?</p>
-        <p>노드는 삭제되지 않으며, 팀과의 연결만 해제됩니다.</p>
-      </Modal>
+      <div className={styles.modalOverlay} style={{ display: removeNodeModalVisible ? 'flex' : 'none' }}>
+        <div className={styles.modal}>
+          <div className={styles.modalHeader}>
+            <h3>노드 연결 해제</h3>
+            <button className={styles.closeButton} onClick={() => {
+              setRemoveNodeModalVisible(false);
+              setNodeToRemove(null);
+            }}>
+              ✕
+            </button>
+          </div>
+          
+          <div className={styles.modalBody}>
+            <p>'{nodeToRemove?.node_name}' 노드를 팀에서 제거하시겠습니까?</p>
+            <p>노드는 삭제되지 않으며, 팀과의 연결만 해제됩니다.</p>
+            
+            <div className={styles.modalFooter}>
+              <button 
+                type="button" 
+                className={styles.cancelButton} 
+                onClick={() => {
+                  setRemoveNodeModalVisible(false);
+                  setNodeToRemove(null);
+                }}
+              >
+                취소
+              </button>
+              <button 
+                type="button" 
+                className={styles.submitButton}
+                onClick={handleRemoveNode}
+                disabled={processingAction}
+              >
+                {processingAction ? '처리 중...' : '제거'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* 팀 탈퇴 확인 모달 */}
-      <Modal
-        title="팀 탈퇴"
-        open={leaveTeamModalVisible}
-        onCancel={() => setLeaveTeamModalVisible(false)}
-        footer={[
-          <Button key="cancel" onClick={() => setLeaveTeamModalVisible(false)}>
-            취소
-          </Button>,
-          <Button 
-            key="submit" 
-            type="primary" 
-            onClick={handleLeaveTeam}
-            loading={processingAction}
-          >
-            탈퇴하기
-          </Button>,
-        ]}
-      >
-        <p>정말로 '{currentTeam?.team_name}' 팀에서 탈퇴하시겠습니까?</p>
-        <p>팀 관리자가 다시 초대하기 전까지 팀에 접근할 수 없게 됩니다.</p>
-      </Modal>
+      <div className={styles.modalOverlay} style={{ display: leaveTeamModalVisible ? 'flex' : 'none' }}>
+        <div className={styles.modal}>
+          <div className={styles.modalHeader}>
+            <h3>팀 탈퇴</h3>
+            <button className={styles.closeButton} onClick={() => setLeaveTeamModalVisible(false)}>
+              ✕
+            </button>
+          </div>
+          
+          <div className={styles.modalBody}>
+            <p>정말로 '{currentTeam?.team_name}' 팀에서 탈퇴하시겠습니까?</p>
+            <p>팀 관리자가 다시 초대하기 전까지 팀에 접근할 수 없게 됩니다.</p>
+            
+            <div className={styles.modalFooter}>
+              <button 
+                type="button" 
+                className={styles.cancelButton} 
+                onClick={() => setLeaveTeamModalVisible(false)}
+              >
+                취소
+              </button>
+              <button 
+                type="button" 
+                className={styles.submitButton}
+                onClick={handleLeaveTeam}
+                disabled={processingAction}
+              >
+                {processingAction ? '처리 중...' : '탈퇴하기'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
       
       {/* 로딩 표시기 */}
       {loading && (
