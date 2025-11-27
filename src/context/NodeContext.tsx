@@ -38,6 +38,7 @@ interface NodeContextType {
   toggleMonitoring: () => void;
   nodeMetrics: NodeMetrics | null;
   updateNodeMetrics: (metrics: NodeMetrics) => void;
+  resetNodeContext: () => void; // 로그아웃 시 모든 상태 초기화
 }
 
 // 기본값으로 Context 생성
@@ -48,7 +49,8 @@ const NodeContext = createContext<NodeContextType>({
   monitoringEnabled: true,
   toggleMonitoring: () => {},
   nodeMetrics: null,
-  updateNodeMetrics: () => {}
+  updateNodeMetrics: () => {},
+  resetNodeContext: () => {}
 });
 
 // Provider 컴포넌트 생성
@@ -178,12 +180,8 @@ export const NodeProvider = ({ children }: { children: ReactNode }) => {
       } else if (!nodeFromUrl) {
         console.warn('URL의 nodeId에 해당하는 노드를 찾을 수 없음:', urlNodeId);
       }
-    } else if (!urlNodeId && selectedNode) {
-      // URL에 nodeId가 없으면 선택 해제
-      console.log('URL에 nodeId가 없어서 선택된 노드 해제');
-      setSelectedNode(null);
-      setNodeMetrics(null);
     }
+    // URL에 nodeId가 없어도 선택된 노드를 유지
   }, [location.pathname, nodes, nodesLoaded, selectedNode, getNodeIdFromUrl]);
 
   // 컴포넌트 마운트 시 노드 목록 로드
@@ -230,6 +228,26 @@ export const NodeProvider = ({ children }: { children: ReactNode }) => {
     setNodeMetrics(metrics);
   }, []);
 
+  // 로그아웃 시 모든 상태 초기화
+  const resetNodeContext = useCallback(() => {
+    setSelectedNode(null);
+    setNodeMetrics(null);
+    setNodes([]);
+    setNodesLoaded(false);
+    setObscuraKey(null);
+    
+    // WebSocketManager 정리
+    try {
+      const wsManager = WebSocketManager.getInstance();
+      wsManager.cleanup();
+      WebSocketManager.setMonitoringEnabled(false);
+    } catch (err) {
+      console.error('WebSocketManager 정리 중 오류:', err);
+    }
+    
+    console.log('NodeContext 상태 초기화 완료');
+  }, []);
+
   return (
     <NodeContext.Provider value={{ 
       selectedNode, 
@@ -238,7 +256,8 @@ export const NodeProvider = ({ children }: { children: ReactNode }) => {
       monitoringEnabled,
       toggleMonitoring,
       nodeMetrics,
-      updateNodeMetrics
+      updateNodeMetrics,
+      resetNodeContext
     }}>
       {children}
     </NodeContext.Provider>

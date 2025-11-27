@@ -1,6 +1,7 @@
 // src/components/node/MiniMetricsGraph.tsx
 import React, { useEffect, useState, useRef } from 'react';
 import { useNodeContext } from '../../context/NodeContext';
+import { useAuthContext } from '../../context/AuthContext';
 import styles from '../../scss/node/MiniMetricsGraph.module.scss';
 import '../../scss/node/node_mobile/MiniMetricsGraph.module.mobile.scss';
 
@@ -25,6 +26,7 @@ const MAX_DATA_POINTS = 15; // 표시할 데이터 포인트 수
 
 const MiniMetricsGraph: React.FC<MiniMetricsGraphProps> = ({ nodeId: propsNodeId }) => {
   const { selectedNode, monitoringEnabled } = useNodeContext();
+  const { isAuthenticated } = useAuthContext();
   const [cpuData, setCpuData] = useState<DataPoint[]>([]);
   const [memoryData, setMemoryData] = useState<DataPoint[]>([]);
   const [cpuAlert, setCpuAlert] = useState<boolean>(false);
@@ -34,6 +36,31 @@ const MiniMetricsGraph: React.FC<MiniMetricsGraphProps> = ({ nodeId: propsNodeId
 
   // props로 받은 nodeId 우선, 없으면 context에서 가져오기
   const currentNodeId = propsNodeId || selectedNode?.node_id;
+
+  // 인증 상태 변화 감지 - 로그아웃 시 WebSocket 정리
+  useEffect(() => {
+    if (!isAuthenticated) {
+      console.log('MiniMetricsGraph: 로그아웃 감지, WebSocket 정리');
+      
+      // WebSocket 연결 해제
+      if (socketRef.current) {
+        socketRef.current.close(1000, "User logged out");
+        socketRef.current = null;
+      }
+      
+      // 재연결 타이머 해제
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
+      
+      // 데이터 초기화
+      setCpuData([]);
+      setMemoryData([]);
+      setCpuAlert(false);
+      setMemoryAlert(false);
+    }
+  }, [isAuthenticated]);
 
   // WebSocket 연결 관리
   useEffect(() => {

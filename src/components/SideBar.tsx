@@ -1,6 +1,6 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import styles from '../scss/SideBar.module.scss';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import api from '../api';
 import { getToken } from '../utils/Auth';
 import { useNodeContext } from '../context/NodeContext';
@@ -31,7 +31,6 @@ const SideBar = ({ isMobile, isSidebarOpen, setIsSidebarOpen }: { isMobile?: boo
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { selectedNode, selectNode } = useNodeContext();
-  const location = useLocation();
   const fetchedRef = useRef(false);
   const wsRef = useRef<WebSocket | null>(null);
   const teamWsRef = useRef<WebSocket | null>(null); // 팀 WebSocket 참조 추가
@@ -312,7 +311,7 @@ const SideBar = ({ isMobile, isSidebarOpen, setIsSidebarOpen }: { isMobile?: boo
 
   // 팀이 관리하는 모든 노드 가져오기
   const getTeamNodes = (teamId: string) => {
-    // 팀 ID로 필터링하고 노드 정보 추출
+    // 팀 ID로 필터링하고 node_id가 null이 아닌 노드만 추출
     return teams
       .filter(team => team.team_id === teamId && team.node_id && team.node_name)
       .map(team => ({

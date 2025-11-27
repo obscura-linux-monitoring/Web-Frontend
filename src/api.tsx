@@ -75,6 +75,8 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
+        console.log('🔄 Access Token 만료 감지, Refresh 시도...');
+        
         // 새로운 axios 인스턴스로 refresh 요청 (인터셉터 우회)
         const refreshInstance = axios.create({
           baseURL: 'http://1.209.148.143:8000',
@@ -84,6 +86,7 @@ api.interceptors.response.use(
         const response = await refreshInstance.post('/auth/refresh');
         const newToken = response.data.access_token;
         
+        console.log('✅ Refresh 성공, 새 토큰 저장');
         saveToken(newToken);
         processQueue(null, newToken);
         isRefreshing = false;
@@ -92,8 +95,12 @@ api.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return axios(originalRequest);
         
-      } catch (refreshError) {
-        console.error('🔒 Refresh 실패:', refreshError);
+      } catch (refreshError: any) {
+        console.error('❌ Refresh 실패:', {
+          status: refreshError?.response?.status,
+          message: refreshError?.response?.data?.detail || refreshError?.message,
+          hasCookie: document.cookie.includes('refresh_token')
+        });
         processQueue(refreshError, null);
         isRefreshing = false;
         removeToken();

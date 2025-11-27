@@ -206,9 +206,7 @@ const NodeServices = ({ nodeId: propsNodeId }: NodeServicesProps = {}) => {
   // 서비스 선택/해제 핸들러
   const toggleServiceSelection = (name: string) => {
     setSelectedServices(prev =>
-      prev.includes(name)
-        ? prev.filter(n => n !== name)
-        : [...prev, name]
+      prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
     );
   };
 

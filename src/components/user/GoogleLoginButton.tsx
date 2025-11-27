@@ -28,6 +28,10 @@ const GoogleLoginButton = ({ onLogin }: Props) => {
       console.log("🔐 JWT:", access_token);
       console.log("👤 User:", user);
       
+      // 🍪 쿠키 저장 확인
+      console.log("🍪 현재 쿠키:", document.cookie);
+      console.log("🍪 Refresh Token 쿠키 존재:", document.cookie.includes('refresh_token'));
+      
       // JWT 저장
       localStorage.setItem("jwt", access_token);
 
