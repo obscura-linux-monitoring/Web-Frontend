@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
 import styles from '../../scss/performance/MonitorComponents.module.scss';
 import '../../scss/performance/performance_mobile/MonitorComponents.module.mobile.scss';
+import { getToken } from '../../utils/Auth';
 
 interface NetworkData {
   name: string;
@@ -20,60 +21,103 @@ interface NetworkUsagePoint {
 }
 
 interface NetworkMonitorProps {
+  nodeId?: string;
+  networkType?: 'ethernet' | 'wifi';
   initialData?: NetworkData;
   darkMode?: boolean;
 }
 
 const NetworkMonitor: React.FC<NetworkMonitorProps> = ({ 
+  nodeId,
+  networkType = 'ethernet',
   initialData,
   darkMode = true
 }) => {
-  // 더미 데이터
   const defaultData: NetworkData = {
-    name: "Wi-Fi",
+    name: networkType === 'wifi' ? "Wi-Fi" : "Ethernet",
     sent: 0,
     received: 0,
     usagePercent: 0,
-    ipAddress: "192.168.1.100",
-    adapter: "Intel(R) Wi-Fi 6 AX201 160MHz"
+    ipAddress: "0.0.0.0",
+    adapter: "Network Adapter"
   };
 
   const [networkData, setNetworkData] = useState<NetworkData>(initialData || defaultData);
   const [usageHistory, setUsageHistory] = useState<NetworkUsagePoint[]>([]);
   const [maxPoints] = useState<number>(60);
 
-  // 실시간 네트워크 데이터 시뮬레이션
+  // WebSocket으로 실시간 네트워크 데이터 수신
   useEffect(() => {
-    const interval = setInterval(() => {
-      const newSent = Math.floor(Math.random() * 500);
-      const newReceived = Math.floor(Math.random() * 800);
-      const newUsage = Math.floor((newSent + newReceived) / 20); // 단순화된 계산
-      
-      setNetworkData(prev => ({
-        ...prev,
-        sent: newSent,
-        received: newReceived,
-        usagePercent: newUsage
-      }));
+    const token = getToken();
+    if (!token || !nodeId) {
+      console.warn('토큰 또는 노드 ID가 없습니다.');
+      return;
+    }
 
-      setUsageHistory(prev => {
-        const newPoint = {
-          time: prev.length > 0 ? prev[prev.length - 1].time + 1 : 0,
-          usage: newUsage,
-          sent: newSent,
-          received: newReceived
-        };
+    const wsUrl = networkType === 'wifi'
+      ? `ws://1.209.148.143:8000/performance/ws/wifi/${nodeId}?token=${token}`
+      : `ws://1.209.148.143:8000/performance/ws/network/${nodeId}?token=${token}`;
+
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      console.log(`${networkType} WebSocket 연결됨`);
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const response = JSON.parse(event.data);
         
-        const newHistory = [...prev, newPoint];
-        if (newHistory.length > maxPoints) {
-          return newHistory.slice(newHistory.length - maxPoints);
-        }
-        return newHistory;
-      });
-    }, 1000);
+        if (response.type === 'network_metrics') {
+          const data = response.data;
+          const primaryInterface = data.primary_interface || {};
 
-    return () => clearInterval(interval);
-  }, [maxPoints]);
+          const sent = primaryInterface.tx_speed_kbps || 0;
+          const received = primaryInterface.rx_speed_kbps || 0;
+          const usage = Math.floor((sent + received) / 20);
+
+          // 네트워크 데이터 업데이트
+          setNetworkData({
+            name: primaryInterface.name || (networkType === 'wifi' ? 'Wi-Fi' : 'Ethernet'),
+            sent,
+            received,
+            usagePercent: usage,
+            ipAddress: primaryInterface.ipv4 || "0.0.0.0",
+            adapter: primaryInterface.name || "Network Adapter"
+          });
+
+          // 히스토리 업데이트
+          setUsageHistory(prev => {
+            const newPoint = {
+              time: prev.length > 0 ? prev[prev.length - 1].time + 1 : 0,
+              usage,
+              sent,
+              received
+            };
+            
+            const newHistory = [...prev, newPoint];
+            return newHistory.length > maxPoints 
+              ? newHistory.slice(-maxPoints) 
+              : newHistory;
+          });
+        }
+      } catch (error) {
+        console.error('네트워크 데이터 파싱 오류:', error);
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error(`${networkType} WebSocket 오류:`, error);
+    };
+
+    ws.onclose = () => {
+      console.log(`${networkType} WebSocket 연결 종료`);
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [nodeId, networkType, maxPoints]);
 
   return (
     <div className={`${styles.monitorContainer} ${darkMode ? styles.darkMode : styles.lightMode}`}>
